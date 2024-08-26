@@ -1,0 +1,7 @@
+.venv/
+.vscode/
+build/
+./CMakeUserPresets.json
+CMakeUserPresets.json
+CMakeFiles/
+docs/html/

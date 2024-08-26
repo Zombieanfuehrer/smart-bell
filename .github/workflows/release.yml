@@ -1,0 +1,131 @@
+name: Create Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type'
+        required: true
+        default: 'debug'
+        type: choice
+        options:
+          - debug
+          - release
+      release_version:
+        description: 'Release version'
+        required: true
+        default: '1.0.0'
+        type: string
+
+jobs:
+  conan-package:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Cache Docker layers
+      uses: actions/cache@v2
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-buildx-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-buildx-
+
+    - name: Set build type
+      id: build_type
+      run: |
+        echo "BUILD_TYPE=${{ github.event.inputs.release_type || 'debug' }}" >> $GITHUB_ENV
+
+    - name: Create shared volume for conan package
+      run: |
+        mkdir -p ${{ github.workspace }}/conan_package
+
+    - name: Package on Docker (zombieanfuehrer/avr-gcc-conan-cmake)
+      run: |
+        docker run --rm -v ${{ github.workspace }}:/workspace -v ${{ github.workspace }}/conan_package:/root/.conan2/p -w /workspace zombieanfuehrer/avr-gcc-conan-cmake:latest /bin/sh -c "
+        . /opt/venv/bin/activate
+          if [ $BUILD_TYPE = 'release' ]; then
+            conan create . --build=missing -pr:h=avr-mega328p -pr:b=avr-mega328p 2>&1 | tee /workspace/conan_output.txt
+          else
+            conan create . --build=missing -pr:h=avr-mega328p_g 2>&1 | tee /workspace/conan_output.txt
+          fi
+        "
+    - name: List contents of mounted directory
+      run: |
+        echo "Listing contents of the mounted directory and its subdirectories:"
+        ls -l ${{ github.workspace }}/conan_package
+        echo "--------------------------------------------------------------------------------"
+        ls -R ${{ github.workspace }}/conan_package/*
+
+    - name: Extract Package Info
+      run: |
+        echo "Checking if conan_output.txt exists and has content..."
+        if [ ! -s conan_output.txt ]; then 
+          echo "Error: conan_output.txt is empty or does not exist"
+          exit 1
+        fi
+        
+        PACKAGE_FOLDER=$(grep -oP 'Package folder \K.*' conan_output.txt)
+        if [ -z "$PACKAGE_FOLDER" ]; then
+          echo "Error: Package folder not found in conan_output.txt"
+          exit 1
+        fi
+        echo "Package folder in Docker Container: $PACKAGE_FOLDER"
+        RELATIVE_PATH=$(echo "$PACKAGE_FOLDER" | sed -n 's|^/root/.conan2/p||p')
+        RUNNER_PACKAGE_FOLDER="${{ github.workspace }}/conan_package$RELATIVE_PATH"
+        echo "RUNNER_PACKAGE_FOLDER=$RUNNER_PACKAGE_FOLDER" >> $GITHUB_ENV
+        echo "Package folder in runner: $RUNNER_PACKAGE_FOLDER"
+
+        FULL_REFERENCE=$(grep -oP 'Full package reference: \K.*' conan_output.txt)
+        if [ -z "$FULL_REFERENCE" ]; then
+          echo "Error: 'Full package reference:' not found in conan_output.txt"
+          exit 1
+        fi
+        echo "Full package reference: $FULL_REFERENCE"
+        
+        PACKAGE_NAME_VERSION=$(echo "$FULL_REFERENCE" | grep -oP '^[^#]+')
+        if [ -z "$PACKAGE_NAME_VERSION" ]; then
+          echo "Error: Package name and version not found in full package reference"
+          exit 1
+        fi
+        echo "Package name and version: $PACKAGE_NAME_VERSION"
+        
+        PACKAGE_NAME_VERSION=$(echo "$PACKAGE_NAME_VERSION" | sed 's/\//_/g')
+        echo "PACKAGE_NAME_VERSION=$PACKAGE_NAME_VERSION" >> $GITHUB_ENV
+        echo "Package name: $PACKAGE_NAME_VERSION"
+
+    - name: Compress Package Folder
+      run: |
+        if [ ! -d "$RUNNER_PACKAGE_FOLDER" ]; then
+          echo "Error: Package folder $RUNNER_PACKAGE_FOLDER does not exist"
+          exit 1
+        fi
+        sudo chmod -R 777 $RUNNER_PACKAGE_FOLDER
+        TARBALL_NAME="$PACKAGE_NAME_VERSION.tar.gz"
+        tar -czvf $TARBALL_NAME -C $RUNNER_PACKAGE_FOLDER .
+        TARBALL_PATH="$(pwd)/$TARBALL_NAME"
+        echo "TARBALL_NAME=$TARBALL_NAME" >> $GITHUB_ENV
+        echo "TARBALL_PATH=$TARBALL_PATH" >> $GITHUB_ENV
+        echo "Tarball created: $TARBALL_PATH"
+    
+    - name: Upload Tarball as Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ env.TARBALL_NAME }}
+        path: ${{ env.TARBALL_PATH }}
+
+    - name: Create GitHub Release
+      env:
+        GITHUB_TOKEN: ${{ secrets.AUTH_GITHUB_API }}
+      run: |
+        TAG_NAME="${{ github.event.inputs.release_version }}"
+        gh release create $TAG_NAME ${{ env.TARBALL_PATH }} --title "Release $TAG_NAME" --notes "Automated release for version $TAG_NAME"

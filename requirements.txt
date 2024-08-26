@@ -1,0 +1,5 @@
+cmake>=3.20.0
+cmake-format==0.6.13
+cmakelang==0.6.13
+conan==2.6.0
+cpplint==1.6.1

@@ -1,0 +1,59 @@
+name: Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build type'
+        required: true
+        default: 'debug'
+        type: choice
+        options:
+          - debug
+          - release
+
+jobs:
+  build:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/Ver'))
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Cache Docker layers
+      uses: actions/cache@v2
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-buildx-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-buildx-
+
+    - name: Set build type
+      id: build_type
+      run: |
+        echo "BUILD_TYPE=${{ github.event.inputs.build_type || 'debug' }}" >> $GITHUB_ENV
+
+    - name: Build on Docker (zombieanfuehrer/avr-gcc-conan-cmake)
+      run: |
+        docker run --rm -v ${{ github.workspace }}:/workspace -w /workspace zombieanfuehrer/avr-gcc-conan-cmake:latest /bin/sh -c "
+        . /opt/venv/bin/activate
+          if [ $BUILD_TYPE = 'release' ]; then
+            conan install . --build=missing -pr:h=avr-mega328p -pr:b=avr-mega328p &&
+            . build/Release/generators/conanbuild.sh &&
+            cmake --preset conan-generated-avr-release &&
+            cmake --build build/Release;
+          else
+            conan install . --build=missing -pr:h=avr-mega328p_g &&
+            . build/Debug/generators/conanbuild.sh &&
+            cmake --preset conan-generated-avr-debug &&
+            cmake --build build/Debug;
+          fi
+        "
