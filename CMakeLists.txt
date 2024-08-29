@@ -6,9 +6,13 @@ project(
     LANGUAGES CXX)
 
 if(DEFINED CONAN_PROFILE_NAME)
-    set(CONAN_PROFILE_NAME ${CONAN_PROFILE_NAME} CACHE STRING "Name of the conan profile to use")
+    set(CONAN_PROFILE_NAME
+        ${CONAN_PROFILE_NAME}
+        CACHE STRING "Name of the conan profile to use")
 else()
-    set(CONAN_PROFILE_NAME "default" CACHE STRING "Name of the conan profile to use")
+    set(CONAN_PROFILE_NAME
+        "default"
+        CACHE STRING "Name of the conan profile to use")
 endif()
 message(STATUS "CONAN_PROFILE_NAME ${CONAN_PROFILE_NAME}")
 
@@ -35,8 +39,9 @@ option(ENABLE_CMAKE_FORMAT "Enable to add cmake-format target." ON)
 option(ENABLE_DOXYGEN_DOCU "Enable to add doxygen docu target." ON)
 
 # PROJECT / LIBRARY NAMES
-set(LIBRARY_NAME "ATmega328__T_LIB")
-set(EXECUTABLE_NAME "ATmega328__T_")
+set(LIB_WTD "ATmega328_WTD")
+set(LIB_PININT "ATmega328_PIN_INT")
+set(EXECUTABLE_NAME "ATmega328_SMART_BELL_FW")
 
 # CMAKE MODULES
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
@@ -82,5 +87,5 @@ endif()
 
 # Include the install commands
 include(Install)
-install_target(${LIBRARY_NAME})
+install_target(${LIB_WTD})
 install_target(${EXECUTABLE_NAME})

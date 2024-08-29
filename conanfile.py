@@ -4,7 +4,7 @@ from conan.tools.cmake import CMakeToolchain, CMake, cmake_layout
 from conan.tools.files import copy
 
 class Atmega328TemplateRecipe(ConanFile):
-    name = "atmega328_template"
+    name = "atmega328_smart_bell_fw"
     version = "1.0.0"
 
     # Optional metadata
