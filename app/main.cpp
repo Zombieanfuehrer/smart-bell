@@ -1,5 +1,6 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <avr/wdt.h>
 
 #include "SetupWDT.h"
 #include "SetupEXT_IN_Interrupt.h"
@@ -31,16 +32,16 @@ int main () {
 
   while (1) {
 
-    if (inc_counter >= 8 && ring_output) {
+    if (inc_counter >= 80 && ring_output) {
       PORTB &= ~(1 << PORTB0); // Set PB0 low
         ring_output = false;
         inc_counter = 0;
     }
 
-    if (ring_output && inc_counter < 8 && !(PORTB & (1 << PORTB0))) {
+    if (ring_output && inc_counter < 80 && !(PORTB & (1 << PORTB0))) {
       PORTB |= (1 << PORTB0);  // Set PB0 high
     }
-    
+    wdt_reset();
   }
   return 0;
 }
