@@ -11,7 +11,7 @@ class Atmega328TemplateRecipe(ConanFile):
     license = "MIT"
     author = "David A. Haufe"
     url = "https://github.com/Zombieanfuehrer/atmega328p-cxx-template"
-    description = "Just a simple conan + cmake project to support the atmega328p"
+    description = "Smart Bell firmware for ATmega328P"
     topics = ("avr")
 
     # Binary configuration
@@ -34,8 +34,10 @@ class Atmega328TemplateRecipe(ConanFile):
         cmake = CMake(self)
         cmake.configure()
 
-        cmake.build(target="ATmega328__T_LIB")
-        cmake.build(target="ATmega328__T_")
+        cmake.build(target="ATmega328_WTD")
+        cmake.build(target="ATmega328_PIN_INT")
+        cmake.build(target="ATmega328_TIMER_INT")
+        cmake.build(target="ATmega328_SMART_BELL_FW")
 
     def package(self):
         cmake = CMake(self)
@@ -46,4 +48,4 @@ class Atmega328TemplateRecipe(ConanFile):
         copy(self, "*", os.path.join(self.build_folder, "bin"), package_bin_dir)
 
     def package_info(self):
-        self.cpp_info.libs = ["ATmega328__T_LIB"]
+        self.cpp_info.libs = ["ATmega328_SMART_BELL_FW"]

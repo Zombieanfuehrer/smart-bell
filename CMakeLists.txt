@@ -86,7 +86,14 @@ else()
     message(FATAL_ERROR "No valid CMake preset found!")
 endif()
 
-# Include the install commands
 include(Install)
 install_target(${LIB_WTD})
+install_target(${LIB_PININT})
+install_target(${LIB_TIMERINT})
 install_target(${EXECUTABLE_NAME})
+
+include(Objcopy)
+run_bin2hex(
+    TARGET ${EXECUTABLE_NAME}
+    TARGET_ARTIFACT "${CMAKE_BINARY_DIR}/app/${EXECUTABLE_NAME}"
+    HEX_FILE "${CMAKE_BINARY_DIR}/app/${EXECUTABLE_NAME}.hex")
