@@ -15,7 +15,7 @@ void setup_GPIO() {
 }
 
 ISR(INT0_vect) {
-  ring_output = true;
+  PORTB |= (1 << PORTB0);  // Set PB0 high
   inc_counter = 0;
 }
 
@@ -24,6 +24,7 @@ ISR(TIMER1_COMPA_vect) {
 }
 
 constexpr const uint16_t kOCR1A_VALUE{62499};
+constexpr const uint8_t kRING_DURATION{6};
 int main () {
   setup_GPIO();
   configure_wdt::timeout_1sec_reset_power::setup_WTD();
@@ -31,15 +32,11 @@ int main () {
   timer_interrupt::ctc_mode::setup_timer0_ctc_mode(timer_interrupt::Prescaler::DIV64, kOCR1A_VALUE);
 
   while (1) {
+    auto timer1_ctc_matches_interrupts_count = inc_counter;
 
-    if (inc_counter >= 80 && ring_output) {
+    if (timer1_ctc_matches_interrupts_count >= kRING_DURATION && PORTB & (1 << PORTB0)) {
       PORTB &= ~(1 << PORTB0); // Set PB0 low
-        ring_output = false;
-        inc_counter = 0;
-    }
-
-    if (ring_output && inc_counter < 80 && !(PORTB & (1 << PORTB0))) {
-      PORTB |= (1 << PORTB0);  // Set PB0 high
+      inc_counter = 0;
     }
     wdt_reset();
   }
