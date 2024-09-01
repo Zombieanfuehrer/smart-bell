@@ -25,7 +25,7 @@ ISR(TIMER1_COMPA_vect) {
 
 constexpr const uint16_t kOCR1A_VALUE{62499};
 constexpr const uint8_t kRING_DURATION{6};
-int main () {
+int main (void) {
   setup_GPIO();
   configure_wdt::timeout_1sec_reset_power::setup_WTD();
   external_pin_interrupt::setup_INT0_PullUpResistorFallingEdge();
@@ -33,7 +33,6 @@ int main () {
 
   while (1) {
     auto timer1_ctc_matches_interrupts_count = inc_counter;
-
     if (timer1_ctc_matches_interrupts_count >= kRING_DURATION && PORTB & (1 << PORTB0)) {
       PORTB &= ~(1 << PORTB0); // Set PB0 low
       inc_counter = 0;
