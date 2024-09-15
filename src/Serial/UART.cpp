@@ -1,32 +1,44 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-#include <cstdint>
+#include <stdint.h>
 
 #include "Serial/UART.h"
-#include "UART.h"
+
+volatile static uint8_t Tx_busy_;
+volatile static uint8_t Rx_buffer_[serial::UART::kRX_buffer_size] = {0};
+volatile static uint16_t Rx_buffer_head_ = 0;
 
 ISR (USART_RX_vect) {
-
+  volatile static uint16_t Rx_buffer_tail_ = 0;
+  Rx_buffer_[Rx_buffer_tail_] = UDR0;
+  Rx_buffer_head_++;
+  Rx_buffer_tail_++;
+  if (Rx_buffer_tail_ <= serial::UART::kRX_buffer_size) {
+    Rx_buffer_tail_ = 0;
+  }
 }
 
 ISR (USART_TX_vect) {
-  UART::Tx_busy_ = UART::is_not_busy;
+  Tx_busy_ = serial::UART::is_not_busy;
 }
 
 namespace serial {
 
   UART::UART(const Serial_parameters &serial_parameters) {
-
-    auto prescaler = calculate_baudrate_prescaler(static_cast<Baudrate>(serial_parameters.Baudrate), static_cast<Asynchronous_mode>(serial_parameters.Asynchronous_mode));
+    cli();
+    auto prescaler = calculate_baudrate_prescaler(static_cast<Baudrate>(serial_parameters.baudrate), static_cast<Asynchronous_mode>(serial_parameters.asynchronous_mode));
     // Set baud rate
     UBRR0H = prescaler >> 8;
     UBRR0L = prescaler;
     // Receiver and transmitter enable with interrupts
     UCSR0B = (1 << RXEN0) | (1 << TXEN0) | (1 << RXCIE0) | (1 << TXCIE0);
     // Set frame format and communication mode
-    UCSR0C = serial_parameters.Communication_mode | serial_parameters.Stop_bits | serial_parameters.Data_bits | serial_parameters.Parity_mode;
-
+    UCSR0C = static_cast<uint8_t>(serial_parameters.communication_mode) | 
+      static_cast<uint8_t>(serial_parameters.stop_bits) |
+      static_cast<uint8_t>(serial_parameters.data_bits) |
+      static_cast<uint8_t>(serial_parameters.parity_mode);
+    sei();
   }
 
   void UART::send_byte(const uint8_t byte) {
@@ -35,7 +47,7 @@ namespace serial {
     UDR0 = byte;
   }
 
-  void UART::send_bytes(const uint8_t const *bytes, const uint16_t lengths) {
+  void UART::send_bytes(const uint8_t *const bytes, const uint16_t lengths) {
     for (uint16_t i = 0; i < lengths; i++) {
       this->send_byte(bytes[i]);
     }
@@ -52,9 +64,22 @@ namespace serial {
 
   }
 
-  UART::~UART() {}
+  uint16_t UART::is_read_data_available() const { 
+    return Rx_buffer_head_; 
+  }
 
-  static uint8_t UART::calculate_baudrate_prescaler(const Baudrate &baudrate, const Asynchronous_mode &asynchronous_mode) {
+  uint8_t UART::read_byte() { 
+    static uint16_t Rx_read_pos{0};
+    auto byte = Rx_buffer_[Rx_read_pos];
+    Rx_read_pos++;
+    Rx_buffer_head_--;
+    if (Rx_read_pos >= UART::kRX_buffer_size) {
+      Rx_read_pos = 0;
+    }
+    return byte;
+  }
+
+  uint8_t UART::calculate_baudrate_prescaler(const Baudrate &baudrate, const Asynchronous_mode &asynchronous_mode) {
     if (asynchronous_mode == Asynchronous_mode::kDouble_speed) {
       return (F_CPU / (kAsynchronous_double_speed_mode * static_cast<uint16_t>(baudrate)) ) - 1;
     }
