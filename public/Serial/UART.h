@@ -63,29 +63,27 @@ namespace serial {
     Parity_mode = Parity::kNone
   };
 
-  ISR (USART_RX_vect) {
-
-  }
-
-  ISR (USART_TX_vect) {
-    UART::Tx_busy_ = 0;
-  }
-
+   
   class UART
   {
     public:
       volatile static uint8_t Tx_busy_{0};
+      static constexpr const uint8_t is_busy{1};
+      static constexpr const uint8_t is_not_busy{0};
 
       UART(const Serial_parameters &serial_parameters);
-      send();
+      void send_byte(const uint8_t byte);
+      void send_bytes(const uint8_t const *bytes, const uint16_t lengths);
+      void send_string(const char *string);
 
-      ~UART();
+      ~UART() = default;
 
     private:
       constexpr const uint8_t kRX_buffer_size{16};
       constexpr const uint8_t kTX_buffer_size{16};
       static constexpr const uint8_t kAsynchronous_normal_speed_mode{16};
       static constexpr const uint8_t kAsynchronous_double_speed_mode{8};
+
 
     private:
       uint8_t Rx_buffer_[kRx_buffer_size_]{};
@@ -96,7 +94,6 @@ namespace serial {
 
     private:
       static uint8_t calculate_baudrate_prescaler(const Baudrate &baudrate);
-
   };  // UART
 
 

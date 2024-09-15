@@ -1,7 +1,7 @@
+set(LIBRARY_INCLUDES "${PROJECT_SOURCE_DIR}/public" "${CMAKE_BINARY_DIR}/configured/include")
+
 set(LIB_WTD_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/SetupWDT.cpp")
 set(LIB_WTD_HEADERS "${PROJECT_SOURCE_DIR}/public/SetupWDT.h")
-
-set(LIBRARY_INCLUDES "${PROJECT_SOURCE_DIR}/public" "${CMAKE_BINARY_DIR}/configured/include")
 
 add_library("${LIB_WTD}" STATIC ${LIB_WTD_SOURCES} ${LIB_WTD_HEADERS})
 target_include_directories("${LIB_WTD}" PUBLIC ${LIBRARY_INCLUDES})
@@ -18,3 +18,4 @@ set(LIB_LIB_TIMERINT_HEADERS "${PROJECT_SOURCE_DIR}/public/SetupTimer.h")
 add_library("${LIB_TIMERINT}" STATIC ${LIB_LIB_TIMERINT_SOURCES} ${LIB_LIB_TIMERINT_HEADERS})
 target_include_directories("${LIB_TIMERINT}" PUBLIC ${LIBRARY_INCLUDES})
 
+add_subdirectory(Serial)

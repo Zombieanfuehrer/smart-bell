@@ -42,6 +42,7 @@ option(ENABLE_DOXYGEN_DOCU "Enable to add doxygen docu target." ON)
 set(LIB_WTD "ATmega328_WTD")
 set(LIB_PININT "ATmega328_PIN_INT")
 set(LIB_TIMERINT "ATmega328_TIMER_INT")
+set(LIB_USART "ATmega328_USART")
 set(EXECUTABLE_NAME "ATmega328_SMART_BELL_FW")
 
 # CMAKE MODULES
