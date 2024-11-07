@@ -59,7 +59,7 @@ int main (void) {
     }
     wdt_reset();
     if (uart.is_read_data_available() > 0) {
-      volatile auto received_byte = uart.read_byte();
+      auto received_byte = uart.read_byte();
       wdt_reset();
       uart.send_byte(received_byte); // Echo back
     }

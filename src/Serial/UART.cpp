@@ -1,23 +1,19 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/wdt.h>
-
 #include <stdint.h>
 
-
 #include "Serial/UART.h"
-
 
 volatile static uint8_t Tx_busy_;
 volatile static uint8_t Rx_buffer_[serial::UART::kRX_buffer_size] = {0};
 volatile static uint16_t Rx_buffer_head_ = 0;
+volatile static uint16_t Rx_buffer_tail_ = 0;
 
 ISR (USART_RX_vect) {
-  volatile static uint16_t Rx_buffer_tail_ = 0;
   Rx_buffer_[Rx_buffer_tail_] = UDR0;
-  Rx_buffer_head_++;
   Rx_buffer_tail_++;
-  if (Rx_buffer_tail_ <= serial::UART::kRX_buffer_size) {
+  if (Rx_buffer_tail_ >= serial::UART::kRX_buffer_size) {
     Rx_buffer_tail_ = 0;
   }
 }
@@ -38,7 +34,6 @@ namespace serial {
     // Receiver and transmitter enable with interrupts
     UCSR0B = (1 << RXEN0) | (1 << TXEN0) | (1 << RXCIE0) | (1 << TXCIE0);
     // Set frame format and communication mode
-    
     UCSR0C = static_cast<uint8_t>(serial_parameters.communication_mode) | 
       static_cast<uint8_t>(serial_parameters.stop_bits) |
       static_cast<uint8_t>(serial_parameters.data_bits) |
@@ -68,16 +63,17 @@ namespace serial {
   }
 
   uint16_t UART::is_read_data_available() const { 
-    return Rx_buffer_head_; 
+    return (Rx_buffer_head_ != Rx_buffer_tail_);
   }
 
   uint8_t UART::read_byte() { 
-    static uint16_t Rx_read_pos{0};
-    auto byte = Rx_buffer_[Rx_read_pos];
-    Rx_read_pos++;
-    Rx_buffer_head_--;
-    if (Rx_read_pos >= UART::kRX_buffer_size) {
-      Rx_read_pos = 0;
+    if (Rx_buffer_head_ == Rx_buffer_tail_) {
+      return 0; // Buffer is empty
+    }
+    auto byte = Rx_buffer_[Rx_buffer_head_];
+    Rx_buffer_head_++;
+    if (Rx_buffer_head_ >= UART::kRX_buffer_size) {
+      Rx_buffer_head_ = 0;
     }
     return byte;
   }
