@@ -12,8 +12,7 @@ function(run_bin2hex)
         OUTPUT ${RUN_BIN2HEX_HEX_FILE}
         COMMAND ${OBJCOPY} -O ihex "${RUN_BIN2HEX_TARGET_ARTIFACT}" ${RUN_BIN2HEX_HEX_FILE}
         DEPENDS ${RUN_BIN2HEX_TARGET_ARTIFACT}
-        COMMENT "Converting ${RUN_BIN2HEX_TARGET_ARTIFACT} to hex file"
-    )
+        COMMENT "Converting ${RUN_BIN2HEX_TARGET_ARTIFACT} to hex file")
 
     add_custom_target(${RUN_BIN2HEX_TARGET}_hex ALL DEPENDS ${RUN_BIN2HEX_HEX_FILE})
 endfunction()

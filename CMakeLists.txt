@@ -42,6 +42,7 @@ option(ENABLE_DOXYGEN_DOCU "Enable to add doxygen docu target." ON)
 set(LIB_WTD "ATmega328_WTD")
 set(LIB_PININT "ATmega328_PIN_INT")
 set(LIB_TIMERINT "ATmega328_TIMER_INT")
+set(LIB_USART "ATmega328_USART")
 set(EXECUTABLE_NAME "ATmega328_SMART_BELL_FW")
 
 # CMAKE MODULES
@@ -90,10 +91,14 @@ include(Install)
 install_target(${LIB_WTD})
 install_target(${LIB_PININT})
 install_target(${LIB_TIMERINT})
+install_target(${LIB_USART})
 install_target(${EXECUTABLE_NAME})
 
 include(Objcopy)
 run_bin2hex(
-    TARGET ${EXECUTABLE_NAME}
-    TARGET_ARTIFACT "${CMAKE_BINARY_DIR}/app/${EXECUTABLE_NAME}"
-    HEX_FILE "${CMAKE_BINARY_DIR}/app/${EXECUTABLE_NAME}.hex")
+    TARGET
+    ${EXECUTABLE_NAME}
+    TARGET_ARTIFACT
+    "${CMAKE_BINARY_DIR}/app/${EXECUTABLE_NAME}"
+    HEX_FILE
+    "${CMAKE_BINARY_DIR}/app/${EXECUTABLE_NAME}.hex")
