@@ -45,9 +45,13 @@ int main (void) {
   configure_wdt::timeout_1sec_reset_power::setup_WTD();
 
   sei();
-  const char* motd = "smart haufe bell Version 0.1.0\r\n"; 
+  const char* motd = "smart haufe bell Version 0.1.0\r\n";
+  bool motd_sent = false;
   while (1) {
-    uart.send_string(motd);
+    if(!motd_sent) {
+      uart.send_string(motd);
+      motd_sent = true;
+    }
     auto timer1_ctc_matches_interrupts_count = inc_counter;
     if (timer1_ctc_matches_interrupts_count >= kRING_DURATION && PORTB & (1 << PORTB0)) {
       PORTB &= ~(1 << PORTB0); // Set PB0 low
@@ -55,7 +59,7 @@ int main (void) {
     }
     wdt_reset();
     if (uart.is_read_data_available() > 0) {
-      auto received_byte = uart.read_byte();
+      volatile auto received_byte = uart.read_byte();
       wdt_reset();
       uart.send_byte(received_byte); // Echo back
     }
