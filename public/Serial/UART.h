@@ -25,15 +25,15 @@ namespace serial {
   };
 
   enum class Baudrate : uint32_t {
-    kBaud_2400,
-    kBaud_4800,
-    kBaud_9600,
-    kBaud_14400,
-    kBaud_19200,
-    kBaud_38400,
-    kBaud_57600,
-    kBaud_76900,
-    kBaud_115200,
+    kBaud_2400 = 2400,
+    kBaud_4800 = 4800,
+    kBaud_9600 = 9600,
+    kBaud_14400 = 14400,
+    kBaud_19200 = 19200,
+    kBaud_38400 = 38400,
+    kBaud_57600 = 57600,
+    kBaud_76900 = 76900,
+    kBaud_115200 = 115200
   };
 
   enum class StopBits : uint8_t {
@@ -71,7 +71,7 @@ namespace serial {
       static constexpr const uint8_t is_not_busy{0};
       static constexpr const uint8_t kRX_buffer_size{16};
       static constexpr const uint8_t kTX_buffer_size{16};
-
+      
       UART(const Serial_parameters &serial_parameters);
 
       void send_byte(const uint8_t byte);

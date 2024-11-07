@@ -37,17 +37,17 @@ serial::Serial_parameters uart_parms = {
 };
 
 int main (void) {
-  const char *welcome_msg = "smart haufe bell Version 0.1.0\r\n";
   setup_GPIO();
 
   external_pin_interrupt::setup_INT0_PullUpResistorFallingEdge();
   timer_interrupt::ctc_mode::setup_timer0_ctc_mode(timer_interrupt::Prescaler::DIV64, kTimer_compare_value);
-  
   serial::UART uart(uart_parms);
   configure_wdt::timeout_1sec_reset_power::setup_WTD();
+
   sei();
+  const char* motd = "smart haufe bell Version 0.1.0\r\n"; 
   while (1) {
-    uart.send_string(welcome_msg);
+    uart.send_string(motd);
     auto timer1_ctc_matches_interrupts_count = inc_counter;
     if (timer1_ctc_matches_interrupts_count >= kRING_DURATION && PORTB & (1 << PORTB0)) {
       PORTB &= ~(1 << PORTB0); // Set PB0 low

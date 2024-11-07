@@ -1,9 +1,12 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <avr/wdt.h>
 
 #include <stdint.h>
 
+
 #include "Serial/UART.h"
+
 
 volatile static uint8_t Tx_busy_;
 volatile static uint8_t Rx_buffer_[serial::UART::kRX_buffer_size] = {0};
@@ -27,13 +30,15 @@ namespace serial {
 
   UART::UART(const Serial_parameters &serial_parameters) {
     cli();
-    auto prescaler = calculate_baudrate_prescaler(static_cast<Baudrate>(serial_parameters.baudrate), static_cast<Asynchronous_mode>(serial_parameters.asynchronous_mode));
+    auto prescaler = calculate_baudrate_prescaler(serial_parameters.baudrate, serial_parameters.asynchronous_mode);
     // Set baud rate
-    UBRR0H = prescaler >> 8;
-    UBRR0L = prescaler;
+    UBRR0L = static_cast<uint8_t>(prescaler & 0xFF);
+    UBRR0H = static_cast<uint8_t>(prescaler >> 8);
+    
     // Receiver and transmitter enable with interrupts
     UCSR0B = (1 << RXEN0) | (1 << TXEN0) | (1 << RXCIE0) | (1 << TXCIE0);
     // Set frame format and communication mode
+    
     UCSR0C = static_cast<uint8_t>(serial_parameters.communication_mode) | 
       static_cast<uint8_t>(serial_parameters.stop_bits) |
       static_cast<uint8_t>(serial_parameters.data_bits) |
@@ -43,6 +48,7 @@ namespace serial {
 
   void UART::send_byte(const uint8_t byte) {
     while (Tx_busy_);
+      wdt_reset();
     Tx_busy_ = UART::is_busy;
     UDR0 = byte;
   }
@@ -54,14 +60,11 @@ namespace serial {
   }
 
   void UART::send_string(const char *string) {
-    uint16_t nByte{0};
-    do {
-      this->send_byte(string[nByte]);
-      nByte++;
-    }while (string[nByte] != '\0');
-    this->send_byte(string[nByte]);
-    
-
+    uint16_t nByte = 0;
+    while (string[nByte] != '\0') {
+        this->send_byte(string[nByte]);
+        nByte++;
+    }
   }
 
   uint16_t UART::is_read_data_available() const { 
@@ -81,9 +84,9 @@ namespace serial {
 
   uint8_t UART::calculate_baudrate_prescaler(const Baudrate &baudrate, const Asynchronous_mode &asynchronous_mode) {
     if (asynchronous_mode == Asynchronous_mode::kDouble_speed) {
-      return (F_CPU / (kAsynchronous_double_speed_mode * static_cast<uint16_t>(baudrate)) ) - 1;
+      return static_cast<uint8_t>((F_CPU / (kAsynchronous_double_speed_mode * static_cast<uint32_t>(baudrate)) ) - 1);
     }
-    return (F_CPU / (kAsynchronous_normal_speed_mode * static_cast<uint16_t>(baudrate)) ) - 1;
+    return static_cast<uint8_t>((F_CPU / (kAsynchronous_normal_speed_mode * static_cast<uint32_t>(baudrate)) ) - 1);
   }
 
 }  // namespace serial
