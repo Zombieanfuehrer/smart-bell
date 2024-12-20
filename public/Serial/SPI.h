@@ -55,10 +55,10 @@ namespace serial
     SPI(const SPI_parameters &parameters);
     ~SPI() = default;
    public:
-    const constexpr uint8_t kMOSI = (1 << DDB3);
-    const constexpr uint8_t kMISO = (0 << DDB4);
-    const constexpr uint8_t kSCK = (1 << DDB5);
-    const constexpr uint8_t kSS = (1 << DDB2);
+    static const constexpr uint8_t kMOSI = (1 << DDB3);
+    static const constexpr uint8_t kMISO = (0 << DDB4);
+    static const constexpr uint8_t kSCK = (1 << DDB5);
+    static const constexpr uint8_t kSS = (1 << DDB2);
   };
 
 } // namespace serial

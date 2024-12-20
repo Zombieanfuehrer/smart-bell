@@ -10,8 +10,8 @@ namespace serial {
 SPI::SPI(const SPI_parameters &parameters) {
 
   // Set MOSI and SCK output, all others input
-  DDR_SPI = (1 << DDB3) | (1 << DDB5) | (1 << DDB2);
-  DDR_SPI = kMOSI | kSCK | kSS | kMISO;
+  DDRB |= kSCK | kMOSI | kSS;
+
 
   // Enable SPI, Master, set clock rate fck/16
   SPCR = static_cast<uint8_t>(parameters.spi_mode) |
@@ -19,7 +19,7 @@ SPI::SPI(const SPI_parameters &parameters) {
          static_cast<uint8_t>(parameters.clock_polarity) |
          static_cast<uint8_t>(parameters.clock_phase) |
          static_cast<uint8_t>(parameters.clock_rate) |
-         (1 << SPE)
-
+         (1 << SPE);
+}
 
 } // namespace serial
