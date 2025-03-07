@@ -50,7 +50,7 @@ SPI::SPI(const SPI_parameters &parameters) {
 void SPI::send(const uint8_t byte) {
   PORTB &= ~(1 << kSS_pin);
   _delay_us(100);
-  send_(byte);
+  this->send_(byte);
   PORTB |= (1 << kSS_pin);
   _delay_us(100);
 }
@@ -59,7 +59,7 @@ void SPI::send_bytes(const uint8_t *const bytes, const uint16_t length) {
   PORTB &= ~(1 << kSS_pin);
   _delay_us(100);
   for (uint16_t i = 0; i < length; i++) {
-    send_(bytes[i]);
+    this->send_(bytes[i]);
   }
   PORTB |= (1 << kSS_pin);
   _delay_us(100);
@@ -70,7 +70,7 @@ void SPI::send_string(const char *string) {
   _delay_us(100);
   uint16_t nByte = 0;
   while (string[nByte] != '\0') {
-    send_(string[nByte]);
+    this->send_(string[nByte]);
     nByte++;
   }
   PORTB |= (1 << kSS_pin);

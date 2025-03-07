@@ -5,6 +5,11 @@
 
 #include "Serial/Interface.h"
 
+#ifndef F_CPU
+  #warning "F_CPU not defined for UART"
+  #define F_CPU 16000000UL
+#endif
+
 namespace serial
 {
   enum class SPI_mode : uint8_t
@@ -56,7 +61,7 @@ namespace serial
    public:
     SPI(const SPI_parameters &parameters);
     ~SPI() = default;
-    static constexpr const uint8_t kRX_buffer_size{256};
+    static constexpr const uint8_t kRX_buffer_size{250};
 
     void send(const uint8_t byte) override;
     void send_bytes(const uint8_t *const bytes, const uint16_t length) override;

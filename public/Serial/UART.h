@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include "Serial/Interface.h"
+
 #ifndef F_CPU
   #warning "F_CPU not defined for UART"
   #define F_CPU 16000000UL
@@ -64,23 +66,22 @@ namespace serial {
   };
 
    
-  class UART
+  class UART : public Interface
   {
     public:
       static constexpr const uint8_t is_busy{1};
       static constexpr const uint8_t is_not_busy{0};
-      static constexpr const uint8_t kRX_buffer_size{16};
-      static constexpr const uint8_t kTX_buffer_size{16};
+      static constexpr const uint8_t kRX_buffer_size{250};
+      static constexpr const uint8_t kTX_buffer_size{250};
       
       UART(const Serial_parameters &serial_parameters);
-
-      void send_byte(const uint8_t byte);
-      void send_bytes(const uint8_t *const bytes, const uint16_t lengths);
-      void send_string(const char *string);
-
-      uint16_t is_read_data_available() const;
-      uint8_t read_byte();
       ~UART() = default;
+
+      void send(const uint8_t byte) override;
+      void send_bytes(const uint8_t *const bytes, const uint16_t length) override;
+      void send_string(const char *string) override;
+      uint16_t is_read_data_available() const override;
+      uint8_t read_byte() override;
 
     private:
       static constexpr const uint8_t kAsynchronous_normal_speed_mode{16};

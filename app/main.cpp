@@ -6,6 +6,7 @@
 #include "SetupEXT_IN_Interrupt.h"
 #include "SetupTimer.h"
 #include "Serial/UART.h"
+#include "Serial/SPI.h"
 
 volatile uint8_t inc_counter {0};
 volatile bool ring_output {false};
@@ -24,6 +25,7 @@ ISR(TIMER1_COMPA_vect) {
   inc_counter += 1;
 }
 
+
 constexpr const uint16_t kTimer_compare_value{62499};
 constexpr const uint8_t kRING_DURATION{6};
 
@@ -36,9 +38,18 @@ serial::Serial_parameters uart_parms = {
   serial::Parity::kNone
 };
 
+serial::SPI_parameters spi_parms = {
+  serial::SPI_mode::kMaster,
+  serial::SPI_data_order::kMsb_first,
+  serial::SPI_clock_polarity::kIdle_low,
+  serial::SPI_clock_phase::kLeading,
+  serial::SPI_clock_rate::k4mHz
+};
+
 int main (void) {
   setup_GPIO();
-
+  serial::SPI spi(spi_parms);
+  spi.send(0x01);
   external_pin_interrupt::setup_INT0_PullUpResistorFallingEdge();
   timer_interrupt::ctc_mode::setup_timer0_ctc_mode(timer_interrupt::Prescaler::DIV64, kTimer_compare_value);
   serial::UART uart(uart_parms);
@@ -61,7 +72,7 @@ int main (void) {
     if (uart.is_read_data_available() > 0) {
       auto received_byte = uart.read_byte();
       wdt_reset();
-      uart.send_byte(received_byte); // Echo back
+      uart.send(received_byte); // Echo back
     }
     wdt_reset();
   }

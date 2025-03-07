@@ -41,7 +41,7 @@ namespace serial {
     sei();
   }
 
-  void UART::send_byte(const uint8_t byte) {
+  void UART::send(const uint8_t byte) {
     while (Tx_busy_);
       wdt_reset();
     Tx_busy_ = UART::is_busy;
@@ -50,14 +50,14 @@ namespace serial {
 
   void UART::send_bytes(const uint8_t *const bytes, const uint16_t lengths) {
     for (uint16_t i = 0; i < lengths; i++) {
-      this->send_byte(bytes[i]);
+      this->send(bytes[i]);
     }
   }
 
   void UART::send_string(const char *string) {
     uint16_t nByte = 0;
     while (string[nByte] != '\0') {
-        this->send_byte(string[nByte]);
+        this->send(string[nByte]);
         nByte++;
     }
   }
