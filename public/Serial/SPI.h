@@ -3,6 +3,8 @@
 
 #include <avr/io.h>
 
+#include "Serial/Interface.h"
+
 namespace serial
 {
   enum class SPI_mode : uint8_t
@@ -49,16 +51,29 @@ namespace serial
     SPI_clock_rate clock_rate = SPI_clock_rate::k4mHz;
   };
 
-  class SPI
+  class SPI : public Interface
   {
    public:
     SPI(const SPI_parameters &parameters);
     ~SPI() = default;
+    static constexpr const uint8_t kRX_buffer_size{256};
+
+    void send(const uint8_t byte) override;
+    void send_bytes(const uint8_t *const bytes, const uint16_t length) override;
+    void send_string(const char *string) override;
+    uint16_t is_read_data_available() const override;
+    uint8_t read_byte() override;
+
    public:
     static const constexpr uint8_t kMOSI = (1 << DDB3);
     static const constexpr uint8_t kMISO = (0 << DDB4);
     static const constexpr uint8_t kSCK = (1 << DDB5);
     static const constexpr uint8_t kSS = (1 << DDB2);
+    static const constexpr uint8_t kSS_pin = (1 << PORTB2);
+
+    private:
+    void send_(const uint8_t byte);
+    
   };
 
 } // namespace serial
