@@ -30,13 +30,11 @@ ISR(SPI_STC_vect) {
 
 namespace serial {
 
-SPI::SPI(const SPI_parameters &parameters) {
+SPI::SPI(const SPI_parameters &parameters, const uint8_t slave_select)     
+: slave_select_(slave_select) {
 
   // Set MOSI and SCK output, all others input
-  DDRB |= kSCK | kMOSI | kSS;
-
-  // Enable internal pull-up on SS
-  PORTB |= (1 << kSS_pin);
+  DDRB |= kSCK | kMOSI;
 
   // Enable SPI, Master, set clock rate fck/16
   SPCR = static_cast<uint8_t>(parameters.spi_mode) |
@@ -47,33 +45,37 @@ SPI::SPI(const SPI_parameters &parameters) {
          (1 << SPE) | (1 << SPIE);
 }
 
+void SPI::set_slave_select(const uint8_t slave_select) {
+  slave_select_ = slave_select;
+}
+
 void SPI::send(const uint8_t byte) {
-  PORTB &= ~(1 << kSS_pin);
+  PORTB &= ~(1 << slave_select_);
   _delay_us(100);
   this->send_(byte);
-  PORTB |= (1 << kSS_pin);
+  PORTB |= (1 << slave_select_);
   _delay_us(100);
 }
 
 void SPI::send_bytes(const uint8_t *const bytes, const uint16_t length) {
-  PORTB &= ~(1 << kSS_pin);
+  PORTB &= ~(1 << slave_select_);
   _delay_us(100);
   for (uint16_t i = 0; i < length; i++) {
     this->send_(bytes[i]);
   }
-  PORTB |= (1 << kSS_pin);
+  PORTB |= (1 << slave_select_);
   _delay_us(100);
 }
 
 void SPI::send_string(const char *string) {
-  PORTB &= ~(1 << kSS_pin);
+  PORTB &= ~(1 << slave_select_);
   _delay_us(100);
   uint16_t nByte = 0;
   while (string[nByte] != '\0') {
     this->send_(string[nByte]);
     nByte++;
   }
-  PORTB |= (1 << kSS_pin);
+  PORTB |= (1 << slave_select_);
   _delay_us(100);
 }
 

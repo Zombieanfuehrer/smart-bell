@@ -59,10 +59,11 @@ namespace serial
   class SPI : public Interface
   {
    public:
-    SPI(const SPI_parameters &parameters);
+    SPI(const SPI_parameters &parameters, const uint8_t slave_select);
     ~SPI() = default;
     static constexpr const uint8_t kRX_buffer_size{250};
 
+    void set_slave_select(const uint8_t slave_select);
     void send(const uint8_t byte) override;
     void send_bytes(const uint8_t *const bytes, const uint16_t length) override;
     void send_string(const char *string) override;
@@ -73,11 +74,10 @@ namespace serial
     static const constexpr uint8_t kMOSI = (1 << DDB3);
     static const constexpr uint8_t kMISO = (0 << DDB4);
     static const constexpr uint8_t kSCK = (1 << DDB5);
-    static const constexpr uint8_t kSS = (1 << DDB2);
-    static const constexpr uint8_t kSS_pin = (1 << PORTB2);
 
     private:
     void send_(const uint8_t byte);
+    uint8_t slave_select_;
     
   };
 
