@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "Serial/Interface.h"
+#include "Utils/CircularBuffer.h"
 
 #ifndef F_CPU
   #warning "F_CPU not defined for UART"
@@ -71,8 +72,8 @@ namespace serial {
     public:
       static constexpr const uint8_t is_busy{1};
       static constexpr const uint8_t is_not_busy{0};
-      static constexpr const uint8_t kRX_buffer_size{250};
-      static constexpr const uint8_t kTX_buffer_size{250};
+      static constexpr const size_t kRX_buffer_size{250};
+      static constexpr const size_t kTX_buffer_size{250};
       
       UART(const Serial_parameters &serial_parameters);
       ~UART() = default;
@@ -84,12 +85,9 @@ namespace serial {
       uint8_t read_byte() override;
 
     private:
+      void send_();
       static constexpr const uint8_t kAsynchronous_normal_speed_mode{16};
       static constexpr const uint8_t kAsynchronous_double_speed_mode{8};
-
-    private:
-
-      uint8_t Tx_buffer_[UART::kTX_buffer_size] = {0};
 
     private:
       static uint8_t calculate_baudrate_prescaler(const Baudrate &baudrate, const Asynchronous_mode &asynchronous_mode);
