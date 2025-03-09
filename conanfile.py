@@ -39,6 +39,7 @@ class Atmega328TemplateRecipe(ConanFile):
         cmake.build(target="ATmega328_TIMER_INT")
         cmake.build(target="ATmega328_USART")
         cmake.build(target="ATmega328_SPI")
+        cmake.build(target="ATmega328_UTILS")
         cmake.build(target="ATmega328_SMART_BELL_FW")
 
     def package(self):

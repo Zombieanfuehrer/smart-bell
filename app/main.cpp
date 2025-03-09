@@ -14,6 +14,9 @@ volatile bool ring_output {false};
 void setup_GPIO() {
   DDRB |= (1 << DDB0);  // Set PB0 as output
   PORTB &= ~(1 << PORTB0); // Ensure PB0 is low initially
+
+  DDRB |= (1 << DDB2);  // Set PB2 as output
+  PORTB &= ~(1 << PORTB2); // Ensure PB2 is low initially
 }
 
 ISR(INT0_vect) {
@@ -45,10 +48,11 @@ serial::SPI_parameters spi_parms = {
   serial::SPI_clock_phase::kLeading,
   serial::SPI_clock_rate::k4mHz
 };
+static const constexpr uint8_t kSPI_CS_W5500 = (1 << PORTB2);
 
 int main (void) {
   setup_GPIO();
-  serial::SPI spi(spi_parms);
+  serial::SPI spi(spi_parms, kSPI_CS_W5500);
   spi.send(0x01);
   external_pin_interrupt::setup_INT0_PullUpResistorFallingEdge();
   timer_interrupt::ctc_mode::setup_timer0_ctc_mode(timer_interrupt::Prescaler::DIV64, kTimer_compare_value);
