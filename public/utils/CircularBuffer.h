@@ -16,11 +16,11 @@ class CircularBuffer
   ~CircularBuffer() = default;
   bool push_back(const uint8_t data);
   bool pop_front(const uint8_t *data);
-  size_t size() const;
+  size_t used_entries() const;
   void clear();
 
  private:
-  uint8_t * const values_;
+  uint8_t * const values_ {nullptr};
   int head_;
   int tail_;
   size_t num_entries_;

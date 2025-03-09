@@ -3,6 +3,15 @@
 
 namespace utils
 {
+  CircularBuffer::CircularBuffer(const size_t max_buffer_size)
+    : max_entries_(max_buffer_size), head_(0), tail_(0), num_entries_(0)
+  {
+    // Initialisierung des statischen Arrays
+    for (size_t i = 0; i < max_entries_; ++i) {
+      values_[i] = 0;
+    }
+  }
+
   bool CircularBuffer::push_back(const uint8_t data) {
     if (circ_buffer_full_()) {
       return false;
@@ -27,7 +36,7 @@ namespace utils
     return true;
   }
 
-  size_t CircularBuffer::size() const {
+  size_t CircularBuffer::used_entries() const {
     return num_entries_;
   }
 
