@@ -19,3 +19,4 @@ add_library("${LIB_TIMERINT}" STATIC ${LIB_LIB_TIMERINT_SOURCES} ${LIB_LIB_TIMER
 target_include_directories("${LIB_TIMERINT}" PUBLIC ${LIBRARY_INCLUDES})
 
 add_subdirectory(Serial)
+add_subdirectory(utils)
