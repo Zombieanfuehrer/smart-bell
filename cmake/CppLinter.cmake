@@ -2,13 +2,8 @@
 #######################################################################################################################
 # @file CppLinter.cmake
 #
-# @author David A. Haufe (david.haufe90@gmail.com)
-# @version 1.0.0
-# @date 2024-07-29
-#
 # @brief This file contains functions to parse and process the cpplint configuration.
 #
-# @copyright MIT License
 #######################################################################################################################
 
 # List of cpplint configuration options
@@ -149,10 +144,13 @@ endfunction(parse_cpplint_config)
 #
 #######################################################################################################################
 function(add_cpplint_custom_target)
-    # Find the cpplint executable
-    find_program(CPPLINT "cpplint")
-    if(NOT CPPLINT)
-        message(FATAL_ERROR "[add_cpplint_custom_target] cpplint not found! Please install to use this option")
+    # Find the cpplint executable in the virtual environment
+    set(CPPLINT "${CMAKE_SOURCE_DIR}/.venv/bin/cpplint")
+    if(NOT EXISTS ${CPPLINT})
+        message(
+            FATAL_ERROR
+                "[add_cpplint_custom_target] cpplint not found in virtual environment! Please install to use this option"
+        )
     else()
         set(CMAKE_CXX_CPPLINT ${CPPLINT})
     endif()

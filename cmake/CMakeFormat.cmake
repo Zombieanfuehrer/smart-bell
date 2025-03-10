@@ -26,8 +26,8 @@ function(add_cmake_format_target)
     set(CMAKE_FILES ${ROOT_CMAKE_FILES} ${CMAKE_FILES_TXT} ${CMAKE_FILES_C})
 
     # Find the cmake-format program
-    find_program(CMAKE_FORMAT cmake-format)
-    if(CMAKE_FORMAT)
+    set(CMAKE_FORMAT "${CMAKE_SOURCE_DIR}/.venv/bin/cmake-format")
+    if(EXISTS ${CMAKE_FORMAT})
         message(STATUS "[add_cmake_format_target] Added Cmake Format")
 
         # Create the list of formatting commands
@@ -37,7 +37,7 @@ function(add_cmake_format_target)
                 APPEND
                 FORMATTING_COMMANDS
                 COMMAND
-                cmake-format
+                "${CMAKE_FORMAT}"
                 -c
                 ${CMAKE_SOURCE_DIR}/style/.cmake-format.yaml
                 -i

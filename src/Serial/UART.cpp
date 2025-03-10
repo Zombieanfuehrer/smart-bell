@@ -43,12 +43,14 @@ namespace serial {
 
   void UART::send(const uint8_t byte) {
     tx_buffer_.push_back(byte);
+    send_();
   }
 
   void UART::send_bytes(const uint8_t *const bytes, const uint16_t lengths) {
     for (uint16_t i = 0; i < lengths; i++) {
       tx_buffer_.push_back(bytes[i]);
     }
+    send_();
   }
 
   void UART::send_string(const char *string) {
@@ -57,6 +59,7 @@ namespace serial {
       tx_buffer_.push_back(string[nByte]);
       nByte++;
     }
+    send_();
   }
 
   uint16_t UART::is_read_data_available() const { 

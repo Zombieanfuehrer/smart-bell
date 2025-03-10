@@ -64,7 +64,7 @@ function(set_python_virtual_enviroment)
 
         # Install packages specified in requirements.txt using pip
         execute_process(
-            COMMAND pip install -r ./requirements.txt
+            COMMAND ${CMAKE_SOURCE_DIR}/.venv/bin/pip install -r ${CMAKE_SOURCE_DIR}/requirements.txt
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
             OUTPUT_VARIABLE PIP_INSTALL_STDOUT
             ERROR_VARIABLE PIP_INSTALL_STDERR
