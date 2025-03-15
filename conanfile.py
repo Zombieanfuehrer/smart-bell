@@ -41,16 +41,31 @@ class Atmega328TemplateRecipe(ConanFile):
         cmake.build(target="ATmega328_USART")
         cmake.build(target="ATmega328_SPI")
         cmake.build(target="ATmega328_UTILS")
+
         cmake.build(target="ATmega328_SMART_BELL_FW")
         cmake.build(target="ATmega328_SMART_BELL_FW_hex")
 
     def package(self):
         cmake = CMake(self)
         cmake.install()
-
-        package_bin_dir = os.path.join(self.package_folder, "bin")
-        os.makedirs(package_bin_dir, exist_ok=True)
-        copy(self, "*", os.path.join(self.build_folder, "bin"), package_bin_dir)
+        # Copy the app folder to the package folder
+        package_app_dir = os.path.join(self.package_folder, "app")
+        copy(self, "ATmega328_SMART_BELL_FW.hex", os.path.join(self.build_folder, "app"), package_app_dir)
+        # Copy libs to the package folder
+        package_lib_dir = os.path.join(self.package_folder, "lib")
+        copy(self, "*.a", os.path.join(self.build_folder, "lib"), package_lib_dir)
+        package_public_dir = os.path.join(self.package_folder, "public")
+        copy(self, "*.h", os.path.join(self.build_folder, "public"), package_public_dir)
 
     def package_info(self):
-        self.cpp_info.libs = ["ATmega328_SMART_BELL_FW"]
+        self.cpp_info.libs = [
+            "ATmega328_WTD",
+            "ATmega328_PIN_INT",
+            "ATmega328_TIMER_INT",
+            "ATmega328_USART",
+            "ATmega328_SPI",
+            "ATmega328_UTILS"
+        ]
+        self.cpp_info.includedirs = ["public"]
+        self.cpp_info.libdirs = ['lib']
+        self.cpp_info.bindirs = ['app']
