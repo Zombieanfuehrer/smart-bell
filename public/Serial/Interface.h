@@ -13,7 +13,7 @@ class Interface
   virtual void send(const uint8_t byte) {}
   virtual void send_bytes(const uint8_t *const bytes, const uint16_t length) {}
   virtual void send_string(const char *string) {}
-  virtual uint16_t is_read_data_available() const { return 0; }
+  virtual bool is_read_data_available() const { return 0; }
   virtual uint8_t read_byte() { return 0; }
 };
 

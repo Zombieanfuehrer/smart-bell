@@ -4,13 +4,9 @@
 #include <stdint.h>
 
 #include "Serial/UART.h"
+#include "Utils/CircularBuffer.h"
 
 volatile static uint8_t Tx_busy_;
-volatile static uint8_t Rx_buffer_[serial::UART::kRX_buffer_size] = {0};
-volatile static uint16_t Rx_buffer_head_ = 0;
-volatile static uint16_t Rx_buffer_tail_ = 0;
-
-
 static utils::CircularBuffer rx_buffer_ {serial::UART::kRX_buffer_size};
 static utils::CircularBuffer tx_buffer_ {serial::UART::kTX_buffer_size};
 
@@ -62,20 +58,15 @@ namespace serial {
     send_();
   }
 
-  uint16_t UART::is_read_data_available() const { 
-    return (Rx_buffer_head_ != Rx_buffer_tail_);
+  bool UART::is_read_data_available() const { 
+    return (rx_buffer_.used_entries() > 0);
   }
 
-  uint8_t UART::read_byte() { 
-    if (Rx_buffer_head_ == Rx_buffer_tail_) {
-      return 0; // Buffer is empty
+  uint8_t UART::read_byte() {
+    uint8_t byte;
+    if (rx_buffer_.pop_front(&byte)) {
+      return byte;
     }
-    auto byte = Rx_buffer_[Rx_buffer_head_];
-    Rx_buffer_head_++;
-    if (Rx_buffer_head_ >= UART::kRX_buffer_size) {
-      Rx_buffer_head_ = 0;
-    }
-    return byte;
   }
 
   uint8_t UART::calculate_baudrate_prescaler(const Baudrate &baudrate, const Asynchronous_mode &asynchronous_mode) {

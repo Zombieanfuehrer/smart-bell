@@ -81,7 +81,7 @@ namespace serial {
       void send(const uint8_t byte) override;
       void send_bytes(const uint8_t *const bytes, const uint16_t length) override;
       void send_string(const char *string) override;
-      uint16_t is_read_data_available() const override;
+      bool is_read_data_available() const override;
       uint8_t read_byte() override;
 
     private:

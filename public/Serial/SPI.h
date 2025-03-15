@@ -4,6 +4,7 @@
 #include <avr/io.h>
 
 #include "Serial/Interface.h"
+#include "Utils/CircularBuffer.h"
 
 #ifndef F_CPU
   #warning "F_CPU not defined for UART"
@@ -61,13 +62,13 @@ namespace serial
    public:
     SPI(const SPI_parameters &parameters, const uint8_t slave_select);
     ~SPI() = default;
-    static constexpr const uint8_t kRX_buffer_size{250};
+    static constexpr const uint8_t kTXRX_buffer_size{250};
 
     void set_slave_select(const uint8_t slave_select);
     void send(const uint8_t byte) override;
     void send_bytes(const uint8_t *const bytes, const uint16_t length) override;
     void send_string(const char *string) override;
-    uint16_t is_read_data_available() const override;
+    bool is_read_data_available() const override;
     uint8_t read_byte() override;
 
    public:
@@ -76,7 +77,7 @@ namespace serial
     static const constexpr uint8_t kSCK = (1 << DDB5);
 
     private:
-    void send_(const uint8_t byte);
+    void send_();
     uint8_t slave_select_;
     
   };
