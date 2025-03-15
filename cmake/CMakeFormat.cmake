@@ -25,9 +25,18 @@ function(add_cmake_format_target)
         "${CMAKE_SOURCE_DIR}/(build|external|.venv)/.*")
     set(CMAKE_FILES ${ROOT_CMAKE_FILES} ${CMAKE_FILES_TXT} ${CMAKE_FILES_C})
 
-    # Find the cmake-format program
-    set(CMAKE_FORMAT "${CMAKE_SOURCE_DIR}/.venv/bin/cmake-format")
-    if(EXISTS ${CMAKE_FORMAT})
+    # Find the cpplint executable in the virtual environment or in the system PATH
+    find_program(CMAKE_FORMAT NAMES cmake-format HINTS "${CMAKE_SOURCE_DIR}/.venv/bin" ENV PATH)
+    if(NOT CMAKE_FORMAT)
+        message(
+            FATAL_ERROR
+                "[add_cmake_format_target] cmake-format not found in virtual environment or system PATH! Please install to use this option"
+        )
+    else()
+        set(CMAKE_CMAKE_FORMAT ${CMAKE_FORMAT})
+    endif()
+
+    if(EXISTS ${CMAKE_CMAKE_FORMAT})
         message(STATUS "[add_cmake_format_target] Added Cmake Format")
 
         # Create the list of formatting commands
@@ -37,7 +46,7 @@ function(add_cmake_format_target)
                 APPEND
                 FORMATTING_COMMANDS
                 COMMAND
-                "${CMAKE_FORMAT}"
+                "${CMAKE_CMAKE_FORMAT}"
                 -c
                 ${CMAKE_SOURCE_DIR}/style/.cmake-format.yaml
                 -i

@@ -144,12 +144,12 @@ endfunction(parse_cpplint_config)
 #
 #######################################################################################################################
 function(add_cpplint_custom_target)
-    # Find the cpplint executable in the virtual environment
-    set(CPPLINT "${CMAKE_SOURCE_DIR}/.venv/bin/cpplint")
-    if(NOT EXISTS ${CPPLINT})
+    # Find the cpplint executable in the virtual environment or in the system PATH
+    find_program(CPPLINT NAMES cpplint HINTS "${CMAKE_SOURCE_DIR}/.venv/bin" ENV PATH)
+    if(NOT CPPLINT)
         message(
             FATAL_ERROR
-                "[add_cpplint_custom_target] cpplint not found in virtual environment! Please install to use this option"
+                "[add_cpplint_custom_target] cpplint not found in virtual environment or system PATH! Please install to use this option"
         )
     else()
         set(CMAKE_CXX_CPPLINT ${CPPLINT})
