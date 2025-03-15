@@ -94,6 +94,8 @@ install_target(${LIB_WTD})
 install_target(${LIB_PININT})
 install_target(${LIB_TIMERINT})
 install_target(${LIB_USART})
+install_target(${LIB_SPI})
+install_target(${LIB_UTILS})
 install_target(${EXECUTABLE_NAME})
 
 include(Objcopy)
