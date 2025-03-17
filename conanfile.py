@@ -1,4 +1,5 @@
 import os
+import subprocess
 from conan import ConanFile
 from conan.tools.cmake import CMakeToolchain, CMake, cmake_layout
 from conan.tools.files import copy
@@ -22,6 +23,10 @@ class Atmega328TemplateRecipe(ConanFile):
     # Sources are located in the same place as this recipe, copy them to the recipe
     exports_sources = "CMakeLists.txt", "*.cmake", "app/*", "src/*", "public/*", "private/*", "style/*", "docs/Doxyfile", "configure/*", ".github/workflows/*", "cmake/*", ".gitignore", "LICENSE", "README.md", "requirements.txt", "conanfile.py"
 
+    def requirements(self):
+        if self.options.platform == "linux":
+            self.requires("gtest/1.16.0")
+
     def layout(self):
         cmake_layout(self)
 
@@ -33,16 +38,19 @@ class Atmega328TemplateRecipe(ConanFile):
     def build(self):
         cmake = CMake(self)
         cmake.configure()
+        if self.options.platform == "linux":
+            cmake.build(target="run_unit_tests_fw_logic")
+            self.perform_ctest()
+        else:
+            cmake.build(target="ATmega328_WTD")
+            cmake.build(target="ATmega328_PIN_INT")
+            cmake.build(target="ATmega328_TIMER_INT")
+            cmake.build(target="ATmega328_USART")
+            cmake.build(target="ATmega328_SPI")
+            cmake.build(target="ATmega328_UTILS")
 
-        cmake.build(target="ATmega328_WTD")
-        cmake.build(target="ATmega328_PIN_INT")
-        cmake.build(target="ATmega328_TIMER_INT")
-        cmake.build(target="ATmega328_USART")
-        cmake.build(target="ATmega328_SPI")
-        cmake.build(target="ATmega328_UTILS")
-
-        cmake.build(target="ATmega328_UART_EXAMPLE_FW")
-        cmake.build(target="ATmega328_UART_EXAMPLE_FW_hex")
+            cmake.build(target="ATmega328_UART_EXAMPLE_FW")
+            cmake.build(target="ATmega328_UART_EXAMPLE_FW_hex")
 
     def package(self):
         cmake = CMake(self)
@@ -68,3 +76,9 @@ class Atmega328TemplateRecipe(ConanFile):
         self.cpp_info.includedirs = ["public"]
         self.cpp_info.libdirs = ['lib']
         self.cpp_info.bindirs = ['app']
+
+    def perform_ctest(self):
+        self.output.info("Running unit tests with CTest")
+        result = subprocess.run(["ctest", "--output-on-failure"], cwd=self.build_folder)
+        if result.returncode != 0:
+            raise Exception("Unit tests failed")
