@@ -1,12 +1,11 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <avr/wdt.h>
 #include <stdint.h>
 
 #include "Serial/UART.h"
 #include "Utils/CircularBuffer.h"
 
-volatile static uint8_t Tx_busy_;
+volatile static uint8_t tx_busy_ = serial::UART::is_not_busy;
 static utils::CircularBuffer rx_buffer_ {serial::UART::kRX_buffer_size};
 static utils::CircularBuffer tx_buffer_ {serial::UART::kTX_buffer_size};
 
@@ -15,13 +14,17 @@ ISR (USART_RX_vect) {
 }
 
 ISR (USART_TX_vect) {
-  Tx_busy_ = serial::UART::is_not_busy;
+  tx_busy_ = serial::UART::is_not_busy;
 }
 
 namespace serial {
   
   UART::UART(const Serial_parameters &serial_parameters) {
-    cli();
+    bool were_interrupts_enabled = (SREG & (1 << SREG_I));
+    if (were_interrupts_enabled) {
+      cli();
+    }
+
     auto prescaler = calculate_baudrate_prescaler(serial_parameters.baudrate, serial_parameters.asynchronous_mode);
     // Set baud rate
     UBRR0L = static_cast<uint8_t>(prescaler & 0xFF);
@@ -34,7 +37,10 @@ namespace serial {
       static_cast<uint8_t>(serial_parameters.stop_bits) |
       static_cast<uint8_t>(serial_parameters.data_bits) |
       static_cast<uint8_t>(serial_parameters.parity_mode);
-    sei();
+
+    if (were_interrupts_enabled) {
+      sei();
+    }
   }
 
   void UART::send(const uint8_t byte) {
@@ -66,6 +72,9 @@ namespace serial {
     uint8_t byte;
     if (rx_buffer_.pop_front(&byte)) {
       return byte;
+    } else {
+      // Handle the case where no data is available
+      return 0; // or any other default value or error code
     }
   }
 
@@ -79,10 +88,12 @@ namespace serial {
   void UART::send_() {
     uint8_t byte;
     while (tx_buffer_.pop_front(&byte)) {
-      while (Tx_busy_);
-        wdt_reset();   
-      Tx_busy_ = UART::is_busy;
-      wdt_reset();
+      while (tx_busy_) {
+        ; // Wait for the transmission to finish
+      }
+      cli(); // Disable interrupts
+      tx_busy_ = UART::is_busy;
+      sei(); // Re-enable interrupts
       UDR0 = byte;
     }
   }

@@ -15,7 +15,7 @@ class CircularBuffer
   CircularBuffer(const size_t max_buffer_size = 250);
   ~CircularBuffer() = default;
   bool push_back(const uint8_t data);
-  bool pop_front(const uint8_t *data);
+  bool pop_front(uint8_t * const data);
   size_t used_entries() const;
   void clear();
 

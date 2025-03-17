@@ -45,7 +45,9 @@ set(LIB_TIMERINT "ATmega328_TIMER_INT")
 set(LIB_USART "ATmega328_USART")
 set(LIB_SPI "ATmega328_SPI")
 set(LIB_UTILS "ATmega328_UTILS")
-set(EXECUTABLE_NAME "ATmega328_SMART_BELL_FW")
+
+
+set(EXECUTABLE_UART_EXAMPLE "ATmega328_UART_EXAMPLE_FW")
 
 # CMAKE MODULES
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
@@ -96,13 +98,13 @@ install_target(${LIB_TIMERINT})
 install_target(${LIB_USART})
 install_target(${LIB_SPI})
 install_target(${LIB_UTILS})
-install_target(${EXECUTABLE_NAME})
+install_target(${EXECUTABLE_UART_EXAMPLE})
 
 include(Objcopy)
 run_bin2hex(
     TARGET
-    ${EXECUTABLE_NAME}
+    ${EXECUTABLE_UART_EXAMPLE}
     TARGET_ARTIFACT
-    "${CMAKE_BINARY_DIR}/app/${EXECUTABLE_NAME}"
+    "${CMAKE_BINARY_DIR}/app/${EXECUTABLE_UART_EXAMPLE}"
     HEX_FILE
-    "${CMAKE_BINARY_DIR}/app/${EXECUTABLE_NAME}.hex")
+    "${CMAKE_BINARY_DIR}/app/${EXECUTABLE_UART_EXAMPLE}.hex")

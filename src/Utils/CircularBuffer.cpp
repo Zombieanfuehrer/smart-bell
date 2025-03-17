@@ -4,9 +4,11 @@
 namespace utils
 {
   CircularBuffer::CircularBuffer(const size_t max_buffer_size)
-    : max_entries_(max_buffer_size), head_(0), tail_(0), num_entries_(0)
+    : max_entries_(max_buffer_size),
+     head_(0), 
+     tail_(0), 
+     num_entries_(0)
   {
-    // Initialisierung des statischen Arrays
     for (size_t i = 0; i < max_entries_; ++i) {
       values_[i] = 0;
     }
@@ -24,12 +26,12 @@ namespace utils
     return true;
   }
 
-  bool CircularBuffer::pop_front(const uint8_t *data) {
-    if (circ_buffer_empty_()) {
+  bool CircularBuffer::pop_front(uint8_t * const data) {
+    if (data == nullptr || circ_buffer_empty_()) {
       return false;
     }
 
-    auto res = values_[head_];
+    *data = values_[head_];
     head_ = (head_ + 1) % max_entries_;
     num_entries_--;
 
@@ -41,7 +43,9 @@ namespace utils
   }
 
   void CircularBuffer::clear() {
-
+    head_ = 0;
+    tail_ = 0;
+    num_entries_ = 0;
   }
 
   bool CircularBuffer::circ_buffer_empty_() const {

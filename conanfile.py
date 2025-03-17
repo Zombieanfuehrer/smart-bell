@@ -1,7 +1,6 @@
 import os
 from conan import ConanFile
 from conan.tools.cmake import CMakeToolchain, CMake, cmake_layout
-from conan.errors import ConanInvalidConfiguration
 from conan.tools.files import copy
 
 class Atmega328TemplateRecipe(ConanFile):
@@ -42,8 +41,8 @@ class Atmega328TemplateRecipe(ConanFile):
         cmake.build(target="ATmega328_SPI")
         cmake.build(target="ATmega328_UTILS")
 
-        cmake.build(target="ATmega328_SMART_BELL_FW")
-        cmake.build(target="ATmega328_SMART_BELL_FW_hex")
+        cmake.build(target="ATmega328_UART_EXAMPLE_FW")
+        cmake.build(target="ATmega328_UART_EXAMPLE_FW_hex")
 
     def package(self):
         cmake = CMake(self)
