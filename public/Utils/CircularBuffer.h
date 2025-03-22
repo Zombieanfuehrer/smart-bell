@@ -15,7 +15,8 @@ class CircularBuffer
 {
 
  public:
-  CircularBuffer(const size_t max_buffer_size = 250);
+  static const size_t kDefaultSize = 250;
+  CircularBuffer(const size_t max_buffer_size = CircularBuffer::kDefaultSize);
   ~CircularBuffer() = default;
   bool push_back(const uint8_t data);
   bool pop_front(uint8_t * const data);
@@ -23,7 +24,7 @@ class CircularBuffer
   void clear();
 
  private:
-  uint8_t * const values_ {nullptr};
+  uint8_t values_ [CircularBuffer::kDefaultSize] = {0};
   int head_;
   int tail_;
   size_t num_entries_;

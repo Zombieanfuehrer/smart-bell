@@ -13,7 +13,7 @@ class CircularBufferTest : public ::testing::Test {
     // Clean up code here, if needed
   }
 
-  utils::CircularBuffer buffer{10};  // CircularBuffer with a size of 10
+  utils::CircularBuffer buffer{}; 
 };
 
 TEST_F(CircularBufferTest, PushBackAndPopFront) {
@@ -25,10 +25,10 @@ TEST_F(CircularBufferTest, PushBackAndPopFront) {
 }
 
 TEST_F(CircularBufferTest, BufferFull) {
-  for (int i = 0; i < 10; ++i) {
+  for (int i = 0; i < 250; ++i) {
     EXPECT_TRUE(buffer.push_back(i));
   }
-  EXPECT_FALSE(buffer.push_back(11));  // Buffer should be full
+  EXPECT_FALSE(buffer.push_back(251));  // Buffer should be full
 }
 
 TEST_F(CircularBufferTest, BufferEmpty) {

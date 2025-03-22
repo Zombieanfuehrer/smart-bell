@@ -7,4 +7,4 @@ target_link_libraries(
     GTest::gtest_main
     ${LIB_UTILS})
 
-add_test(NAME ${EXECUTABLE_UNIT_TEST} COMMAND ${EXECUTABLE_UNIT_TEST})
+add_test(NAME ${EXECUTABLE_UNIT_TEST} COMMAND ${EXECUTABLE_UNIT_TEST} --gtest_output=xml:report.xml --gtest_color=yes --gtest_verbose)

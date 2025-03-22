@@ -1,18 +1,15 @@
 
 #include "Utils/CircularBuffer.h"
+#include <algorithm>
 
 namespace utils
 {
   CircularBuffer::CircularBuffer(const size_t max_buffer_size)
-    : max_entries_(max_buffer_size),
+    : max_entries_(std::min(max_buffer_size, CircularBuffer::kDefaultSize)),
      head_(0), 
      tail_(0), 
      num_entries_(0)
-  {
-    for (size_t i = 0; i < max_entries_; ++i) {
-      values_[i] = 0;
-    }
-  }
+  {}
 
   bool CircularBuffer::push_back(const uint8_t data) {
     if (circ_buffer_full_()) {
