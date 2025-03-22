@@ -16,10 +16,6 @@ else()
 endif()
 message(STATUS "CONAN_PROFILE_NAME ${CONAN_PROFILE_NAME}")
 
-if(NOT DEFINED F_CPU)
-    set(F_CPU "16000000UL")
-endif()
-
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CONAN_C_FLAGS} -DF_CPU=${F_CPU}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CONAN_CXX_FLAGS} -DF_CPU=${F_CPU}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${CONAN_EXE_LINKER_FLAGS}")
@@ -37,6 +33,11 @@ option(ENABLE_WARNINGS_AS_ERRORS "Enable to treat warnings as errors." OFF)
 option(ENABLE_CPPLINT "Enable to add cpplint, static code analysis target" ON)
 option(ENABLE_CMAKE_FORMAT "Enable to add cmake-format target." ON)
 option(ENABLE_DOXYGEN_DOCU "Enable to add doxygen docu target." ON)
+option(ENABLE_UNIT_TESTS "Enable to run unit tests for logical part of this project sources" OFF)
+
+if(NOT DEFINED F_CPU)
+    set(F_CPU "16000000UL")
+endif()
 
 # PROJECT / LIBRARY NAMES
 set(LIB_WTD "ATmega328_WTD")
@@ -45,7 +46,6 @@ set(LIB_TIMERINT "ATmega328_TIMER_INT")
 set(LIB_USART "ATmega328_USART")
 set(LIB_SPI "ATmega328_SPI")
 set(LIB_UTILS "ATmega328_UTILS")
-
 
 set(EXECUTABLE_UART_EXAMPLE "ATmega328_UART_EXAMPLE_FW")
 
@@ -89,6 +89,14 @@ if(CONAN_GENERATED_CMAKE_PRESET)
     create_target_load_cmake_preset(CMAKE_BUILD_PRESET_NAME ${CONAN_GENERATED_CMAKE_PRESET})
 else()
     message(FATAL_ERROR "No valid CMake preset found!")
+endif()
+
+if(${ENABLE_UNIT_TESTS})
+    find_package(GTest REQUIRED)
+    include_directories(${GTEST_INCLUDE_DIRS})
+    set(EXECUTABLE_UNIT_TEST "run_unit_tests_fw_logic")
+    enable_testing()
+    add_subdirectory("${CMAKE_SOURCE_DIR}/tests")
 endif()
 
 include(Install)

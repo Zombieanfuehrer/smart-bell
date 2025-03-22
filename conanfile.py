@@ -1,7 +1,7 @@
 import os
 import subprocess
 from conan import ConanFile
-from conan.tools.cmake import CMakeToolchain, CMake, cmake_layout
+from conan.tools.cmake import CMakeToolchain, CMake, cmake_layout, CMakeDeps
 from conan.tools.files import copy
 
 class Atmega328TemplateRecipe(ConanFile):
@@ -17,14 +17,14 @@ class Atmega328TemplateRecipe(ConanFile):
 
     # Binary configuration
     settings = "compiler", "build_type", "arch"
-    options = {"shared": [True, False], "fPIC": [True, False], "platform": ["avr", "linux"]}
-    default_options = {"shared": False, "fPIC": False, "platform": "avr"}
+    options = {"shared": [True, False], "fPIC": [True, False], "platform": ["avr", "linux"], "tests": [True, False]}
+    default_options = {"shared": False, "fPIC": False, "platform": "avr", "tests": False}
 
     # Sources are located in the same place as this recipe, copy them to the recipe
-    exports_sources = "CMakeLists.txt", "*.cmake", "app/*", "src/*", "public/*", "private/*", "style/*", "docs/Doxyfile", "configure/*", ".github/workflows/*", "cmake/*", ".gitignore", "LICENSE", "README.md", "requirements.txt", "conanfile.py"
+    exports_sources = "CMakeLists.txt", "*.cmake", "app/*", "src/*", "public/*", "private/*", "tests/*", "style/*", "docs/Doxyfile", "configure/*", ".github/workflows/*", "cmake/*", ".gitignore", "LICENSE", "README.md", "requirements.txt", "conanfile.py"
 
     def requirements(self):
-        if self.options.platform == "linux":
+        if self.options.platform == "linux" and self.options.tests:
             self.requires("gtest/1.16.0")
 
     def layout(self):
@@ -32,7 +32,10 @@ class Atmega328TemplateRecipe(ConanFile):
 
     def generate(self):
         tc = CMakeToolchain(self)
+        tc.variables["ENABLE_UNIT_TESTS"] = "ON" if self.options.tests else "OFF"
         tc.presets_prefix = "conan-generated-" + str(self.options.platform)
+        deps = CMakeDeps(self)
+        deps.generate()
         tc.generate()
 
     def build(self):
