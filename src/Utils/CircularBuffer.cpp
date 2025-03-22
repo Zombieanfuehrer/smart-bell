@@ -1,11 +1,10 @@
 
 #include "Utils/CircularBuffer.h"
-#include <algorithm>
 
 namespace utils
 {
   CircularBuffer::CircularBuffer(const size_t max_buffer_size)
-    : max_entries_(std::min(max_buffer_size, CircularBuffer::kDefaultSize)),
+    : max_entries_(max_buffer_size),
      head_(0), 
      tail_(0), 
      num_entries_(0)
