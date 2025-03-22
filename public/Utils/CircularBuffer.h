@@ -1,9 +1,12 @@
 #ifndef PUBLIC_UTILS_CIRCULARBUFFER_H_
 #define PUBLIC_UTILS_CIRCULARBUFFER_H_
 
-#include <avr/io.h>
 #include <stdint.h>
 #include <stddef.h>
+
+#ifdef __AVR__
+#include <avr/io.h>
+#endif
 
 namespace utils
 {

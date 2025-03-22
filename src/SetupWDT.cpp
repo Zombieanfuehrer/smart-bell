@@ -1,6 +1,8 @@
+#ifdef __AVR__
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/wdt.h>
+#endif
 
 #include "SetupWDT.h"
 

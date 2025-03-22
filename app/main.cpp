@@ -1,12 +1,16 @@
+#ifdef __AVR__
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/wdt.h>
+#endif
 
 #include "SetupWDT.h"
 #include "SetupEXT_IN_Interrupt.h"
 #include "SetupTimer.h"
 #include "Serial/UART.h"
 #include "Serial/SPI.h"
+
+
 
 volatile uint8_t inc_counter {0};
 volatile bool ring_output {false};

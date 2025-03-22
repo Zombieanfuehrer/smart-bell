@@ -1,9 +1,10 @@
 #ifndef PUBLIC_SERIAL_UART_H_
 #define PUBLIC_SERIAL_UART_H_
 
+#ifdef __AVR__
 #include <avr/io.h>
 #include <avr/interrupt.h>
-
+#endif
 #include <stdint.h>
 
 #include "Serial/Interface.h"

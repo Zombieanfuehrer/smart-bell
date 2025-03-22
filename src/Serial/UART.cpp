@@ -1,5 +1,7 @@
+#ifdef __AVR__
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#endif
 #include <stdint.h>
 
 #include "Serial/UART.h"

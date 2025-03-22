@@ -1,6 +1,9 @@
+#ifdef __AVR__
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/wdt.h>
+#endif
+
 #include <stdint.h>
 #include <util/delay.h>
 

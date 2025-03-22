@@ -1,6 +1,7 @@
+#ifdef __AVR__
 #include <avr/io.h>
 #include <avr/interrupt.h>
-
+#endif
 
 #include "SetupEXT_IN_Interrupt.h"
 

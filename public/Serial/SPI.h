@@ -1,8 +1,9 @@
 #ifndef PUBLIC_SERIAL_SPI_H_
 #define PUBLIC_SERIAL_SPI_H_
 
+#ifdef __AVR__
 #include <avr/io.h>
-
+#endif
 #include "Serial/Interface.h"
 #include "Utils/CircularBuffer.h"
 

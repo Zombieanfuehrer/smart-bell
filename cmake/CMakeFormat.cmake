@@ -26,7 +26,10 @@ function(add_cmake_format_target)
     set(CMAKE_FILES ${ROOT_CMAKE_FILES} ${CMAKE_FILES_TXT} ${CMAKE_FILES_C})
 
     # Find the cpplint executable in the virtual environment or in the system PATH
-    find_program(CMAKE_FORMAT NAMES cmake-format HINTS "${CMAKE_SOURCE_DIR}/.venv/bin" ENV PATH)
+    find_program(
+        CMAKE_FORMAT
+        NAMES cmake-format
+        HINTS "${CMAKE_SOURCE_DIR}/.venv/bin" ENV PATH)
     if(NOT CMAKE_FORMAT)
         message(
             FATAL_ERROR

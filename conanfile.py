@@ -42,7 +42,7 @@ class Atmega328TemplateRecipe(ConanFile):
         cmake = CMake(self)
         cmake.configure()
         if self.options.platform == "linux":
-            cmake.build(target="run_unit_tests_fw_logic")
+            cmake.build(target="run_gTest")
             self.perform_ctest()
         else:
             cmake.build(target="ATmega328_WTD")
