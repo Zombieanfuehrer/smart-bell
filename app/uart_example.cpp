@@ -1,5 +1,6 @@
 #ifdef __AVR__
 #include <avr/io.h>
+#include <util/delay.h>
 #endif
 
 #include "Serial/UART.h"
@@ -13,17 +14,24 @@ serial::Serial_parameters uart_parms = {
   serial::Parity::kNone
   };
 
+const char* motd = "uart example\n\r";
+const char* debug_msg_ = "__data is available\n\r";
+const uint8_t* debug_msg = reinterpret_cast<const uint8_t*>("data is available\n\r");
+
 int main (void) {
   serial::UART uart(uart_parms);
 
   while (true)
   {
     if (uart.is_read_data_available()) {
-      uint8_t data = uart.read_byte();
+      uart.send_string(debug_msg_);    
+      char data = uart.read_byte();
       uart.send(data);
       data = 0;
+    } else {
+      uart.send_string(motd);
+      _delay_ms(1500);
     }
-    uart.send(static_cast<uint8_t>('F'));
   }
   
 }
