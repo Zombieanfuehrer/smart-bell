@@ -16,6 +16,13 @@ else()
 endif()
 message(STATUS "CONAN_PROFILE_NAME ${CONAN_PROFILE_NAME}")
 
+if(NOT DEFINED F_CPU)
+    message(STATUS "F_CPU not defined, using default value 16Mhz")
+    set(F_CPU "16000000UL")
+else()
+    message(STATUS "F_CPU defined, using value ${F_CPU}")
+endif()
+
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CONAN_C_FLAGS} -DF_CPU=${F_CPU}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CONAN_CXX_FLAGS} -DF_CPU=${F_CPU}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${CONAN_EXE_LINKER_FLAGS}")
