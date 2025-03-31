@@ -19,6 +19,16 @@ ISR (USART_TX_vect) {
   tx_busy_ = serial::UART::is_not_busy;
 }
 
+ISR (USART_UDRE_vect) {
+  uint8_t	send_byte;
+  if (tx_buffer_.pop_front(&send_byte)) {
+    UDR0 = send_byte;
+  } else {
+    UCSR0B &= ~(1 << UDRIE0); // disable the interrupt
+    tx_busy_ = serial::UART::is_not_busy;
+  }  
+}
+
 namespace serial {
   
   UART::UART(const Serial_parameters &serial_parameters) {
@@ -88,15 +98,11 @@ namespace serial {
   }
 
   void UART::send_() {
-    uint8_t byte;
-    while (tx_buffer_.pop_front(&byte)) {
-      while (tx_busy_) {
-        ; // Wait for the transmission to finish
-      }
-      cli(); // Disable interrupts
-      tx_busy_ = UART::is_busy;
-      sei(); // Re-enable interrupts
-      UDR0 = byte;
+if (tx_busy_ == is_not_busy && tx_buffer_.used_entries() > 0) {
+      tx_busy_ = serial::UART::is_busy;
+      uint8_t send_byte;
+      UDR0 = send_byte;
+      UCSR0B |= (1 << UDRIE0); // Enable the interrupt
     }
   }
 

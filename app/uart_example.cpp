@@ -18,6 +18,8 @@ const char* motd = "uart example\n\r";
 const char* debug_msg_ = "__data is available\n\r";
 const uint8_t* debug_msg = reinterpret_cast<const uint8_t*>("data is available\n\r");
 
+char rcvd_buffer[251] = {0};
+
 int main (void) {
   serial::UART uart(uart_parms);
 
@@ -32,6 +34,7 @@ int main (void) {
       uart.send_string(motd);
       _delay_ms(1500);
     }
+
   }
   
 }
