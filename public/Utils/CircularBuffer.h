@@ -25,9 +25,15 @@ class CircularBuffer
 
  private:
   uint8_t values_ [CircularBuffer::kDefaultSize] = {0};
+#ifdef __AVR__
+  volatile int head_;
+  volatile int tail_;
+  volatile size_t num_entries_;
+#else
   int head_;
   int tail_;
   size_t num_entries_;
+#endif
   const size_t max_entries_;
 
  private:
