@@ -12,21 +12,20 @@ static utils::CircularBuffer rx_buffer_ {serial::UART::kRX_buffer_size};
 static utils::CircularBuffer tx_buffer_ {serial::UART::kTX_buffer_size};
 
 ISR (USART_RX_vect) {
-  rx_buffer_.push_back(UDR0);
-}
-
-ISR (USART_TX_vect) {
-  tx_busy_ = serial::UART::is_not_busy;
+  uint8_t received_byte = UDR0;
+  rx_buffer_.push_back(received_byte);
 }
 
 ISR (USART_UDRE_vect) {
-  uint8_t	send_byte;
-  if (tx_buffer_.pop_front(&send_byte)) {
-    UDR0 = send_byte;
-  } else {
-    UCSR0B &= ~(1 << UDRIE0); // disable the interrupt
-    tx_busy_ = serial::UART::is_not_busy;
-  }  
+  if (tx_buffer_.used_entries() > 0) {
+    uint8_t	send_byte;
+    if (tx_buffer_.pop_front(&send_byte)) {
+      UDR0 = send_byte;
+    } else {
+      UCSR0B &= ~(1 << UDRIE0); // disable the interrupt
+      tx_busy_ = serial::UART::is_not_busy;
+    }    
+  }
 }
 
 namespace serial {
@@ -77,7 +76,7 @@ namespace serial {
   }
 
   bool UART::is_read_data_available() const { 
-    return (rx_buffer_.used_entries() > 0);
+    return (rx_buffer_.used_entries() >= 1);
   }
 
   uint8_t UART::read_byte() {
@@ -98,10 +97,12 @@ namespace serial {
   }
 
   void UART::send_() {
-if (tx_busy_ == is_not_busy && tx_buffer_.used_entries() > 0) {
+    if (tx_busy_ == is_not_busy && tx_buffer_.used_entries() > 0) {
       tx_busy_ = serial::UART::is_busy;
       uint8_t send_byte;
-      UDR0 = send_byte;
+      if (tx_buffer_.pop_front(&send_byte)) {
+        UDR0 = send_byte;
+      }
       UCSR0B |= (1 << UDRIE0); // Enable the interrupt
     }
   }
