@@ -75,6 +75,17 @@ int main(void) {
     uart.send('0' + i);  // Senden der Iterationsnummer
     uart.send('\n');
     uart.send('\r');
+
+    uart.send_string("Please type something:\n\r");
+    while (!uart.is_read_data_available()) {
+      // Warten, bis Daten verfügbar sind
+    }
+    char received_data = uart.read_byte();
+    uart.send_string("You typed: ");
+    uart.send(received_data);
+    uart.send('\n');
+    uart.send('\r');
+
     _delay_ms(500);
   }
 
