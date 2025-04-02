@@ -9,7 +9,7 @@
 serial::Serial_parameters uart_parms = {
   serial::Communication_mode::kAsynchronous,
   serial::Asynchronous_mode::kNormal,
-  serial::Baudrate::kBaud_9600,
+  serial::Baudrate::kBaud_57600,
   serial::StopBits::kOne,
   serial::DataBits::kEight,
   serial::Parity::kNone
