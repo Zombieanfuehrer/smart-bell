@@ -1,8 +1,10 @@
 import os
 import subprocess
+import shutil
 from conan import ConanFile
 from conan.tools.cmake import CMakeToolchain, CMake, cmake_layout, CMakeDeps
-from conan.tools.files import copy
+from conan.tools.files import copy, download, unzip, check_sha1
+from conan.tools.scm import Git
 
 class Atmega328TemplateRecipe(ConanFile):
     name = "atmega328_smart_bell_fw"
@@ -15,14 +17,25 @@ class Atmega328TemplateRecipe(ConanFile):
     description = "Smart Bell firmware for ATmega328P"
     topics = ("avr")
 
-    # Binary configuration
+    # Configuration
     settings = "compiler", "build_type", "arch"
-    options = {"shared": [True, False], "fPIC": [True, False], "platform": ["avr", "linux"], "tests": [True, False]}
-    default_options = {"shared": False, "fPIC": False, "platform": "avr", "tests": False}
-
-    # Sources are located in the same place as this recipe, copy them to the recipe
-    exports_sources = "CMakeLists.txt", "*.cmake", "app/*", "src/*", "public/*", "private/*", "tests/*", "style/*", "docs/Doxyfile", "configure/*", ".github/workflows/*", "cmake/*", ".gitignore", "LICENSE", "README.md", "requirements.txt", "conanfile.py"
-
+    options = {
+        "shared": [True, False],
+        "fPIC": [True, False],
+        "platform": ["avr", "linux"],
+        "tests": [True, False],
+        "W5500_support": [True, False]
+    }
+    default_options = {
+        "shared": False,
+        "fPIC": False,
+        "platform": "avr",
+        "tests": False,
+        "W5500_support": False
+    }
+    ioLibrary_Driver_Version = "v3.2.0"
+    exports_sources = "CMakeLists.txt", "*.cmake", "app/*", "src/*", "public/*", "private/*", "tests/*", "style/*", "docs/Doxyfile", "configure/*", ".github/workflows/*", "cmake/*",".gitignore", "LICENSE", "README.md", "requirements.txt", "conanfile.py"
+    
     def requirements(self):
         if self.options.platform == "linux" and self.options.tests:
             self.requires("gtest/1.16.0")
@@ -38,6 +51,16 @@ class Atmega328TemplateRecipe(ConanFile):
         deps.generate()
         tc.generate()
 
+    def source(self):
+        ioLibrary_Driver_zip = f"ioLibrary_Driver-{self.ioLibrary_Driver_Version}.zip"
+        download(self, f"https://github.com/Wiznet/ioLibrary_Driver/archive/refs/tags/{self.ioLibrary_Driver_Version}.zip", ioLibrary_Driver_zip)
+        check_sha1(self, ioLibrary_Driver_zip, "661eca703e2852027bf6c4c849b463d413c6afa0")
+        unzip(self, ioLibrary_Driver_zip)
+        extracted_folder = f"ioLibrary_Driver-{self.ioLibrary_Driver_Version.lstrip('v')}"
+        os.makedirs("extern/ioLibrary_Driver", exist_ok=True)
+        shutil.move(extracted_folder, "extern/ioLibrary_Driver")
+        os.remove(ioLibrary_Driver_zip)
+            
     def build(self):
         cmake = CMake(self)
         cmake.configure()
