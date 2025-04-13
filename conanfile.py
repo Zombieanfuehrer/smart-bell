@@ -44,6 +44,8 @@ class Atmega328TemplateRecipe(ConanFile):
         cmake_layout(self)
 
     def generate(self):
+        if self.options.W5500_support:
+            
         tc = CMakeToolchain(self)
         tc.variables["ENABLE_UNIT_TESTS"] = "ON" if self.options.tests else "OFF"
         tc.presets_prefix = "conan-generated-" + str(self.options.platform)
