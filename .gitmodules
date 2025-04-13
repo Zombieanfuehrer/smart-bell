@@ -1,3 +1,0 @@
-[submodule "extern/ioLibrary_Driver"]
-	path = extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0
-	url = https://github.com/Wiznet/ioLibrary_Driver.git
