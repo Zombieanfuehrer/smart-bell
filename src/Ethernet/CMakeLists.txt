@@ -1,0 +1,16 @@
+set(LIB_W5500_ETHERNET_SOURCE 
+    "${CMAKE_CURRENT_SOURCE_DIR}/W5500/w5500.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/socket.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/wizchip_conf.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/W5500/W5500Class.cpp"
+)
+
+set(LIB_W5500_ETHERNET_HEADERS 
+    "${PROJECT_SOURCE_DIR}/public/Ethernet/W5500/w5500.h"
+    "${PROJECT_SOURCE_DIR}/public/Ethernet/socket.h"
+    "${PROJECT_SOURCE_DIR}/public/Ethernet/wizchip_conf.h"
+    "${PROJECT_SOURCE_DIR}/public/Ethernet/W5500/W5500Class.h"
+)
+
+add_library("${LIB_W5500_ETHERNET}" STATIC ${LIB_W5500_ETHERNET_SOURCE} ${LIB_W5500_ETHERNET_HEADERS})
+target_include_directories("${LIB_W5500_ETHERNET}" PUBLIC ${LIBRARY_INCLUDES})

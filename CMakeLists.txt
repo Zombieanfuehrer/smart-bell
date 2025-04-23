@@ -53,6 +53,7 @@ set(LIB_TIMERINT "ATmega328_TIMER_INT")
 set(LIB_USART "ATmega328_USART")
 set(LIB_SPI "ATmega328_SPI")
 set(LIB_UTILS "ATmega328_UTILS")
+set(LIB_W5500_ETHERNET "ATmega328_W5500_ETHERNET")
 
 set(EXECUTABLE_UART_EXAMPLE "ATmega328_UART_EXAMPLE_FW")
 
@@ -113,6 +114,7 @@ install_target(${LIB_TIMERINT})
 install_target(${LIB_USART})
 install_target(${LIB_SPI})
 install_target(${LIB_UTILS})
+install_target(${LIB_W5500_ETHERNET})
 install_target(${EXECUTABLE_UART_EXAMPLE})
 
 include(Objcopy)

@@ -20,3 +20,4 @@ target_include_directories("${LIB_TIMERINT}" PUBLIC ${LIBRARY_INCLUDES})
 
 add_subdirectory(Serial)
 add_subdirectory(Utils)
+add_subdirectory(Ethernet)
