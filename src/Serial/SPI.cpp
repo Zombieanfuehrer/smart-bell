@@ -78,6 +78,7 @@ uint8_t SPI::read_byte() {
   if (rx_buffer_.pop_front(&byte)) {
     return byte;
   }
+  return 0; // Return a default value if the buffer is empty
 }
 
 void SPI::send_() {
