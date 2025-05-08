@@ -1,9 +1,12 @@
-#ifndef PUBLIC_ETERNET_W5500_W5500CLASS_H_
+#ifndef PUBLIC_ETHERNET_W5500_W5500CLASS_H_
 #define PUBLIC_ETHERNET_W5500_W5500CLASS_H_
 
-#include "Serial/SPI.h"
+#include <Serial/SPI.h>
+#include <Serial/UART.h>
+
 #include "Ethernet/wizchip_conf.h"
 
+namespace Ethernet {
 
 struct MacAddress {
     uint8_t addr[6];
@@ -18,11 +21,12 @@ struct GatewayAddress {
     uint8_t addr[4];
 };
 
-class W5500Class
+class W5500Interface
 {
  public:
-  W5500Class(serial::SPI *const SPI);
-  ~W5500Class();
+  W5500Interface(serial::SPI *const SPI);
+  W5500Interface(serial::SPI *const SPI, serial::UART *const UART_LOG);
+  ~W5500Interface();
 
   void init();
   void soft_reset();
@@ -43,6 +47,7 @@ class W5500Class
 
  private:
   serial::SPI *const spi_ = nullptr;
+  serial::UART *const uart_log_ = nullptr;
   static wiz_NetInfo netInfo_;
   static bool initialized_;
 
@@ -53,12 +58,12 @@ class W5500Class
   static void cb_spi_read_burst(uint8_t* pBuf, uint16_t len);
   static void cb_spi_write_burst(uint8_t* pBuf, uint16_t len);
 
-  static W5500Class* instance_;
+  static W5500Interface* instance_;
   static void (*cb_chip_select_)();
   static void (*cb_chip_deselect_)();
 };
 
-
+} // namespace Ethernet
 
 #endif // PUBLIC_ETHERNET_W5500_W5500CLASS_H_
 
