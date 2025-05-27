@@ -9,28 +9,37 @@
 namespace Ethernet {
 
 struct MacAddress {
-    uint8_t addr[6];
+  uint8_t addr[6];
 };
 struct IpAddress {
-    uint8_t addr[4];
+  uint8_t addr[4];
 };
 struct SubnetMask {
-    uint8_t addr[4];
+  uint8_t addr[4];
 };
 struct GatewayAddress {
-    uint8_t addr[4];
+  uint8_t addr[4];
+};
+
+struct W5500Callbacks {
+  void (*hard_reset)() = nullptr;
+  void (*chip_select)() = nullptr;
+  void (*chip_deselect)() = nullptr;
 };
 
 class W5500Interface
 {
  public:
-  W5500Interface(serial::SPI *const SPI);
+  W5500Interface(serial::SPI *const SPI, W5500Callbacks register_callbacks);
+  W5500Interface(serial::SPI *const SPI, W5500Callbacks register_callbacks, serial::UART *const UART_LOG);
   W5500Interface(serial::SPI *const SPI, serial::UART *const UART_LOG);
-  ~W5500Interface();
+
+  ~W5500Interface() = default;
+
 
   void init();
   void soft_reset();
-  void hard_reset(void (*callback)());
+  void hard_reset();
 
   void set_network_config(const MacAddress* const mac, const IpAddress* const ip, 
     const SubnetMask* const subnet, const GatewayAddress* const gateway);
@@ -49,18 +58,17 @@ class W5500Interface
   serial::SPI *const spi_ = nullptr;
   serial::UART *const uart_log_ = nullptr;
   static wiz_NetInfo netInfo_;
-  static bool initialized_;
+  bool initialized_;
 
-  static void cb_chip_select(void (*callback)());
-  static void cb_chip_deselect(void (*callback)());
   static uint8_t cb_spi_read();
   static void cb_spi_write(uint8_t data);
   static void cb_spi_read_burst(uint8_t* pBuf, uint16_t len);
   static void cb_spi_write_burst(uint8_t* pBuf, uint16_t len);
 
   static W5500Interface* instance_;
-  static void (*cb_chip_select_)();
-  static void (*cb_chip_deselect_)();
+  void (*cb_hard_reset_)() = nullptr;
+  void (*cb_chip_select_)() = nullptr;
+  void (*cb_chip_deselect_)() = nullptr;
 };
 
 } // namespace Ethernet

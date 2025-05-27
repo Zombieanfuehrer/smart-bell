@@ -7,26 +7,44 @@
 #include "Serial/SPI.h"
 #include "Ethernet/W5500/w5500.h"
 
+
 namespace Ethernet {
 
 W5500Interface* W5500Interface::instance_ = nullptr;
 
 
-W5500Interface::W5500Interface(serial::SPI *SPI)
- : spi_(SPI) {
+W5500Interface::W5500Interface(serial::SPI *SPI, W5500Callbacks register_callbacks)
+ : spi_(SPI), initialized_(false), uart_log_(nullptr) {
   instance_ = this;
+  if (register_callbacks.hard_reset) {
+    cb_hard_reset_ = register_callbacks.hard_reset;
+  }
+  if (register_callbacks.chip_select) {
+    cb_chip_select_ = register_callbacks.chip_select;
+  }
+  if (register_callbacks.chip_deselect) {
+    cb_chip_deselect_ = register_callbacks.chip_deselect;
+  }
 }
 
-W5500Interface::W5500Interface(serial::SPI *const SPI, serial::UART *const UART_LOG)
-: spi_(SPI), 
-uart_log_(UART_LOG) {
+W5500Interface::W5500Interface(serial::SPI *const SPI,W5500Callbacks register_callbacks, serial::UART *const UART_LOG)
+: spi_(SPI), initialized_(false), uart_log_(UART_LOG) {
   instance_ = this;
+  if (register_callbacks.hard_reset) {
+    cb_hard_reset_ = register_callbacks.hard_reset;
+  }
+  if (register_callbacks.chip_select) {
+    cb_chip_select_ = register_callbacks.chip_select;
+  }
+  if (register_callbacks.chip_deselect) {
+    cb_chip_deselect_ = register_callbacks.chip_deselect;
+  }
 }
 
 void W5500Interface::init()
 {
   if (initialized_)
-      return;
+    return;
 
   this->soft_reset();
   reg_wizchip_cs_cbfunc(cb_chip_select_, cb_chip_deselect_);
@@ -52,12 +70,16 @@ void W5500Interface::soft_reset() {
   _delay_ms(100);
 }
 
-inline void W5500Interface::cb_chip_select(void (*callback)()) {
-  cb_chip_select_ = callback;
-}
-
-inline void W5500Interface::cb_chip_deselect(void (*callback)()) {
-  cb_chip_deselect_ = callback;
+void W5500Interface::hard_reset() {
+  if (cb_hard_reset_) {
+    cb_hard_reset_();
+  } else {
+    if (uart_log_) {
+      uart_log_->send_string("No hard reset callback defined");
+    }
+  }
+  _delay_ms(100);
+  initialized_ = false;
 }
 
 inline uint8_t W5500Interface::cb_spi_read() {
