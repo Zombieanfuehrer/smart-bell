@@ -41,7 +41,8 @@ class Atmega328TemplateRecipe(ConanFile):
             self.requires("gtest/1.16.0")
 
     def layout(self):
-        cmake_layout(self)
+        arch = str(self.settings.arch)
+        cmake_layout(self, build_folder=f"build/{arch}")
 
     def generate(self):
         tc = CMakeToolchain(self)
@@ -75,10 +76,14 @@ class Atmega328TemplateRecipe(ConanFile):
             cmake.build(target="ATmega328_SPI")
             cmake.build(target="ATmega328_UTILS")
 
+            cmake.build(target="ATmega328_UART_EXAMPLE_FW")
+            cmake.build(target="ATmega328_UART_EXAMPLE_FW_hex")
+            
             if self.options.W5500_support:
                 cmake.build(target="ATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY")
                 cmake.build(target="ATmega328_W5500_ETHERNET")
                 cmake.build(target="ATmega328_TCP_SERVER_EXAMPLE_FW")
+                cmake.build(target="ATmega328_TCP_SERVER_EXAMPLE_FW_hex")
 
     def package(self):
         cmake = CMake(self)
@@ -101,6 +106,14 @@ class Atmega328TemplateRecipe(ConanFile):
             "ATmega328_SPI",
             "ATmega328_UTILS"
         ]
+
+        if self.options.W5500_support:
+            self.cpp_info.libs.extend([
+                "ATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY",
+                "ATmega328_W5500_ETHERNET",
+                "ATmega328_TCP_SERVER_EXAMPLE_FW"
+            ])
+
         self.cpp_info.includedirs = ["public"]
         self.cpp_info.libdirs = ['lib']
         self.cpp_info.bindirs = ['app']

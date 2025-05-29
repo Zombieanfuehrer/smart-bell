@@ -89,14 +89,27 @@ serial::SPI_parameters spi_params = {
     serial::SPI_clock_rate::k4mHz
 };
 
+serial::Serial_parameters uart_parms = {
+  serial::Communication_mode::kAsynchronous,
+  serial::Asynchronous_mode::kNormal,
+  serial::Baudrate::kBaud_57600,
+  serial::StopBits::kOne,
+  serial::DataBits::kEight,
+  serial::Parity::kNone
+};
+
 static const constexpr uint8_t kSPI_CS_W5500 = (1 << PORTB2);
 static const constexpr uint8_t kRESET_W5500 = (1 << PORTD4);
 
 int main() {
+    wdt_disable();  // Watchdog deaktivieren
+    sei(); 
 
     DDRD |= kSPI_CS_W5500;     // RST auf Pin 4 als Ausgang
-    DDRB |= kRESET_W5500;     // CS auf Pin 10 als Ausgang
+    DDRB |= kRESET_W5500;      // CS auf Pin 10 als Ausgang
 
+    serial::UART uart(uart_parms);
+    uart.send_string("TCP Server Example\n\r");
     serial::SPI spi(spi_params, kSPI_CS_W5500); // Pin 10 als Slave Select (CS)
     
     Ethernet::W5500Callbacks callbacks = {
@@ -115,7 +128,7 @@ int main() {
     };
     
     // W5500 initialisieren
-    Ethernet::W5500Interface w5500(&spi, callbacks);
+    Ethernet::W5500Interface w5500(&spi, callbacks, &uart);
     w5500.init();
     
     // Netzwerk konfigurieren

@@ -36,13 +36,19 @@ namespace serial {
       cli();
     }
 
+    if (serial_parameters.asynchronous_mode == Asynchronous_mode::kDouble_speed) {
+      UCSR0A |= (1 << U2X0);  // Enable double speed mode
+    } else {
+      UCSR0A &= ~(1 << U2X0); // Disable double speed mode
+    }
+
     auto prescaler = calculate_baudrate_prescaler(serial_parameters.baudrate, serial_parameters.asynchronous_mode);
     // Set baud rate
     UBRR0L = static_cast<uint8_t>(prescaler & 0xFF);
     UBRR0H = static_cast<uint8_t>(prescaler >> 8);
     
     // Receiver and transmitter enable with interrupts
-    UCSR0B = (1 << RXEN0) | (1 << TXEN0) | (1 << RXCIE0) | (1 << TXCIE0);
+    UCSR0B = (1 << RXEN0) | (1 << TXEN0) | (1 << RXCIE0);
     // Set frame format and communication mode
     UCSR0C = static_cast<uint8_t>(serial_parameters.communication_mode) | 
       static_cast<uint8_t>(serial_parameters.stop_bits) |

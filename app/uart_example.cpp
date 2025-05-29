@@ -9,7 +9,7 @@
 serial::Serial_parameters uart_parms = {
   serial::Communication_mode::kAsynchronous,
   serial::Asynchronous_mode::kNormal,
-  serial::Baudrate::kBaud_57600,
+  serial::Baudrate::kBaud_19200,
   serial::StopBits::kOne,
   serial::DataBits::kEight,
   serial::Parity::kNone
@@ -72,7 +72,8 @@ int main(void) {
   uart.send_string("Test 4: Repeated send and receive...\n\r");
   for (int i = 0; i < 5; ++i) {
     uart.send_string("Iteration: ");
-    uart.send('0' + i);  // Senden der Iterationsnummer
+    char ascii_char = static_cast<char>(i + 48);  // i in ASCII-Zeichen umwandeln
+    uart.send(ascii_char); 
     uart.send('\n');
     uart.send('\r');
 
@@ -85,8 +86,6 @@ int main(void) {
     uart.send(received_data);
     uart.send('\n');
     uart.send('\r');
-
-    _delay_ms(500);
   }
 
   // Test 5: Endlosschleife mit regulärem Betrieb

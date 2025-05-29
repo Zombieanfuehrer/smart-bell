@@ -120,11 +120,18 @@ install_target(${LIB_W5500_ETHERNET})
 install_target(${EXECUTABLE_UART_EXAMPLE})
 install_target(${EXECUTABLE_TCP_SERVER_EXAMPLE})
 
+set(FW_EXAMPLES_LIST
+    ${EXECUTABLE_UART_EXAMPLE}
+    ${EXECUTABLE_TCP_SERVER_EXAMPLE})
+
 include(Objcopy)
-run_bin2hex(
-    TARGET
-    ${EXECUTABLE_TCP_SERVER_EXAMPLE}
-    TARGET_ARTIFACT
-    "${CMAKE_BINARY_DIR}/app/${EXECUTABLE_TCP_SERVER_EXAMPLE}"
-    HEX_FILE
-    "${CMAKE_BINARY_DIR}/app/${EXECUTABLE_TCP_SERVER_EXAMPLE}.hex")
+
+foreach(FW_2_hex_item IN LISTS FW_EXAMPLES_LIST)
+    run_bin2hex(
+        TARGET
+        ${FW_2_hex_item}
+        TARGET_ARTIFACT
+        "${CMAKE_BINARY_DIR}/app/${FW_2_hex_item}"
+        HEX_FILE
+        "${CMAKE_BINARY_DIR}/app/${FW_2_hex_item}.hex")
+endforeach()
