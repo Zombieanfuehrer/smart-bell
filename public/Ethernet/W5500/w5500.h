@@ -53,7 +53,7 @@ extern "C" {
 #endif
 
 #include <stdint.h>
-#include "Ethernet/wizchip_conf.h"
+#include "wizchip_conf.h"
 
 
 

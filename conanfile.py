@@ -74,10 +74,11 @@ class Atmega328TemplateRecipe(ConanFile):
             cmake.build(target="ATmega328_USART")
             cmake.build(target="ATmega328_SPI")
             cmake.build(target="ATmega328_UTILS")
-            cmake.build(target="ATmega328_W5500_ETHERNET")
 
-            cmake.build(target="ATmega328_UART_EXAMPLE_FW")
-            cmake.build(target="ATmega328_UART_EXAMPLE_FW_hex")
+            if self.options.W5500_support:
+                cmake.build(target="ATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY")
+                cmake.build(target="ATmega328_W5500_ETHERNET")
+                cmake.build(target="ATmega328_TCP_SERVER_EXAMPLE_FW")
 
     def package(self):
         cmake = CMake(self)

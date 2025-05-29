@@ -12,6 +12,8 @@ namespace Ethernet {
 
 W5500Interface* W5500Interface::instance_ = nullptr;
 
+wiz_NetInfo W5500Interface::netInfo_;
+
 
 W5500Interface::W5500Interface(serial::SPI *SPI, W5500Callbacks register_callbacks)
  : spi_(SPI), initialized_(false), uart_log_(nullptr) {
