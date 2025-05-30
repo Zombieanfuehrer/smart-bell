@@ -2,7 +2,7 @@
 #include <util/delay.h>
 #include <string.h>
 
-#include "Ethernet/W5500/W5500Class.h"
+#include "W5500Interface.h"
 #include "Ethernet/wizchip_conf.h"
 #include "Serial/SPI.h"
 #include "Ethernet/W5500/w5500.h"

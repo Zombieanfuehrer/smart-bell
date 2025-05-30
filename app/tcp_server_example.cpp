@@ -7,7 +7,7 @@
 #include <Serial/SPI.h>
 #include <Serial/UART.h>
 
-#include <Ethernet/W5500/W5500Class.h>
+#include <Ethernet/W5500/W5500Interface.h>
 #include <Ethernet/W5500/w5500.h>
 #include <Ethernet/socket.h>
 
