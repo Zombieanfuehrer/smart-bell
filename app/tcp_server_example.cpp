@@ -18,7 +18,7 @@
 void run_tcp_server(Ethernet::W5500Interface* w5500) {
     uint8_t buffer[BUFFER_SIZE];
     int32_t received_size;
-    
+
     // Socket initialisieren (TCP-Modus)
     socket(SOCKET_NUMBER, Sn_MR_TCP, TCP_PORT, 0);
     
@@ -92,7 +92,7 @@ serial::SPI_parameters spi_params = {
 serial::Serial_parameters uart_parms = {
   serial::Communication_mode::kAsynchronous,
   serial::Asynchronous_mode::kNormal,
-  serial::Baudrate::kBaud_57600,
+  serial::Baudrate::kBaud_19200,
   serial::StopBits::kOne,
   serial::DataBits::kEight,
   serial::Parity::kNone
@@ -111,7 +111,7 @@ int main() {
     serial::UART uart(uart_parms);
     uart.send_string("TCP Server Example\n\r");
     serial::SPI spi(spi_params, kSPI_CS_W5500); // Pin 10 als Slave Select (CS)
-    
+
     Ethernet::W5500Callbacks callbacks = {
         .hard_reset = []() {
             PORTD &= ~kRESET_W5500;     // kRESET_W5500 auf LOW (aktiv)
@@ -129,16 +129,17 @@ int main() {
     
     // W5500 initialisieren
     Ethernet::W5500Interface w5500(&spi, callbacks, &uart);
+    uart.send_string("W5500 init()\n\r");
     w5500.init();
-    
+    uart.send_string("W5500 init() done!\n\r");    
     // Netzwerk konfigurieren
     Ethernet::MacAddress mac = {{0x00, 0x08, 0xDC, 0xAB, 0xCD, 0xEF}};
     Ethernet::IpAddress ip = {{192, 168, 1, 177}};
     Ethernet::SubnetMask subnet = {{255, 255, 255, 0}};
     Ethernet::GatewayAddress gateway = {{192, 168, 1, 1}};
-    
+    uart.send_string("W5500 set_network_config()\n\r");  
     w5500.set_network_config(&mac, &ip, &subnet, &gateway);
-    
+    uart.send_string("run_tcp_server()\n\r");  
     // TCP-Server starten
     run_tcp_server(&w5500);
     
