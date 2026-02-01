@@ -19,8 +19,19 @@ void run_tcp_server(Ethernet::EmbeddedSocketW5500* socket_manager) {
   uint8_t buffer[BUFFER_SIZE];
   int32_t received_size;
 
+  // Socket-Status-Struktur erstellen
+  Ethernet::W5500SocketStatus socket_status = {
+    .socket_number = Ethernet::W5500SocketNumber::kSocket0,
+    .protocol_type = Ethernet::W5500SocketProtocol::kTCP,
+    .port = TCP_PORT,
+    .current_state = Ethernet::W5500SocketState::kSOCK_CLOSED,
+    .socket_flags = Ethernet::W5500SocketFlag::kNone
+  };
+
   // Socket initialisieren (TCP-Modus)
-  socket_manager->open_socket(SOCKET_NUMBER, Sn_MR_TCP, TCP_PORT, 0);
+  if (socket_manager->open_socket(socket_status) != SOCK_OK) {
+    return;  // Fehler beim Öffnen des Sockets
+  }
 
   // Server-Socket in Listen-Modus versetzen
   if (socket_manager->listen_socket(SOCKET_NUMBER) != SOCK_OK) {
@@ -28,48 +39,49 @@ void run_tcp_server(Ethernet::EmbeddedSocketW5500* socket_manager) {
   }
 
   while (1) {
-    // Socket-Status prüfen
-    uint8_t status = getSn_SR(SOCKET_NUMBER);
+    // Socket-Status aktualisieren
+    socket_status = socket_manager->get_socket_status(SOCKET_NUMBER);
 
-    switch (status) {
-      case SOCK_ESTABLISHED:  // Verbindung hergestellt
+    switch (socket_status.current_state) {
+      case Ethernet::W5500SocketState::kSOCK_ESTABLISHED:  // Verbindung hergestellt
         // Daten empfangen, wenn verfügbar
-        received_size = recv(SOCKET_NUMBER, buffer, BUFFER_SIZE);
+        received_size = socket_manager->recv_socket(SOCKET_NUMBER, buffer, BUFFER_SIZE);
 
         if (received_size > 0) {
           // Echo zurücksenden
-          send(SOCKET_NUMBER, buffer, received_size);
+          socket_manager->send_socket(SOCKET_NUMBER, buffer, received_size);
         } else if (received_size == SOCK_CLOSED) {
           // Verbindung geschlossen
-          close(SOCKET_NUMBER);
-          // Neuen Socket öffnen
-          socket(SOCKET_NUMBER, Sn_MR_TCP, TCP_PORT, 0);
-          listen(SOCKET_NUMBER);
+          socket_manager->close_socket(SOCKET_NUMBER);
+          // Socket neu öffnen
+          socket_status.current_state = Ethernet::W5500SocketState::kSOCK_CLOSED;
+          socket_manager->open_socket(socket_status);
+          socket_manager->listen_socket(SOCKET_NUMBER);
         }
         break;
 
-      case SOCK_CLOSE_WAIT:  // Verbindung wird geschlossen
+      case Ethernet::W5500SocketState::kSOCK_CLOSE_WAIT:  // Verbindung wird geschlossen
         // Restliche Daten empfangen
-        received_size = recv(SOCKET_NUMBER, buffer, BUFFER_SIZE);
+        received_size = socket_manager->recv_socket(SOCKET_NUMBER, buffer, BUFFER_SIZE);
         if (received_size > 0) {
-          send(SOCKET_NUMBER, buffer, received_size);
+          socket_manager->send_socket(SOCKET_NUMBER, buffer, received_size);
         }
 
-        // Socket schließen
-        close(SOCKET_NUMBER);
-        // Neuen Socket öffnen und in Listen-Modus setzen
-        socket(SOCKET_NUMBER, Sn_MR_TCP, TCP_PORT, 0);
-        listen(SOCKET_NUMBER);
+        // Socket schließen und neu öffnen
+        socket_manager->close_socket(SOCKET_NUMBER);
+        socket_status.current_state = Ethernet::W5500SocketState::kSOCK_CLOSED;
+        socket_manager->open_socket(socket_status);
+        socket_manager->listen_socket(SOCKET_NUMBER);
         break;
 
-      case SOCK_CLOSED:  // Socket geschlossen
+      case Ethernet::W5500SocketState::kSOCK_CLOSED:  // Socket geschlossen
         // Socket neu öffnen
-        socket(SOCKET_NUMBER, Sn_MR_TCP, TCP_PORT, 0);
-        listen(SOCKET_NUMBER);
+        socket_manager->open_socket(socket_status);
+        socket_manager->listen_socket(SOCKET_NUMBER);
         break;
 
-      case SOCK_INIT:  // Socket initialisiert
-        listen(SOCKET_NUMBER);
+      case Ethernet::W5500SocketState::kSOCK_INIT:  // Socket initialisiert
+        socket_manager->listen_socket(SOCKET_NUMBER);
         break;
 
       default:

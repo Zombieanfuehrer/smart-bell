@@ -19,22 +19,46 @@ int8_t EmbeddedSocketW5500::open_socket(W5500SocketStatus& socket_status) {
                         socket_status.port, static_cast<uint8_t>(socket_status.socket_flags));
 
   if (ret_val == SOCK_OK) {
-    socket_status_[socket_idx].current_state = static_cast<W5500SocketState>(getSn_SR(socket_idx));
+    update_socket_state_(socket_idx);
+    socket_status = socket_status_[socket_idx];
   } else {
     socket_status_[socket_idx].current_state = W5500SocketState::kSOCK_CLOSED;
+    socket_status = socket_status_[socket_idx];
   }
   return ret_val;
 }
 
-int8_t EmbeddedSocketW5500::close_socket(uint8_t sn) { return close(sn); }
+int8_t EmbeddedSocketW5500::close_socket(uint8_t sn) {
+  auto ret_val = close(sn);
+  if (ret_val == SOCK_OK && sn < 8) {
+    socket_status_[sn].current_state = W5500SocketState::kSOCK_CLOSED;
+  }
+  return ret_val;
+}
 
-int8_t EmbeddedSocketW5500::disconnect_socket(uint8_t sn) { return disconnect(sn); }
+int8_t EmbeddedSocketW5500::disconnect_socket(uint8_t sn) {
+  auto ret_val = disconnect(sn);
+  if (sn < 8) {
+    update_socket_state_(sn);
+  }
+  return ret_val;
+}
 
-int8_t EmbeddedSocketW5500::listen_socket(uint8_t sn) { return listen(sn); }
+int8_t EmbeddedSocketW5500::listen_socket(uint8_t sn) {
+  auto ret_val = listen(sn);
+  if (ret_val == SOCK_OK && sn < 8) {
+    update_socket_state_(sn);
+  }
+  return ret_val;
+}
 
 int8_t Ethernet::EmbeddedSocketW5500::connect_socket(uint8_t sn, const uint8_t* addr,
                                                      uint16_t port) {
-  return connect(sn, const_cast<uint8_t*>(addr), port);
+  auto ret_val = connect(sn, const_cast<uint8_t*>(addr), port);
+  if (sn < 8) {
+    update_socket_state_(sn);
+  }
+  return ret_val;
 }
 
 int32_t Ethernet::EmbeddedSocketW5500::send_socket(uint8_t sn, const uint8_t* buf, uint16_t len) {
@@ -78,5 +102,10 @@ W5500SocketStatus EmbeddedSocketW5500::get_socket_status(uint8_t socket_num) con
 
 uint8_t EmbeddedSocketW5500::get_socket_index_(const W5500SocketNumber socket_num) const {
   return static_cast<uint8_t>(socket_num);
+}
+void EmbeddedSocketW5500::update_socket_state_(uint8_t sn) {
+  if (sn < 8) {
+    socket_status_[sn].current_state = static_cast<W5500SocketState>(getSn_SR(sn));
+  }
 }
 }  // namespace Ethernet

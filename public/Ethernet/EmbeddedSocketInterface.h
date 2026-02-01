@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include <Ethernet/W5500/w5500.h>
+#include <Ethernet/socket.h>
 
 #include "W5500Interface.h"
 
@@ -87,8 +88,8 @@ class EmbeddedSocketW5500 {
   const Ethernet::W5500Interface* const w5500_interface_ = nullptr;
   W5500SocketStatus socket_status_[8];
 
- private:
   uint8_t get_socket_index_(const W5500SocketNumber socket_num) const;
+  void update_socket_state_(uint8_t sn);
 };
 
 }  // namespace Ethernet
