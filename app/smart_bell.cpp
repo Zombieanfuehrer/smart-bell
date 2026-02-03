@@ -46,7 +46,7 @@ ISR(INT0_vect) {
 }
 
 // Timer interrupt for ring duration
-ISR(TIMER1_COMPA_vect) {
+ISR(TIMER0_COMPA_vect) {
   timer_counter++;
 }
 

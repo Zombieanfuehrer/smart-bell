@@ -33,8 +33,8 @@ void ConfigManager::load_defaults() {
   config_.mqtt_topic_control[47] = '\0';
   config_.mqtt_keepalive = 60;
   
-  // Network defaults (DHCP enabled)
-  config_.use_dhcp = true;
+  // Network defaults (Static IP for now, DHCP not implemented)
+  config_.use_dhcp = false;
   config_.static_ip[0] = 192;
   config_.static_ip[1] = 168;
   config_.static_ip[2] = 1;
@@ -194,11 +194,19 @@ void ConfigManager::print_config() const {
   uart_->send_string(config_.use_dhcp ? "enabled" : "disabled");
   uart_->send_string("\r\n");
   
-  if (!config_.use_dhcp) {
+  if (!config.use_dhcp) {
     uart_->send_string("Static IP: ");
-    char ip_str[16];
-    snprintf(ip_str, 16, "%d.%d.%d.%d", config_.static_ip[0], config_.static_ip[1], 
-             config_.static_ip[2], config_.static_ip[3]);
+    char ip_str[4];
+    itoa(config.static_ip[0], ip_str, 10);
+    uart_->send_string(ip_str);
+    uart_->send_string(".");
+    itoa(config.static_ip[1], ip_str, 10);
+    uart_->send_string(ip_str);
+    uart_->send_string(".");
+    itoa(config.static_ip[2], ip_str, 10);
+    uart_->send_string(ip_str);
+    uart_->send_string(".");
+    itoa(config.static_ip[3], ip_str, 10);
     uart_->send_string(ip_str);
     uart_->send_string("\r\n");
   }

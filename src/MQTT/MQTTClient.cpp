@@ -6,14 +6,23 @@
 #endif
 
 #include <string.h>
+#include <stdio.h>
 
 namespace MQTT {
 
-// Helper function to get current time in milliseconds (simplified for AVR)
+// Helper function to get current time in milliseconds
+// Note: This is a simplified implementation for embedded systems.
+// In production, this should be connected to a hardware timer.
+// For now, we use a simple counter that needs external updating.
+static volatile uint32_t ms_counter = 0;
+
 static uint32_t millis() {
-  // This is a placeholder - in real implementation, use timer
-  static uint32_t ms_counter = 0;
-  return ms_counter++;
+  return ms_counter;
+}
+
+// Function to be called from timer ISR to update millisecond counter
+void MQTT_update_millis() {
+  ms_counter++;
 }
 
 MQTTClient::MQTTClient(Ethernet::EmbeddedSocketW5500* socket_manager, 
@@ -308,11 +317,38 @@ bool MQTTClient::connect_to_broker() {
     return false;
   }
   
-  // TODO: DNS resolution for hostname - for now assume IP address in hostname field
   // Parse IP address from config_.broker_hostname
-  uint8_t ip[4] = {0};
   // Simple IP parsing (assumes format xxx.xxx.xxx.xxx)
-  // For production, use proper DNS resolution
+  uint8_t ip[4] = {0};
+  int parsed = sscanf(config_.broker_hostname, "%hhu.%hhu.%hhu.%hhu", 
+                      &ip[0], &ip[1], &ip[2], &ip[3]);
+  
+  if (parsed != 4) {
+    if (uart_log_) {
+      uart_log_->send_string("[MQTT] Invalid IP address format. Use xxx.xxx.xxx.xxx\r\n");
+    }
+    return false;
+  }
+  
+  if (uart_log_) {
+    uart_log_->send_string("[MQTT] Connecting to ");
+    char temp[4];
+    itoa(ip[0], temp, 10);
+    uart_log_->send_string(temp);
+    uart_log_->send_string(".");
+    itoa(ip[1], temp, 10);
+    uart_log_->send_string(temp);
+    uart_log_->send_string(".");
+    itoa(ip[2], temp, 10);
+    uart_log_->send_string(temp);
+    uart_log_->send_string(".");
+    itoa(ip[3], temp, 10);
+    uart_log_->send_string(temp);
+    uart_log_->send_string(":");
+    itoa(config_.broker_port, temp, 10);
+    uart_log_->send_string(temp);
+    uart_log_->send_string("\r\n");
+  }
   
   // Connect to broker
   if (socket_manager_->connect_socket(socket_number_, ip, config_.broker_port) != SOCK_OK) {

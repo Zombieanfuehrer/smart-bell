@@ -119,11 +119,13 @@ Username: (none)
 Password: (none)
 Ring Topic: home/bell/ring
 Control Topic: home/bell/control
-Network: DHCP (fallback to 192.168.1.177/24)
+Network: Static IP 192.168.1.177/24 (DHCP not yet implemented)
 Ring Duration: 6 seconds
 Reconnect Interval: 30 seconds
 Watchdog Timeout: 4 seconds
 ```
+
+**Note**: DHCP is planned but not yet implemented. Static IP configuration must be used.
 
 ### Example Configuration Session
 
