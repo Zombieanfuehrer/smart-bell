@@ -2,13 +2,18 @@
 #define PUBLIC_APP_SMARTBELLAPP_H_
 
 #include <stdint.h>
+#include "App/GongController.h"
 #include "Config/ConfigManager.h"
 #include "Config/UARTCommandParser.h"
 #include "Ethernet/W5500/W5500Interface.h"
-#include "Network/DHCPClient.h"
-#include "Network/DNSClient.h"
 #include "Network/MQTTClient.h"
 #include "Serial/Interface.h"
+#include "SetupEXT_IN_Interrupt.h"
+
+// Define to disable verbose logging (saves ~2-3KB flash)
+#ifndef SMARTBELL_VERBOSE_LOG
+#define SMARTBELL_VERBOSE_LOG 0
+#endif
 
 namespace App {
 
@@ -19,8 +24,7 @@ enum class AppState : uint8_t {
   kInit = 0,        ///< Initial state
   kConfigCheck,     ///< Check EEPROM for valid configuration
   kConfigMode,      ///< UART configuration menu (if EEPROM empty)
-  kDHCPWait,        ///< Waiting for DHCP IP assignment
-  kDNSResolve,      ///< Resolving broker hostname via DNS
+  kNetworkInit,     ///< Initialize W5500 with static IP
   kMQTTConnecting,  ///< Connecting to MQTT broker
   kRunning,         ///< Normal operation - publish/subscribe active
   kReconnectWait,   ///< Waiting before reconnection attempt
@@ -33,12 +37,37 @@ enum class AppState : uint8_t {
 enum class BellState : uint8_t { kEnabled = 0, kDisabled };
 
 /**
+ * @brief Button identifiers for the two doorbell buttons.
+ */
+enum class ButtonId : uint8_t {
+  kFrontdoor = 0,  ///< INT0 / PD2
+  kOffice = 1      ///< INT1 / PD3
+};
+
+/**
  * @brief MQTT topics used by SmartBell.
  */
 struct SmartBellTopics {
-  static constexpr const char* kRing = "smartbell/ring";
+  // Button event topics (publish)
+  static constexpr const char* kFrontdoorActive = "smartbell/bellbutton/frontdoor/active";
+  static constexpr const char* kFrontdoorInactive = "smartbell/bellbutton/frontdoor/inactive";
+  static constexpr const char* kOfficeActive = "smartbell/bellbutton/office/active";
+  static constexpr const char* kOfficeInactive = "smartbell/bellbutton/office/inactive";
+
+  // Gong status topics (subscribe)
+  static constexpr const char* kGongUpperfloorStatus = "smartbell/gong/upperfloor/status";
+  static constexpr const char* kGongGroundfloorStatus = "smartbell/gong/groundfloor/status";
+
+  // Test gong topics (subscribe)
+  static constexpr const char* kTestGongUpperfloor = "smartbell/gong/upperfloor/testgong";
+  static constexpr const char* kTestGongGroundfloor = "smartbell/gong/groundfloor/testgong";
+  static constexpr const char* kTestGongBoth = "smartbell/gong/testgong";
+
+  // Configuration topics (subscribe)
+  static constexpr const char* kGongDuration = "smartbell/gong/duration";
+
+  // Legacy topics
   static constexpr const char* kStatus = "smartbell/status";
-  static constexpr const char* kControl = "smartbell/control";
 };
 
 /**
@@ -82,10 +111,10 @@ class SmartBellApp {
   void loop();
 
   /**
-   * @brief Handle doorbell button press (call from INT0 ISR).
-   * Sets the bell_triggered_ flag for processing in loop().
+   * @brief Handle doorbell button interrupt (call from INT0/INT1 ISR).
+   * @param button Which button triggered the interrupt.
    */
-  void on_bell_interrupt();
+  void on_button_interrupt(ButtonId button);
 
   /**
    * @brief Get current application state.
@@ -94,22 +123,10 @@ class SmartBellApp {
   AppState get_state() const;
 
   /**
-   * @brief Get current bell state.
-   * @return Current BellState (enabled/disabled).
+   * @brief Get gong controller for external access.
+   * @return Pointer to GongController.
    */
-  BellState get_bell_state() const;
-
-  /**
-   * @brief Check if bell is triggered and waiting to be published.
-   * @return true if bell event pending.
-   */
-  bool is_bell_triggered() const;
-
-  /**
-   * @brief Manually set bell state.
-   * @param state New bell state.
-   */
-  void set_bell_state(BellState state);
+  GongController* get_gong_controller();
 
   /**
    * @brief Get configuration manager for external access.
@@ -122,31 +139,33 @@ class SmartBellApp {
   Ethernet::W5500Interface* w5500_;
   serial::Interface* uart_;
 
-  // Configuration
+  // Configuration - embedded to avoid dynamic allocation
   Config::ConfigManager config_manager_;
-  Config::UARTCommandParser* command_parser_;
+  Config::UARTCommandParser command_parser_;
 
-  // Network clients
-  Network::DHCPClient* dhcp_client_;
-  Network::DNSClient* dns_client_;
-  Network::MQTTClient* mqtt_client_;
+  // Network client - embedded to avoid dynamic allocation
+  SmartBell::MQTTClient mqtt_client_;
+
+  // Gong controller - embedded
+  GongController gong_controller_;
+
+  // Button state structure
+  struct ButtonState {
+    volatile bool interrupt_pending;  ///< Interrupt occurred, needs processing
+    bool last_state;                  ///< Last known pin state (true=HIGH/released)
+    bool current_state;               ///< Current pin state after interrupt
+  };
+
+  ButtonState frontdoor_button_;
+  ButtonState office_button_;
 
   // State
   AppState state_;
   AppState previous_state_;
-  BellState bell_state_;
-  volatile bool bell_triggered_;
 
   // Timing
   uint32_t state_enter_time_;
   uint32_t reconnect_start_time_;
-
-  // Resolved broker IP
-  uint8_t broker_ip_[4];
-  bool broker_ip_resolved_;
-
-  // Ring event counter for timestamp
-  uint32_t ring_counter_;
 
   /**
    * @brief Transition to new state.
@@ -154,6 +173,7 @@ class SmartBellApp {
    */
   void transition_to(AppState new_state);
 
+#if SMARTBELL_VERBOSE_LOG
   /**
    * @brief Log state transition.
    * @param from Previous state.
@@ -167,40 +187,48 @@ class SmartBellApp {
    * @return State name string.
    */
   const char* state_name(AppState state) const;
+#endif
 
   // State handlers
   void handle_init();
   void handle_config_check();
   void handle_config_mode();
-  void handle_dhcp_wait();
-  void handle_dns_resolve();
+  void handle_network_init();
   void handle_mqtt_connecting();
   void handle_running();
   void handle_reconnect_wait();
   void handle_error();
 
   /**
-   * @brief Publish doorbell ring event.
+   * @brief Process button state changes and publish MQTT events.
    */
-  void publish_ring_event();
+  void process_button_events();
 
   /**
-   * @brief Publish status message.
+   * @brief Publish button event to MQTT.
+   * @param button Which button.
+   * @param active true for active (pressed), false for inactive (released).
    */
-  void publish_status();
+  void publish_button_event(ButtonId button, bool active);
 
   /**
-   * @brief Handle received MQTT control message.
+   * @brief Subscribe to all required MQTT topics.
+   */
+  void subscribe_to_topics();
+
+  /**
+   * @brief Handle received MQTT message.
    * @param message Received message data.
    */
-  static void on_mqtt_message(const Network::MQTTMessageData* message);
+  static void on_mqtt_message(const SmartBell::MQTTMessageData* message);
 
   /**
-   * @brief Process control command from MQTT.
-   * @param payload Command payload.
+   * @brief Process received MQTT message.
+   * @param topic Topic string.
+   * @param payload Message payload.
    * @param length Payload length.
    */
-  void process_control_command(const uint8_t* payload, uint16_t length);
+  void process_mqtt_message(const char* topic, const uint8_t* payload, uint16_t length);
 
   /**
    * @brief Log message to UART.

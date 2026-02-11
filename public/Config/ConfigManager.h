@@ -15,18 +15,21 @@ static constexpr uint16_t kDefaultBrokerPort = 1883;
 static constexpr const char* kDefaultClientId = "smartbell";
 
 // Field size limits
-static constexpr uint8_t kMaxBrokerLength = 64;
 static constexpr uint8_t kMaxUsernameLength = 32;
 static constexpr uint8_t kMaxPasswordLength = 32;
 static constexpr uint8_t kMaxClientIdLength = 16;
 
 /**
  * @brief Configuration structure stored in EEPROM.
- * Total size: ~149 bytes (fits in ATmega328P's 1KB EEPROM)
+ * Static IP mode - no DHCP/DNS, all addresses stored directly.
+ * Total size: ~100 bytes (fits in ATmega328P's 1KB EEPROM)
  */
 struct StoredConfig {
   uint8_t magic[2];                    // 0xBE, 0x11 for validation
-  char broker[kMaxBrokerLength];       // IP "192.168.1.100" or hostname "mqtt.local"
+  uint8_t device_ip[4];                // Static IP for this device
+  uint8_t subnet[4];                   // Subnet mask (e.g. 255.255.255.0)
+  uint8_t gateway[4];                  // Gateway IP
+  uint8_t broker_ip[4];                // MQTT broker IP address
   uint16_t broker_port;                // Default: 1883
   char username[kMaxUsernameLength];   // Null-terminated, plaintext
   char password[kMaxPasswordLength];   // Null-terminated, plaintext
@@ -35,12 +38,13 @@ struct StoredConfig {
 };
 
 /**
- * @brief Runtime configuration with parsed IP address.
+ * @brief Runtime configuration with IP addresses.
  */
 struct RuntimeConfig {
-  char broker[kMaxBrokerLength];
-  uint8_t broker_ip[4];     // Parsed IP if broker is IP address
-  bool broker_is_hostname;  // true if broker needs DNS resolution
+  uint8_t device_ip[4];  // Static IP for this device
+  uint8_t subnet[4];     // Subnet mask
+  uint8_t gateway[4];    // Gateway IP
+  uint8_t broker_ip[4];  // MQTT broker IP
   uint16_t broker_port;
   char username[kMaxUsernameLength];
   char password[kMaxPasswordLength];
@@ -88,32 +92,25 @@ class ConfigManager {
    */
   bool has_stored_config() const;
 
-  // Setters
-  void set_broker(const char* broker);
+  // Setters for IP addresses
+  void set_device_ip(const uint8_t* ip);
+  void set_subnet(const uint8_t* subnet);
+  void set_gateway(const uint8_t* gateway);
+  void set_broker_ip(const uint8_t* ip);
   void set_port(uint16_t port);
   void set_username(const char* username);
   void set_password(const char* password);
   void set_client_id(const char* client_id);
 
   // Getters
-  const char* get_broker() const;
+  const uint8_t* get_device_ip() const;
+  const uint8_t* get_subnet() const;
+  const uint8_t* get_gateway() const;
+  const uint8_t* get_broker_ip() const;
   uint16_t get_port() const;
   const char* get_username() const;
   const char* get_password() const;
   const char* get_client_id() const;
-
-  /**
-   * @brief Check if broker is a hostname (requires DNS) or IP address.
-   * @return true if broker contains letters (hostname), false if only digits/dots (IP).
-   */
-  bool broker_is_hostname() const;
-
-  /**
-   * @brief Get broker IP address (only valid if broker_is_hostname() returns false).
-   * @param ip_out Output buffer for 4-byte IP address.
-   * @return true if IP was parsed successfully.
-   */
-  bool get_broker_ip(uint8_t* ip_out) const;
 
   /**
    * @brief Get the runtime configuration.
@@ -137,21 +134,6 @@ class ConfigManager {
    * @return true if valid.
    */
   bool validate_config(const StoredConfig& config) const;
-
-  /**
-   * @brief Check if string contains alphabetic characters.
-   * @param str Null-terminated string.
-   * @return true if contains letters (a-z or A-Z).
-   */
-  bool contains_alpha(const char* str) const;
-
-  /**
-   * @brief Parse IP address string to bytes.
-   * @param str IP string like "192.168.1.100".
-   * @param ip_out Output buffer for 4 bytes.
-   * @return true if parsed successfully.
-   */
-  bool parse_ip_address(const char* str, uint8_t* ip_out) const;
 
   /**
    * @brief Safe string copy with null termination.

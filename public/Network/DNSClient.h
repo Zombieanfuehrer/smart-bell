@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include "Serial/Interface.h"
 
-namespace Network {
+namespace SmartBell {
 
 /**
  * @brief DNS resolution result.
@@ -94,6 +94,6 @@ class DNSClient {
   void log_ip(const char* label, const uint8_t* ip);
 };
 
-}  // namespace Network
+}  // namespace SmartBell
 
 #endif  // PUBLIC_NETWORK_DNSCLIENT_H_

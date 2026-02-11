@@ -1,12 +1,8 @@
-# Network library sources
+# Network library sources (Static IP mode - MQTT only)
 set(LIB_NETWORK_SOURCES 
-    "${CMAKE_CURRENT_SOURCE_DIR}/DHCPClient.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/DNSClient.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/MQTTClient.cpp")
 
 set(LIB_NETWORK_HEADERS 
-    "${PROJECT_SOURCE_DIR}/public/Network/DHCPClient.h"
-    "${PROJECT_SOURCE_DIR}/public/Network/DNSClient.h"
     "${PROJECT_SOURCE_DIR}/public/Network/MQTTClient.h")
 
 add_library("${LIB_NETWORK}" STATIC 
@@ -15,8 +11,6 @@ add_library("${LIB_NETWORK}" STATIC
 
 target_include_directories("${LIB_NETWORK}" PUBLIC 
     ${LIBRARY_INCLUDES}
-    "${IOLIBRARY_INTERNET_DIR}/DHCP"
-    "${IOLIBRARY_INTERNET_DIR}/DNS"
     "${IOLIBRARY_INTERNET_DIR}/MQTT"
     "${IOLIBRARY_INTERNET_DIR}/MQTT/MQTTPacket/src")
 

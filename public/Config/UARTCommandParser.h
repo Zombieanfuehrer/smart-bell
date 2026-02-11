@@ -15,7 +15,10 @@ static constexpr uint8_t kMaxCommandLength = 80;
  */
 enum class CommandType : uint8_t {
   kNone = 0,
-  kSetBroker,
+  kSetIP,
+  kSetSubnet,
+  kSetGateway,
+  kSetBrokerIP,
   kSetPort,
   kSetUser,
   kSetPass,
@@ -170,6 +173,20 @@ class UARTCommandParser {
    * @return Parsed number, 0 on error.
    */
   uint16_t parse_number(const char* str);
+
+  /**
+   * @brief Parse IP address from string.
+   * @param str IP string like "192.168.1.100".
+   * @param ip_out Output buffer for 4 bytes.
+   * @return true if parsed successfully.
+   */
+  bool parse_ip(const char* str, uint8_t* ip_out);
+
+  /**
+   * @brief Print IP address.
+   * @param ip 4-byte IP address.
+   */
+  void print_ip(const uint8_t* ip);
 };
 
 }  // namespace Config

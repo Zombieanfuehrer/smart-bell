@@ -6,7 +6,7 @@
 #include "Ethernet/W5500/W5500Interface.h"
 #include "Serial/Interface.h"
 
-namespace Network {
+namespace SmartBell {
 
 /**
  * @brief DHCP client status codes.
@@ -135,6 +135,11 @@ class DHCPClient {
    */
   void log_ip(const char* label, const uint8_t* ip);
 
+  /**
+   * @brief Update config from DHCP server response.
+   */
+  void update_config_from_dhcp();
+
   // Static callbacks for ioLibrary
   static DHCPClient* instance_;
   static void on_ip_assign();
@@ -142,6 +147,6 @@ class DHCPClient {
   static void on_ip_conflict();
 };
 
-}  // namespace Network
+}  // namespace SmartBell
 
 #endif  // PUBLIC_NETWORK_DHCPCLIENT_H_

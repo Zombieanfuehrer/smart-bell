@@ -3,6 +3,11 @@
 #include "SetupWDT.h"
 #include "System/TimerService.h"
 
+// Define to disable verbose logging (saves flash)
+#ifndef SMARTBELL_VERBOSE_LOG
+#define SMARTBELL_VERBOSE_LOG 0
+#endif
+
 // Include ioLibrary MQTT headers
 extern "C" {
 #include "MQTTClient.h"
@@ -10,10 +15,18 @@ extern "C" {
 #include "socket.h"
 }
 
-namespace Network {
+namespace SmartBell {
 
 // Static instance for callbacks
 MQTTClient* MQTTClient::instance_ = nullptr;
+
+// Free function message handler with correct ioLibrary signature
+static void mqtt_message_arrived(MessageData* md) {
+  if (MQTTClient::instance_ == nullptr) {
+    return;
+  }
+  MQTTClient::instance_->handle_message(md);
+}
 
 MQTTClient::MQTTClient(serial::Interface* uart)
     : uart_(uart),
@@ -243,7 +256,7 @@ bool MQTTClient::subscribe(const char* topic, MQTTMessageCallback callback, MQTT
 
   ::MQTTClient* client = static_cast<::MQTTClient*>(mqtt_client_);
   int rc = MQTTSubscribe(client, topic, static_cast<enum QoS>(static_cast<uint8_t>(qos)),
-                         internal_message_handler);
+                         mqtt_message_arrived);
 
   configure_wdt::reset();
 
@@ -331,8 +344,8 @@ void MQTTClient::set_default_message_handler(MQTTMessageCallback callback) {
   default_callback_ = callback;
 }
 
-void MQTTClient::internal_message_handler(void* md) {
-  if (instance_ == nullptr || instance_->default_callback_ == nullptr) {
+void MQTTClient::handle_message(void* md) {
+  if (default_callback_ == nullptr) {
     return;
   }
 
@@ -346,18 +359,23 @@ void MQTTClient::internal_message_handler(void* md) {
   data.qos = static_cast<MQTTQoS>(message_data->message->qos);
   data.retained = message_data->message->retained != 0;
 
-  instance_->log("[MQTT] Message received on topic\r\n");
+  log("[MQTT] Message received on topic\r\n");
 
-  instance_->default_callback_(&data);
+  default_callback_(&data);
 }
 
 void MQTTClient::log(const char* message) {
+#if SMARTBELL_VERBOSE_LOG
   if (uart_ != nullptr) {
     uart_->send_string(message);
   }
+#else
+  (void)message;
+#endif
 }
 
 void MQTTClient::log_ip(const char* label, const uint8_t* ip) {
+#if SMARTBELL_VERBOSE_LOG
   if (uart_ == nullptr)
     return;
 
@@ -385,6 +403,10 @@ void MQTTClient::log_ip(const char* label, const uint8_t* ip) {
     }
   }
   uart_->send_string("\r\n");
+#else
+  (void)label;
+  (void)ip;
+#endif
 }
 
-}  // namespace Network
+}  // namespace SmartBell

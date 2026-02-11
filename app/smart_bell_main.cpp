@@ -4,15 +4,17 @@
  *
  * This is the main firmware for the SmartBell project.
  * It implements a network-connected doorbell with:
- * - DHCP for automatic IP configuration
- * - DNS for broker hostname resolution
+ * - Static IP for network configuration
  * - MQTT for event publishing and command subscription
  * - UART-based configuration interface
  *
  * Hardware:
  * - ATmega328P microcontroller
  * - W5500 Ethernet chip via SPI
- * - Doorbell button on INT0 (PD2)
+ * - Frontdoor button on INT0 (PD2)
+ * - Office button on INT1 (PD3)
+ * - Upperfloor gong relay on PD4
+ * - Groundfloor gong relay on PD5
  * - UART for debugging/configuration
  */
 
@@ -54,11 +56,20 @@ ISR(TIMER0_COMPA_vect) { System::TimerService::on_1ms_tick(); }
 ISR(TIMER1_COMPA_vect) { System::TimerService::on_1s_tick(); }
 
 /**
- * @brief External Interrupt 0 ISR - Doorbell button
+ * @brief External Interrupt 0 ISR - Frontdoor button (PD2)
  */
 ISR(INT0_vect) {
   if (g_app != nullptr) {
-    g_app->on_bell_interrupt();
+    g_app->on_button_interrupt(App::ButtonId::kFrontdoor);
+  }
+}
+
+/**
+ * @brief External Interrupt 1 ISR - Office button (PD3)
+ */
+ISR(INT1_vect) {
+  if (g_app != nullptr) {
+    g_app->on_button_interrupt(App::ButtonId::kOffice);
   }
 }
 #endif
@@ -119,11 +130,11 @@ int main() {
 
   // Setup SPI for W5500
   serial::SPI_parameters spi_params;
-  spi_params.mode = serial::SPI_mode::kMaster;
-  spi_params.data_order = serial::SPI_data_order::kMSB;
-  spi_params.clock_polarity = serial::SPI_clock_polarity::kIdleLow;
-  spi_params.clock_phase = serial::SPI_clock_phase::kLeadingEdge;
-  spi_params.clock_rate = serial::SPI_clock_rate::kFosc_4;
+  spi_params.spi_mode = serial::SPI_mode::kMaster;
+  spi_params.data_order = serial::SPI_data_order::kMsb_first;
+  spi_params.clock_polarity = serial::SPI_clock_polarity::kIdle_low;
+  spi_params.clock_phase = serial::SPI_clock_phase::kLeading;
+  spi_params.clock_rate = serial::SPI_clock_rate::k4mHz;
   serial::SPI spi(spi_params, kSPI_CS_W5500);
 
   uart.send_string("[MAIN] SPI initialized\r\n");
@@ -162,10 +173,12 @@ int main() {
 
   uart.send_string("[MAIN] MAC address set\r\n");
 
-  // Setup external interrupt for doorbell button (INT0, falling edge)
-  external_pin_interrupt::setup_INT0_PullUpResistorFallingEdge();
+  // Setup external interrupts for doorbell buttons (INT0 and INT1, any change for press/release)
+  external_pin_interrupt::setup_both_interrupts(
+      external_pin_interrupt::EdgeType::kAnyChange,
+      external_pin_interrupt::EdgeType::kAnyChange);
 
-  uart.send_string("[MAIN] External interrupt configured\r\n");
+  uart.send_string("[MAIN] External interrupts configured (INT0+INT1)\r\n");
 
   // Setup timers
   setup_timer0_1ms();
@@ -177,6 +190,11 @@ int main() {
   App::SmartBellApp app(&w5500, &uart);
   g_app = &app;
   app.init();
+
+  // Initialize gong controller GPIO
+  app.get_gong_controller()->init();
+
+  uart.send_string("[MAIN] Gong outputs initialized (PD4, PD5)\r\n");
 
   // Enable watchdog with 8 second timeout for network operations
   configure_wdt::timeout_8sec_reset_power::setup_WDT();

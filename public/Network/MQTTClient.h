@@ -5,7 +5,7 @@
 #include "Ethernet/EmbeddedSocketInterface.h"
 #include "Serial/Interface.h"
 
-namespace Network {
+namespace SmartBell {
 
 /**
  * @brief MQTT connection status.
@@ -231,15 +231,17 @@ class MQTTClient {
    */
   void log_ip(const char* label, const uint8_t* ip);
 
+ public:
   /**
-   * @brief Internal message handler adapter.
+   * @brief Handle incoming message (called from internal handler).
+   * @param message_data Pointer to MessageData from ioLibrary.
    */
-  static void internal_message_handler(void* message_data);
+  void handle_message(void* message_data);
 
-  // Static instance for callbacks
+  // Static instance for callbacks (public for free function access)
   static MQTTClient* instance_;
 };
 
-}  // namespace Network
+}  // namespace SmartBell
 
 #endif  // PUBLIC_NETWORK_MQTTCLIENT_H_

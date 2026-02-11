@@ -3,6 +3,10 @@
 #include "SetupWDT.h"
 #include "System/TimerService.h"
 
+#ifdef __AVR__
+#include <avr/pgmspace.h>
+#endif
+
 namespace App {
 
 // Static instance for callbacks
@@ -11,53 +15,34 @@ SmartBellApp* SmartBellApp::instance_ = nullptr;
 SmartBellApp::SmartBellApp(Ethernet::W5500Interface* w5500, serial::Interface* uart)
     : w5500_(w5500),
       uart_(uart),
-      command_parser_(nullptr),
-      dhcp_client_(nullptr),
-      dns_client_(nullptr),
-      mqtt_client_(nullptr),
+      command_parser_(uart, &config_manager_),
+      mqtt_client_(uart),
+      gong_controller_(),
+      frontdoor_button_{false, true, true},  // interrupt_pending=false, last=HIGH, current=HIGH
+      office_button_{false, true, true},
       state_(AppState::kInit),
       previous_state_(AppState::kInit),
-      bell_state_(BellState::kEnabled),
-      bell_triggered_(false),
       state_enter_time_(0),
-      reconnect_start_time_(0),
-      broker_ip_resolved_(false),
-      ring_counter_(0) {
-  memset(broker_ip_, 0, 4);
+      reconnect_start_time_(0) {
   instance_ = this;
 }
 
 SmartBellApp::~SmartBellApp() {
-  delete command_parser_;
-  delete dhcp_client_;
-  delete dns_client_;
-  delete mqtt_client_;
-
   if (instance_ == this) {
     instance_ = nullptr;
   }
 }
 
 void SmartBellApp::init() {
-  log("[APP] SmartBell initializing...\r\n");
-
-  // Create command parser
-  command_parser_ = new Config::UARTCommandParser(uart_, &config_manager_);
-
-  // Create network clients
-  dhcp_client_ = new Network::DHCPClient(w5500_, uart_);
-  dns_client_ = new Network::DNSClient(uart_);
-  mqtt_client_ = new Network::MQTTClient(uart_);
+  log("[APP] Init\r\n");
 
   // Initialize MQTT client
-  mqtt_client_->init();
-  mqtt_client_->set_reconnect_interval(kReconnectIntervalSec);
-  mqtt_client_->set_default_message_handler(on_mqtt_message);
+  mqtt_client_.init();
+  mqtt_client_.set_reconnect_interval(kReconnectIntervalSec);
+  mqtt_client_.set_default_message_handler(on_mqtt_message);
 
   // Start state machine
   transition_to(AppState::kConfigCheck);
-
-  log("[APP] Initialization complete\r\n");
 }
 
 void SmartBellApp::loop() {
@@ -75,11 +60,8 @@ void SmartBellApp::loop() {
     case AppState::kConfigMode:
       handle_config_mode();
       break;
-    case AppState::kDHCPWait:
-      handle_dhcp_wait();
-      break;
-    case AppState::kDNSResolve:
-      handle_dns_resolve();
+    case AppState::kNetworkInit:
+      handle_network_init();
       break;
     case AppState::kMQTTConnecting:
       handle_mqtt_connecting();
@@ -96,34 +78,33 @@ void SmartBellApp::loop() {
   }
 }
 
-void SmartBellApp::on_bell_interrupt() { bell_triggered_ = true; }
+void SmartBellApp::on_button_interrupt(ButtonId button) {
+  // Called from ISR - just set flag, actual processing happens in loop
+  if (button == ButtonId::kFrontdoor) {
+    frontdoor_button_.interrupt_pending = true;
+  } else {
+    office_button_.interrupt_pending = true;
+  }
+}
 
 AppState SmartBellApp::get_state() const { return state_; }
 
-BellState SmartBellApp::get_bell_state() const { return bell_state_; }
-
-bool SmartBellApp::is_bell_triggered() const { return bell_triggered_; }
-
-void SmartBellApp::set_bell_state(BellState state) {
-  bell_state_ = state;
-  if (state == BellState::kEnabled) {
-    log("[APP] Bell ENABLED\r\n");
-  } else {
-    log("[APP] Bell DISABLED\r\n");
-  }
-}
+GongController* SmartBellApp::get_gong_controller() { return &gong_controller_; }
 
 Config::ConfigManager* SmartBellApp::get_config_manager() { return &config_manager_; }
 
 void SmartBellApp::transition_to(AppState new_state) {
   if (state_ != new_state) {
+#if SMARTBELL_VERBOSE_LOG
     log_state_transition(state_, new_state);
+#endif
     previous_state_ = state_;
     state_ = new_state;
     state_enter_time_ = System::TimerService::seconds();
   }
 }
 
+#if SMARTBELL_VERBOSE_LOG
 void SmartBellApp::log_state_transition(AppState from, AppState to) {
   log("[APP] State: ");
   log(state_name(from));
@@ -140,10 +121,8 @@ const char* SmartBellApp::state_name(AppState state) const {
       return "CONFIG_CHECK";
     case AppState::kConfigMode:
       return "CONFIG_MODE";
-    case AppState::kDHCPWait:
-      return "DHCP_WAIT";
-    case AppState::kDNSResolve:
-      return "DNS_RESOLVE";
+    case AppState::kNetworkInit:
+      return "NETWORK_INIT";
     case AppState::kMQTTConnecting:
       return "MQTT_CONNECTING";
     case AppState::kRunning:
@@ -156,6 +135,7 @@ const char* SmartBellApp::state_name(AppState state) const {
       return "UNKNOWN";
   }
 }
+#endif
 
 // State handlers
 
@@ -173,117 +153,69 @@ void SmartBellApp::handle_config_check() {
     // Check if broker is set
     if (config_manager_.is_valid()) {
       log("[APP] Configuration valid, starting network...\r\n");
-      transition_to(AppState::kDHCPWait);
+      transition_to(AppState::kNetworkInit);
     } else {
       log("[APP] Configuration incomplete\r\n");
-      command_parser_->init(true);
+      command_parser_.init(true);
       transition_to(AppState::kConfigMode);
     }
   } else {
     log("[APP] No valid configuration in EEPROM\r\n");
-    command_parser_->init(true);
+    command_parser_.init(true);
     transition_to(AppState::kConfigMode);
   }
 }
 
 void SmartBellApp::handle_config_mode() {
   // Process UART commands
-  command_parser_->process();
+  command_parser_.process();
 
   // Check if configuration was saved
-  if (command_parser_->config_saved()) {
-    command_parser_->clear_flags();
+  if (command_parser_.config_saved()) {
+    command_parser_.clear_flags();
 
     if (config_manager_.is_valid()) {
       log("[APP] Configuration complete, starting network...\r\n");
-      transition_to(AppState::kDHCPWait);
+      transition_to(AppState::kNetworkInit);
     }
   }
 }
 
-void SmartBellApp::handle_dhcp_wait() {
-  static bool dhcp_initialized = false;
+void SmartBellApp::handle_network_init() {
+  log("[APP] Configuring static IP...\r\n");
 
-  if (!dhcp_initialized) {
-    dhcp_client_->init();
-    dhcp_initialized = true;
-  }
+  // Get static IP configuration from ConfigManager
+  const Config::RuntimeConfig& cfg = config_manager_.get_runtime_config();
 
-  Network::DHCPStatus status = dhcp_client_->run();
+  // Configure W5500 with static IP using proper types
+  Ethernet::IpAddress ip;
+  Ethernet::SubnetMask subnet;
+  Ethernet::GatewayAddress gateway;
 
-  switch (status) {
-    case Network::DHCPStatus::kIPLeased:
-    case Network::DHCPStatus::kIPAssign:
-    case Network::DHCPStatus::kIPChanged:
-      // Apply configuration to W5500
-      dhcp_client_->apply_config();
+  memcpy(ip.addr, cfg.device_ip, 4);
+  memcpy(subnet.addr, cfg.subnet, 4);
+  memcpy(gateway.addr, cfg.gateway, 4);
 
-      // Get DNS server for hostname resolution
-      uint8_t dns_server[4];
-      dhcp_client_->get_dns(dns_server);
-      dns_client_->set_dns_server(dns_server);
-      dns_client_->init();
+  w5500_->set_IP(&ip);
+  w5500_->set_subnet(&subnet);
+  w5500_->set_gateway(&gateway);
 
-      // Check if broker is hostname or IP
-      if (config_manager_.broker_is_hostname()) {
-        transition_to(AppState::kDNSResolve);
-      } else {
-        // Broker is IP address, use directly
-        config_manager_.get_broker_ip(broker_ip_);
-        broker_ip_resolved_ = true;
-        transition_to(AppState::kMQTTConnecting);
-      }
-      dhcp_initialized = false;  // Reset for potential reconnect
-      break;
-
-    case Network::DHCPStatus::kFailed:
-      log("[APP] DHCP failed, retrying...\r\n");
-      dhcp_initialized = false;
-      // Stay in DHCP_WAIT and retry
-      break;
-
-    case Network::DHCPStatus::kRunning:
-      // Still waiting
-      break;
-
-    default:
-      break;
-  }
-}
-
-void SmartBellApp::handle_dns_resolve() {
-  log("[APP] Resolving broker hostname...\r\n");
-
-  Network::DNSResult result = dns_client_->resolve(config_manager_.get_broker(), broker_ip_);
-
-  if (result == Network::DNSResult::kSuccess) {
-    broker_ip_resolved_ = true;
-    transition_to(AppState::kMQTTConnecting);
-  } else {
-    log("[APP] DNS resolution failed\r\n");
-    reconnect_start_time_ = System::TimerService::seconds();
-    transition_to(AppState::kReconnectWait);
-  }
+  log("[APP] Network configured, connecting to MQTT...\r\n");
+  transition_to(AppState::kMQTTConnecting);
 }
 
 void SmartBellApp::handle_mqtt_connecting() {
-  if (!broker_ip_resolved_) {
-    log("[APP] Error: Broker IP not resolved\r\n");
-    transition_to(AppState::kError);
-    return;
-  }
-
-  // Build MQTT config
-  Network::MQTTConfig mqtt_config;
-  memcpy(mqtt_config.broker_ip, broker_ip_, 4);
+  // Build MQTT config from static IP settings
+  SmartBell::MQTTConfig mqtt_config;
+  memcpy(mqtt_config.broker_ip, config_manager_.get_broker_ip(), 4);
   mqtt_config.broker_port = config_manager_.get_port();
   mqtt_config.client_id = config_manager_.get_client_id();
   mqtt_config.keepalive_sec = kMQTTKeepAlive;
   mqtt_config.clean_session = true;
 
   // Build credentials if available
-  Network::MQTTCredentials credentials;
-  Network::MQTTCredentials* creds_ptr = nullptr;
+  SmartBell::MQTTCredentials credentials;
+  SmartBell::MQTTCredentials* creds_ptr = nullptr;
 
   if (config_manager_.get_username()[0] != '\0') {
     credentials.username = config_manager_.get_username();
@@ -292,15 +224,9 @@ void SmartBellApp::handle_mqtt_connecting() {
   }
 
   // Connect
-  if (mqtt_client_->connect(mqtt_config, creds_ptr)) {
-    // Subscribe to control topic
-    if (mqtt_client_->subscribe(SmartBellTopics::kControl, on_mqtt_message,
-                                Network::MQTTQoS::kQoS1)) {
-      log("[APP] Subscribed to control topic\r\n");
-    }
-
-    // Publish initial status
-    publish_status();
+  if (mqtt_client_.connect(mqtt_config, creds_ptr)) {
+    // Subscribe to all required topics
+    subscribe_to_topics();
 
     transition_to(AppState::kRunning);
   } else {
@@ -312,21 +238,16 @@ void SmartBellApp::handle_mqtt_connecting() {
 
 void SmartBellApp::handle_running() {
   // Process MQTT messages
-  mqtt_client_->yield(100);
+  mqtt_client_.yield(100);
 
-  // Check if bell was triggered
-  if (bell_triggered_) {
-    bell_triggered_ = false;
+  // Process button state changes and publish events
+  process_button_events();
 
-    if (bell_state_ == BellState::kEnabled) {
-      publish_ring_event();
-    } else {
-      log("[APP] Bell triggered but disabled\r\n");
-    }
-  }
+  // Update gong controller (handles auto-off timing)
+  gong_controller_.update();
 
   // Check if connection was lost
-  if (!mqtt_client_->is_connected()) {
+  if (!mqtt_client_.is_connected()) {
     log("[APP] MQTT connection lost\r\n");
     reconnect_start_time_ = System::TimerService::seconds();
     transition_to(AppState::kReconnectWait);
@@ -334,7 +255,7 @@ void SmartBellApp::handle_running() {
 
   // Also process any UART commands for runtime configuration
   if (uart_->is_read_data_available()) {
-    command_parser_->process();
+    command_parser_.process();
   }
 }
 
@@ -343,20 +264,12 @@ void SmartBellApp::handle_reconnect_wait() {
 
   if (elapsed >= kReconnectIntervalSec) {
     log("[APP] Reconnect interval elapsed, retrying...\r\n");
-
-    // Determine where to reconnect from
-    if (!broker_ip_resolved_ && config_manager_.broker_is_hostname()) {
-      transition_to(AppState::kDNSResolve);
-    } else {
-      transition_to(AppState::kMQTTConnecting);
-    }
+    transition_to(AppState::kMQTTConnecting);
   }
 
-  // Still process bell triggers during reconnect wait
-  if (bell_triggered_) {
-    bell_triggered_ = false;
-    log("[APP] Bell triggered during reconnect (not published)\r\n");
-  }
+  // Still process button events during reconnect (trigger gongs locally)
+  process_button_events();
+  gong_controller_.update();
 }
 
 void SmartBellApp::handle_error() {
@@ -368,109 +281,181 @@ void SmartBellApp::handle_error() {
     log("[APP] In error state, attempting recovery...\r\n");
     last_error_log = now;
 
-    // Try to recover by going back to DHCP
-    transition_to(AppState::kDHCPWait);
+    // Try to recover by re-initializing network
+    transition_to(AppState::kNetworkInit);
   }
 }
 
-void SmartBellApp::publish_ring_event() {
-  ring_counter_++;
+void SmartBellApp::process_button_events() {
+  // Process frontdoor button (INT0)
+  if (frontdoor_button_.interrupt_pending) {
+    frontdoor_button_.interrupt_pending = false;
 
-  log("[APP] Bell pressed! Publishing ring event...\r\n");
+    // Read current pin state (true = HIGH = released)
+    bool current = external_pin_interrupt::read_INT0_state();
+    frontdoor_button_.current_state = current;
 
-  // Build JSON payload
-  // {"event":"ring","count":123}
-  char payload[64];
-  char* p = payload;
+    if (current != frontdoor_button_.last_state) {
+      bool active = !current;  // LOW = pressed = active
 
-  // Manual JSON construction (no sprintf on AVR)
-  const char* prefix = "{\"event\":\"ring\",\"count\":";
-  while (*prefix)
-    *p++ = *prefix++;
+      // Publish button event
+      publish_button_event(ButtonId::kFrontdoor, active);
 
-  // Convert counter to string
-  char num_buf[12];
-  uint32_t n = ring_counter_;
-  int i = 0;
-  do {
-    num_buf[i++] = '0' + (n % 10);
-    n /= 10;
-  } while (n > 0);
+      // On button release (transition to inactive), trigger gongs
+      if (!active) {
+        gong_controller_.trigger(GongId::kBoth);
+        log("[APP] Frontdoor released, triggering gongs\r\n");
+      } else {
+        log("[APP] Frontdoor pressed\r\n");
+      }
 
-  // Reverse number
-  while (i > 0) {
-    *p++ = num_buf[--i];
+      frontdoor_button_.last_state = current;
+    }
   }
 
-  *p++ = '}';
-  *p = '\0';
+  // Process office button (INT1)
+  if (office_button_.interrupt_pending) {
+    office_button_.interrupt_pending = false;
 
-  if (mqtt_client_->publish_string(SmartBellTopics::kRing, payload, Network::MQTTQoS::kQoS1)) {
-    log("[APP] Ring event published\r\n");
+    bool current = external_pin_interrupt::read_INT1_state();
+    office_button_.current_state = current;
+
+    if (current != office_button_.last_state) {
+      bool active = !current;
+
+      publish_button_event(ButtonId::kOffice, active);
+
+      if (!active) {
+        gong_controller_.trigger(GongId::kBoth);
+        log("[APP] Office released, triggering gongs\r\n");
+      } else {
+        log("[APP] Office pressed\r\n");
+      }
+
+      office_button_.last_state = current;
+    }
+  }
+}
+
+void SmartBellApp::publish_button_event(ButtonId button, bool active) {
+  const char* topic;
+
+  if (button == ButtonId::kFrontdoor) {
+    topic = active ? SmartBellTopics::kFrontdoorActive : SmartBellTopics::kFrontdoorInactive;
   } else {
-    log("[APP] Failed to publish ring event\r\n");
+    topic = active ? SmartBellTopics::kOfficeActive : SmartBellTopics::kOfficeInactive;
   }
-}
 
-void SmartBellApp::publish_status() {
-  log("[APP] Publishing status...\r\n");
-
-  // Build JSON payload
-  // {"state":"enabled"} or {"state":"disabled"}
-  const char* payload;
-  if (bell_state_ == BellState::kEnabled) {
-    payload = "{\"state\":\"enabled\"}";
+  // Publish with empty payload (topic itself indicates the event)
+  if (mqtt_client_.publish_string(topic, "", SmartBell::MQTTQoS::kQoS1)) {
+    log("[APP] Button event published\r\n");
   } else {
-    payload = "{\"state\":\"disabled\"}";
+    log("[APP] Failed to publish button event\r\n");
   }
-
-  mqtt_client_->publish_string(SmartBellTopics::kStatus, payload, Network::MQTTQoS::kQoS0);
 }
 
-void SmartBellApp::on_mqtt_message(const Network::MQTTMessageData* message) {
+void SmartBellApp::subscribe_to_topics() {
+  log("[APP] Subscribing to topics...\r\n");
+
+  // Gong status topics
+  mqtt_client_.subscribe(SmartBellTopics::kGongUpperfloorStatus, on_mqtt_message,
+                         SmartBell::MQTTQoS::kQoS1);
+  mqtt_client_.subscribe(SmartBellTopics::kGongGroundfloorStatus, on_mqtt_message,
+                         SmartBell::MQTTQoS::kQoS1);
+
+  // Test gong topics
+  mqtt_client_.subscribe(SmartBellTopics::kTestGongUpperfloor, on_mqtt_message,
+                         SmartBell::MQTTQoS::kQoS1);
+  mqtt_client_.subscribe(SmartBellTopics::kTestGongGroundfloor, on_mqtt_message,
+                         SmartBell::MQTTQoS::kQoS1);
+  mqtt_client_.subscribe(SmartBellTopics::kTestGongBoth, on_mqtt_message,
+                         SmartBell::MQTTQoS::kQoS1);
+
+  // Duration configuration topic
+  mqtt_client_.subscribe(SmartBellTopics::kGongDuration, on_mqtt_message,
+                         SmartBell::MQTTQoS::kQoS1);
+
+  log("[APP] Subscribed to all topics\r\n");
+}
+
+void SmartBellApp::on_mqtt_message(const SmartBell::MQTTMessageData* message) {
   if (instance_ == nullptr) {
     return;
   }
 
-  instance_->log("[APP] MQTT message received\r\n");
-  instance_->process_control_command(message->payload, message->payload_length);
+  instance_->process_mqtt_message(message->topic, message->payload, message->payload_length);
 }
 
-void SmartBellApp::process_control_command(const uint8_t* payload, uint16_t length) {
-  // Simple command parsing
-  // "enable" - enable bell
-  // "disable" - disable bell
-
-  // Null-terminate for comparison (temporary buffer)
-  char cmd[16];
+void SmartBellApp::process_mqtt_message(const char* topic, const uint8_t* payload,
+                                        uint16_t length) {
+  // Convert payload to string (with null termination)
+  char payload_str[16];
   uint16_t copy_len = (length < 15) ? length : 15;
-  memcpy(cmd, payload, copy_len);
-  cmd[copy_len] = '\0';
+  memcpy(payload_str, payload, copy_len);
+  payload_str[copy_len] = '\0';
 
   // Convert to lowercase for comparison
   for (uint16_t i = 0; i < copy_len; i++) {
-    if (cmd[i] >= 'A' && cmd[i] <= 'Z') {
-      cmd[i] = cmd[i] + ('a' - 'A');
+    if (payload_str[i] >= 'A' && payload_str[i] <= 'Z') {
+      payload_str[i] = payload_str[i] + ('a' - 'A');
     }
   }
 
-  if (strncmp(cmd, "enable", 6) == 0) {
-    set_bell_state(BellState::kEnabled);
-    publish_status();
-  } else if (strncmp(cmd, "disable", 7) == 0) {
-    set_bell_state(BellState::kDisabled);
-    publish_status();
-  } else {
-    log("[APP] Unknown control command: ");
-    log(cmd);
-    log("\r\n");
+  log("[APP] MQTT: ");
+  log(topic);
+  log(" = ");
+  log(payload_str);
+  log("\r\n");
+
+  // Handle gong status topics
+  if (strcmp(topic, SmartBellTopics::kGongUpperfloorStatus) == 0) {
+    bool enabled = (strncmp(payload_str, "active", 6) == 0);
+    gong_controller_.set_enabled(GongId::kUpperfloor, enabled);
+    log(enabled ? "[APP] Upperfloor gong enabled\r\n" : "[APP] Upperfloor gong disabled\r\n");
+  } else if (strcmp(topic, SmartBellTopics::kGongGroundfloorStatus) == 0) {
+    bool enabled = (strncmp(payload_str, "active", 6) == 0);
+    gong_controller_.set_enabled(GongId::kGroundfloor, enabled);
+    log(enabled ? "[APP] Groundfloor gong enabled\r\n" : "[APP] Groundfloor gong disabled\r\n");
+  }
+  // Handle test gong topics (trigger regardless of payload)
+  else if (strcmp(topic, SmartBellTopics::kTestGongUpperfloor) == 0) {
+    gong_controller_.trigger(GongId::kUpperfloor, true);  // force=true ignores enabled state
+    log("[APP] Test gong upperfloor\r\n");
+  } else if (strcmp(topic, SmartBellTopics::kTestGongGroundfloor) == 0) {
+    gong_controller_.trigger(GongId::kGroundfloor, true);
+    log("[APP] Test gong groundfloor\r\n");
+  } else if (strcmp(topic, SmartBellTopics::kTestGongBoth) == 0) {
+    gong_controller_.trigger(GongId::kBoth, true);
+    log("[APP] Test gong both\r\n");
+  }
+  // Handle duration configuration
+  else if (strcmp(topic, SmartBellTopics::kGongDuration) == 0) {
+    // Parse number from payload
+    uint16_t duration = 0;
+    for (uint16_t i = 0; i < copy_len; i++) {
+      if (payload_str[i] >= '0' && payload_str[i] <= '9') {
+        duration = duration * 10 + (payload_str[i] - '0');
+        if (duration > 10000)
+          break;
+      } else {
+        break;
+      }
+    }
+    if (duration >= 100 && duration <= 10000) {
+      gong_controller_.set_duration(duration);
+      log("[APP] Gong duration updated\r\n");
+    }
   }
 }
 
 void SmartBellApp::log(const char* message) {
+#if SMARTBELL_VERBOSE_LOG
   if (uart_ != nullptr) {
     uart_->send_string(message);
   }
+#else
+  (void)message;  // Suppress unused warning
+#endif
 }
 
 }  // namespace App

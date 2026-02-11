@@ -2,12 +2,16 @@
 #include <string.h>
 #include "SetupWDT.h"
 
+#ifndef SMARTBELL_VERBOSE_LOG
+#define SMARTBELL_VERBOSE_LOG 0
+#endif
+
 // Include ioLibrary DHCP header
 extern "C" {
 #include "dhcp.h"
 }
 
-namespace Network {
+namespace SmartBell {
 
 // Static instance pointer for callbacks
 DHCPClient* DHCPClient::instance_ = nullptr;
@@ -155,12 +159,17 @@ void DHCPClient::update_config_from_dhcp() {
 }
 
 void DHCPClient::log(const char* message) {
+#if SMARTBELL_VERBOSE_LOG
   if (uart_ != nullptr) {
     uart_->send_string(message);
   }
+#else
+  (void)message;
+#endif
 }
 
 void DHCPClient::log_ip(const char* label, const uint8_t* ip) {
+#if SMARTBELL_VERBOSE_LOG
   if (uart_ == nullptr)
     return;
 
@@ -189,6 +198,10 @@ void DHCPClient::log_ip(const char* label, const uint8_t* ip) {
     }
   }
   uart_->send_string("\r\n");
+#else
+  (void)label;
+  (void)ip;
+#endif
 }
 
 // Static callbacks
@@ -212,4 +225,4 @@ void DHCPClient::on_ip_conflict() {
   }
 }
 
-}  // namespace Network
+}  // namespace SmartBell

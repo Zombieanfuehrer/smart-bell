@@ -1,10 +1,12 @@
 #include "System/TimerService.h"
 
+#ifdef __AVR__
+#include <avr/interrupt.h>
+#endif
+
 // Forward declarations for ioLibrary timer handlers
 #ifdef __AVR__
 extern "C" {
-void DHCP_time_handler(void);
-void DNS_time_handler(void);
 void MilliTimer_Handler(void);
 }
 #endif
@@ -24,11 +26,7 @@ void TimerService::on_1ms_tick() {
 
 void TimerService::on_1s_tick() {
   seconds_counter_++;
-#ifdef __AVR__
-  // Call DHCP and DNS second timer handlers
-  DHCP_time_handler();
-  DNS_time_handler();
-#endif
+  // Note: DHCP/DNS removed for static IP mode
 }
 
 uint32_t TimerService::millis() {

@@ -18,10 +18,8 @@ set(LIB_LIB_TIMERINT_HEADERS "${PROJECT_SOURCE_DIR}/public/SetupTimer.h")
 add_library("${LIB_TIMERINT}" STATIC ${LIB_LIB_TIMERINT_SOURCES} ${LIB_LIB_TIMERINT_HEADERS})
 target_include_directories("${LIB_TIMERINT}" PUBLIC ${LIBRARY_INCLUDES})
 
-# ioLibrary Internet protocols (DHCP, DNS, MQTT)
+# ioLibrary Internet protocols (MQTT only - Static IP mode)
 set(IOLIBRARY_INTERNET_SOURCES
-    "${IOLIBRARY_INTERNET_DIR}/DHCP/dhcp.c"
-    "${IOLIBRARY_INTERNET_DIR}/DNS/dns.c"
     "${IOLIBRARY_INTERNET_DIR}/MQTT/mqtt_interface.c"
     "${IOLIBRARY_INTERNET_DIR}/MQTT/MQTTClient.c"
     "${IOLIBRARY_INTERNET_DIR}/MQTT/MQTTPacket/src/MQTTConnectClient.c"

@@ -2,12 +2,16 @@
 #include <string.h>
 #include "SetupWDT.h"
 
+#ifndef SMARTBELL_VERBOSE_LOG
+#define SMARTBELL_VERBOSE_LOG 0
+#endif
+
 // Include ioLibrary DNS header
 extern "C" {
 #include "dns.h"
 }
 
-namespace Network {
+namespace SmartBell {
 
 DNSClient::DNSClient(serial::Interface* uart)
     : uart_(uart), initialized_(false), has_result_(false) {
@@ -93,12 +97,17 @@ bool DNSClient::get_last_ip(uint8_t* ip_out) const {
 bool DNSClient::is_initialized() const { return initialized_; }
 
 void DNSClient::log(const char* message) {
+#if SMARTBELL_VERBOSE_LOG
   if (uart_ != nullptr) {
     uart_->send_string(message);
   }
+#else
+  (void)message;
+#endif
 }
 
 void DNSClient::log_ip(const char* label, const uint8_t* ip) {
+#if SMARTBELL_VERBOSE_LOG
   if (uart_ == nullptr)
     return;
 
@@ -127,6 +136,10 @@ void DNSClient::log_ip(const char* label, const uint8_t* ip) {
     }
   }
   uart_->send_string("\r\n");
+#else
+  (void)label;
+  (void)ip;
+#endif
 }
 
-}  // namespace Network
+}  // namespace SmartBell
