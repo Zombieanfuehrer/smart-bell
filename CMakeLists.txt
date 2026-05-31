@@ -28,6 +28,16 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CONAN_CXX_FLAGS} -DF_CPU=${F_CPU}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${CONAN_EXE_LINKER_FLAGS}")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${CONAN_SHARED_LINKER_FLAGS}")
 
+# For AVR targets: Override -O3 with -Os to optimize for size instead of speed
+if(CONAN_PROFILE_NAME STREQUAL "avr-mega328p")
+    message(STATUS "AVR target detected: Using -Os (size optimization) instead of -O3")
+    string(REPLACE "-O3" "-Os" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+    string(REPLACE "-O3" "-Os" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    # Also override the Release-specific flags that CMake sets automatically
+    set(CMAKE_C_FLAGS_RELEASE "-Os -DNDEBUG" CACHE STRING "" FORCE)
+    set(CMAKE_CXX_FLAGS_RELEASE "-Os -DNDEBUG" CACHE STRING "" FORCE)
+endif()
+
 # GLOBAL VARIABLES
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -57,6 +67,16 @@ set(LIB_W5500_ETHERNET "ATmega328_W5500_ETHERNET")
 set(LIB_WIZNET_IOLIBRARY "ATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY")
 set(LIB_MQTT "ATmega328_MQTT")
 set(LIB_CONFIG "ATmega328_CONFIG")
+
+# New libraries for MQTT/DHCP/DNS support
+set(LIB_TIMER_SERVICE "ATmega328_TIMER_SERVICE")
+set(LIB_CONFIG "ATmega328_CONFIG")
+set(LIB_IOLIBRARY_INTERNET "ATmega328_IOLIBRARY_INTERNET")
+set(LIB_NETWORK "ATmega328_NETWORK")
+set(LIB_APP "ATmega328_APP")
+
+# ioLibrary Internet directory
+set(IOLIBRARY_INTERNET_DIR "${PROJECT_SOURCE_DIR}/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet")
 
 set(EXECUTABLE_UART_EXAMPLE "ATmega328_UART_EXAMPLE_FW")
 set(EXECUTABLE_TCP_SERVER_EXAMPLE "ATmega328_TCP_SERVER_EXAMPLE_FW")
@@ -122,6 +142,11 @@ install_target(${LIB_UTILS})
 install_target(${LIB_W5500_ETHERNET})
 install_target(${LIB_MQTT})
 install_target(${LIB_CONFIG})
+install_target(${LIB_TIMER_SERVICE})
+install_target(${LIB_CONFIG})
+install_target(${LIB_IOLIBRARY_INTERNET})
+install_target(${LIB_NETWORK})
+install_target(${LIB_APP})
 install_target(${EXECUTABLE_UART_EXAMPLE})
 install_target(${EXECUTABLE_TCP_SERVER_EXAMPLE})
 install_target(${EXECUTABLE_SMART_BELL})
