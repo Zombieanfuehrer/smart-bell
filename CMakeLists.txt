@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.20)
 project(
     ATmega328__T_
     VERSION 1.0.0
-    LANGUAGES CXX)
+    LANGUAGES C CXX)
 
 if(DEFINED CONAN_PROFILE_NAME)
     set(CONAN_PROFILE_NAME
@@ -27,6 +27,16 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CONAN_C_FLAGS} -DF_CPU=${F_CPU}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CONAN_CXX_FLAGS} -DF_CPU=${F_CPU}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${CONAN_EXE_LINKER_FLAGS}")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${CONAN_SHARED_LINKER_FLAGS}")
+
+# For AVR targets: Override -O3 with -Os to optimize for size instead of speed
+if(CONAN_PROFILE_NAME STREQUAL "avr-mega328p")
+    message(STATUS "AVR target detected: Using -Os (size optimization) instead of -O3")
+    string(REPLACE "-O3" "-Os" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+    string(REPLACE "-O3" "-Os" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    # Also override the Release-specific flags that CMake sets automatically
+    set(CMAKE_C_FLAGS_RELEASE "-Os -DNDEBUG" CACHE STRING "" FORCE)
+    set(CMAKE_CXX_FLAGS_RELEASE "-Os -DNDEBUG" CACHE STRING "" FORCE)
+endif()
 
 # GLOBAL VARIABLES
 set(CMAKE_CXX_STANDARD 17)
@@ -53,8 +63,24 @@ set(LIB_TIMERINT "ATmega328_TIMER_INT")
 set(LIB_USART "ATmega328_USART")
 set(LIB_SPI "ATmega328_SPI")
 set(LIB_UTILS "ATmega328_UTILS")
+set(LIB_W5500_ETHERNET "ATmega328_W5500_ETHERNET")
+set(LIB_WIZNET_IOLIBRARY "ATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY")
+set(LIB_MQTT "ATmega328_MQTT")
+set(LIB_CONFIG "ATmega328_CONFIG")
+
+# New libraries for MQTT/DHCP/DNS support
+set(LIB_TIMER_SERVICE "ATmega328_TIMER_SERVICE")
+set(LIB_CONFIG "ATmega328_CONFIG")
+set(LIB_IOLIBRARY_INTERNET "ATmega328_IOLIBRARY_INTERNET")
+set(LIB_NETWORK "ATmega328_NETWORK")
+set(LIB_APP "ATmega328_APP")
+
+# ioLibrary Internet directory
+set(IOLIBRARY_INTERNET_DIR "${PROJECT_SOURCE_DIR}/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet")
 
 set(EXECUTABLE_UART_EXAMPLE "ATmega328_UART_EXAMPLE_FW")
+set(EXECUTABLE_TCP_SERVER_EXAMPLE "ATmega328_TCP_SERVER_EXAMPLE_FW")
+set(EXECUTABLE_SMART_BELL "ATmega328_SMART_BELL_FW")
 
 # CMAKE MODULES
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
@@ -113,13 +139,31 @@ install_target(${LIB_TIMERINT})
 install_target(${LIB_USART})
 install_target(${LIB_SPI})
 install_target(${LIB_UTILS})
+install_target(${LIB_W5500_ETHERNET})
+install_target(${LIB_MQTT})
+install_target(${LIB_CONFIG})
+install_target(${LIB_TIMER_SERVICE})
+install_target(${LIB_CONFIG})
+install_target(${LIB_IOLIBRARY_INTERNET})
+install_target(${LIB_NETWORK})
+install_target(${LIB_APP})
 install_target(${EXECUTABLE_UART_EXAMPLE})
+install_target(${EXECUTABLE_TCP_SERVER_EXAMPLE})
+install_target(${EXECUTABLE_SMART_BELL})
+
+set(FW_EXAMPLES_LIST
+    ${EXECUTABLE_UART_EXAMPLE}
+    ${EXECUTABLE_TCP_SERVER_EXAMPLE}
+    ${EXECUTABLE_SMART_BELL})
 
 include(Objcopy)
-run_bin2hex(
-    TARGET
-    ${EXECUTABLE_UART_EXAMPLE}
-    TARGET_ARTIFACT
-    "${CMAKE_BINARY_DIR}/app/${EXECUTABLE_UART_EXAMPLE}"
-    HEX_FILE
-    "${CMAKE_BINARY_DIR}/app/${EXECUTABLE_UART_EXAMPLE}.hex")
+
+foreach(FW_2_hex_item IN LISTS FW_EXAMPLES_LIST)
+    run_bin2hex(
+        TARGET
+        ${FW_2_hex_item}
+        TARGET_ARTIFACT
+        "${CMAKE_BINARY_DIR}/app/${FW_2_hex_item}"
+        HEX_FILE
+        "${CMAKE_BINARY_DIR}/app/${FW_2_hex_item}.hex")
+endforeach()
