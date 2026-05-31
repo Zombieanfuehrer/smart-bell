@@ -1,164 +1,371 @@
 #include "Config/ConfigManager.h"
-#include <string.h>
-#include "SetupWDT.h"
 
 #ifdef __AVR__
 #include <avr/eeprom.h>
 #endif
 
+#include <string.h>
+#include <stdlib.h>
+
 namespace Config {
 
-// EEPROM address for stored config (start at address 0)
-#ifdef __AVR__
-static StoredConfig EEMEM eeprom_config;
-#endif
+// EEPROM address for configuration
+constexpr uint16_t EEPROM_CONFIG_ADDR = 0;
+constexpr uint32_t CONFIG_MAGIC = 0xBEEFCAFE;
 
-ConfigManager::ConfigManager() { reset_to_defaults(); }
+ConfigManager::ConfigManager(serial::UART* uart)
+    : uart_(uart) {
+  load_defaults();
+}
 
-bool ConfigManager::load() {
-#ifdef __AVR__
-  StoredConfig stored;
-
-  // Pause WDT during EEPROM read
-  configure_wdt::pause();
-  eeprom_read_block(&stored, &eeprom_config, sizeof(StoredConfig));
-  configure_wdt::resume();
-
-  if (!validate_config(stored)) {
-    config_.is_valid = false;
-    return false;
+void ConfigManager::load_defaults() {
+  // MQTT defaults
+  strncpy(config_.mqtt_broker, "192.168.1.100", 63);
+  config_.mqtt_broker[63] = '\0';
+  config_.mqtt_port = 1883;
+  strncpy(config_.mqtt_client_id, "smart-bell", 31);
+  config_.mqtt_client_id[31] = '\0';
+  config_.mqtt_username[0] = '\0'; // Empty by default
+  config_.mqtt_password[0] = '\0'; // Empty by default
+  strncpy(config_.mqtt_topic_ring, "home/bell/ring", 47);
+  config_.mqtt_topic_ring[47] = '\0';
+  strncpy(config_.mqtt_topic_control, "home/bell/control", 47);
+  config_.mqtt_topic_control[47] = '\0';
+  config_.mqtt_keepalive = 60;
+  
+  // Network defaults (Static IP for now, DHCP not implemented)
+  config_.use_dhcp = false;
+  config_.static_ip[0] = 192;
+  config_.static_ip[1] = 168;
+  config_.static_ip[2] = 1;
+  config_.static_ip[3] = 177;
+  config_.subnet_mask[0] = 255;
+  config_.subnet_mask[1] = 255;
+  config_.subnet_mask[2] = 255;
+  config_.subnet_mask[3] = 0;
+  config_.gateway[0] = 192;
+  config_.gateway[1] = 168;
+  config_.gateway[2] = 1;
+  config_.gateway[3] = 1;
+  config_.mac_address[0] = 0x00;
+  config_.mac_address[1] = 0x08;
+  config_.mac_address[2] = 0xDC;
+  config_.mac_address[3] = 0xAB;
+  config_.mac_address[4] = 0xCD;
+  config_.mac_address[5] = 0xEF;
+  
+  // Bell settings
+  config_.ring_duration = 6; // 6 seconds
+  config_.debounce_delay = 50; // 50 ms
+  
+  // System settings
+  config_.reconnect_interval = 30; // 30 seconds
+  
+  config_.magic_number = CONFIG_MAGIC;
+  
+  if (uart_) {
+    uart_->send_string("[Config] Loaded default configuration\r\n");
   }
+}
 
-  // Copy to runtime config
-  memcpy(config_.device_ip, stored.device_ip, 4);
-  memcpy(config_.subnet, stored.subnet, 4);
-  memcpy(config_.gateway, stored.gateway, 4);
-  memcpy(config_.broker_ip, stored.broker_ip, 4);
-  config_.broker_port = stored.broker_port;
-  safe_strcpy(config_.username, stored.username, kMaxUsernameLength);
-  safe_strcpy(config_.password, stored.password, kMaxPasswordLength);
-  safe_strcpy(config_.client_id, stored.client_id, kMaxClientIdLength);
-
-  config_.is_valid = true;
+bool ConfigManager::save_to_eeprom() {
+#ifdef __AVR__
+  config_.magic_number = CONFIG_MAGIC;
+  eeprom_update_block(&config_, (void*)EEPROM_CONFIG_ADDR, sizeof(SmartBellConfig));
+  
+  if (uart_) {
+    uart_->send_string("[Config] Configuration saved to EEPROM\r\n");
+  }
   return true;
 #else
+  if (uart_) {
+    uart_->send_string("[Config] EEPROM not available on this platform\r\n");
+  }
   return false;
 #endif
 }
 
-bool ConfigManager::save() {
+bool ConfigManager::load_from_eeprom() {
 #ifdef __AVR__
-  StoredConfig stored;
-
-  stored.magic[0] = kConfigMagic0;
-  stored.magic[1] = kConfigMagic1;
-
-  memcpy(stored.device_ip, config_.device_ip, 4);
-  memcpy(stored.subnet, config_.subnet, 4);
-  memcpy(stored.gateway, config_.gateway, 4);
-  memcpy(stored.broker_ip, config_.broker_ip, 4);
-  stored.broker_port = config_.broker_port;
-  safe_strcpy(stored.username, config_.username, kMaxUsernameLength);
-  safe_strcpy(stored.password, config_.password, kMaxPasswordLength);
-  safe_strcpy(stored.client_id, config_.client_id, kMaxClientIdLength);
-
-  stored.checksum = calculate_checksum(stored);
-
-  configure_wdt::pause();
-  eeprom_update_block(&stored, &eeprom_config, sizeof(StoredConfig));
-  configure_wdt::resume();
-
-  config_.is_valid = true;
-  return true;
+  SmartBellConfig temp_config;
+  eeprom_read_block(&temp_config, (void*)EEPROM_CONFIG_ADDR, sizeof(SmartBellConfig));
+  
+  if (temp_config.magic_number == CONFIG_MAGIC) {
+    memcpy(&config_, &temp_config, sizeof(SmartBellConfig));
+    if (uart_) {
+      uart_->send_string("[Config] Configuration loaded from EEPROM\r\n");
+    }
+    return true;
+  } else {
+    if (uart_) {
+      uart_->send_string("[Config] No valid configuration in EEPROM, using defaults\r\n");
+    }
+    load_defaults();
+    return false;
+  }
 #else
-  config_.is_valid = true;
-  return true;
-#endif
-}
-
-void ConfigManager::reset_to_defaults() {
-  memset(&config_, 0, sizeof(RuntimeConfig));
-  // Default subnet: 255.255.255.0
-  config_.subnet[0] = 255;
-  config_.subnet[1] = 255;
-  config_.subnet[2] = 255;
-  config_.subnet[3] = 0;
-  config_.broker_port = kDefaultBrokerPort;
-  safe_strcpy(config_.client_id, kDefaultClientId, kMaxClientIdLength);
-  config_.is_valid = false;
-}
-
-bool ConfigManager::is_valid() const {
-  // Valid if we have device IP and broker IP set (non-zero)
-  return config_.is_valid && (config_.device_ip[0] != 0 || config_.device_ip[1] != 0) &&
-         (config_.broker_ip[0] != 0 || config_.broker_ip[1] != 0);
-}
-
-bool ConfigManager::has_stored_config() const {
-#ifdef __AVR__
-  uint8_t magic0 = eeprom_read_byte((const uint8_t*)&eeprom_config.magic[0]);
-  uint8_t magic1 = eeprom_read_byte((const uint8_t*)&eeprom_config.magic[1]);
-  return (magic0 == kConfigMagic0 && magic1 == kConfigMagic1);
-#else
+  if (uart_) {
+    uart_->send_string("[Config] EEPROM not available, using defaults\r\n");
+  }
+  load_defaults();
   return false;
 #endif
 }
 
-void ConfigManager::set_device_ip(const uint8_t* ip) { memcpy(config_.device_ip, ip, 4); }
-void ConfigManager::set_subnet(const uint8_t* subnet) { memcpy(config_.subnet, subnet, 4); }
-void ConfigManager::set_gateway(const uint8_t* gateway) { memcpy(config_.gateway, gateway, 4); }
-void ConfigManager::set_broker_ip(const uint8_t* ip) { memcpy(config_.broker_ip, ip, 4); }
-void ConfigManager::set_port(uint16_t port) { config_.broker_port = port; }
-
-void ConfigManager::set_username(const char* username) {
-  safe_strcpy(config_.username, username, kMaxUsernameLength);
+void ConfigManager::get_mqtt_config(MQTT::MQTTConfig& mqtt_config) const {
+  strncpy(mqtt_config.broker_hostname, config_.mqtt_broker, 63);
+  mqtt_config.broker_hostname[63] = '\0';
+  mqtt_config.broker_port = config_.mqtt_port;
+  strncpy(mqtt_config.client_id, config_.mqtt_client_id, 31);
+  mqtt_config.client_id[31] = '\0';
+  strncpy(mqtt_config.username, config_.mqtt_username, 31);
+  mqtt_config.username[31] = '\0';
+  strncpy(mqtt_config.password, config_.mqtt_password, 31);
+  mqtt_config.password[31] = '\0';
+  mqtt_config.keepalive = config_.mqtt_keepalive;
+  mqtt_config.reconnect_interval = config_.reconnect_interval;
 }
 
-void ConfigManager::set_password(const char* password) {
-  safe_strcpy(config_.password, password, kMaxPasswordLength);
+void ConfigManager::set_mqtt_broker(const char* broker, uint16_t port) {
+  strncpy(config_.mqtt_broker, broker, 63);
+  config_.mqtt_broker[63] = '\0';
+  config_.mqtt_port = port;
 }
 
-void ConfigManager::set_client_id(const char* client_id) {
-  safe_strcpy(config_.client_id, client_id, kMaxClientIdLength);
+void ConfigManager::set_mqtt_credentials(const char* client_id, const char* username, const char* password) {
+  strncpy(config_.mqtt_client_id, client_id, 31);
+  config_.mqtt_client_id[31] = '\0';
+  strncpy(config_.mqtt_username, username, 31);
+  config_.mqtt_username[31] = '\0';
+  strncpy(config_.mqtt_password, password, 31);
+  config_.mqtt_password[31] = '\0';
 }
 
-const uint8_t* ConfigManager::get_device_ip() const { return config_.device_ip; }
-const uint8_t* ConfigManager::get_subnet() const { return config_.subnet; }
-const uint8_t* ConfigManager::get_gateway() const { return config_.gateway; }
-const uint8_t* ConfigManager::get_broker_ip() const { return config_.broker_ip; }
-uint16_t ConfigManager::get_port() const { return config_.broker_port; }
-const char* ConfigManager::get_username() const { return config_.username; }
-const char* ConfigManager::get_password() const { return config_.password; }
-const char* ConfigManager::get_client_id() const { return config_.client_id; }
+void ConfigManager::set_mqtt_topics(const char* topic_ring, const char* topic_control) {
+  strncpy(config_.mqtt_topic_ring, topic_ring, 47);
+  config_.mqtt_topic_ring[47] = '\0';
+  strncpy(config_.mqtt_topic_control, topic_control, 47);
+  config_.mqtt_topic_control[47] = '\0';
+}
 
-const RuntimeConfig& ConfigManager::get_runtime_config() const { return config_; }
+void ConfigManager::set_dhcp(bool enable) {
+  config_.use_dhcp = enable;
+}
 
-uint8_t ConfigManager::calculate_checksum(const StoredConfig& config) const {
-  uint8_t checksum = 0;
-  const uint8_t* data = reinterpret_cast<const uint8_t*>(&config);
-  for (size_t i = 0; i < sizeof(StoredConfig) - 1; i++) {
-    checksum ^= data[i];
+void ConfigManager::set_static_ip(const uint8_t* ip, const uint8_t* subnet, const uint8_t* gateway) {
+  memcpy(config_.static_ip, ip, 4);
+  memcpy(config_.subnet_mask, subnet, 4);
+  memcpy(config_.gateway, gateway, 4);
+}
+
+void ConfigManager::print_config() const {
+  if (!uart_) return;
+  
+  uart_->send_string("\r\n=== Smart Bell Configuration ===\r\n");
+  uart_->send_string("MQTT Broker: ");
+  uart_->send_string(config_.mqtt_broker);
+  uart_->send_string(":");
+  char port_str[8];
+  itoa(config_.mqtt_port, port_str, 10);
+  uart_->send_string(port_str);
+  uart_->send_string("\r\n");
+  
+  uart_->send_string("Client ID: ");
+  uart_->send_string(config_.mqtt_client_id);
+  uart_->send_string("\r\n");
+  
+  uart_->send_string("Username: ");
+  uart_->send_string(config_.mqtt_username[0] ? config_.mqtt_username : "(none)");
+  uart_->send_string("\r\n");
+  
+  uart_->send_string("Password: ");
+  uart_->send_string(config_.mqtt_password[0] ? "********" : "(none)");
+  uart_->send_string("\r\n");
+  
+  uart_->send_string("Ring Topic: ");
+  uart_->send_string(config_.mqtt_topic_ring);
+  uart_->send_string("\r\n");
+  
+  uart_->send_string("Control Topic: ");
+  uart_->send_string(config_.mqtt_topic_control);
+  uart_->send_string("\r\n");
+  
+  uart_->send_string("DHCP: ");
+  uart_->send_string(config_.use_dhcp ? "enabled" : "disabled");
+  uart_->send_string("\r\n");
+  
+  if (!config.use_dhcp) {
+    uart_->send_string("Static IP: ");
+    char ip_str[4];
+    itoa(config.static_ip[0], ip_str, 10);
+    uart_->send_string(ip_str);
+    uart_->send_string(".");
+    itoa(config.static_ip[1], ip_str, 10);
+    uart_->send_string(ip_str);
+    uart_->send_string(".");
+    itoa(config.static_ip[2], ip_str, 10);
+    uart_->send_string(ip_str);
+    uart_->send_string(".");
+    itoa(config.static_ip[3], ip_str, 10);
+    uart_->send_string(ip_str);
+    uart_->send_string("\r\n");
   }
-  return checksum;
+  
+  uart_->send_string("Ring Duration: ");
+  char dur_str[8];
+  itoa(config_.ring_duration, dur_str, 10);
+  uart_->send_string(dur_str);
+  uart_->send_string(" seconds\r\n");
+  
+  uart_->send_string("Reconnect Interval: ");
+  char recon_str[8];
+  itoa(config_.reconnect_interval, recon_str, 10);
+  uart_->send_string(recon_str);
+  uart_->send_string(" seconds\r\n");
+  
+  uart_->send_string("===============================\r\n\r\n");
 }
 
-bool ConfigManager::validate_config(const StoredConfig& config) const {
-  if (config.magic[0] != kConfigMagic0 || config.magic[1] != kConfigMagic1) {
-    return false;
+bool ConfigManager::process_uart_command(const char* command) {
+  if (starts_with(command, "config show")) {
+    print_config();
+    return true;
   }
-  uint8_t expected = calculate_checksum(config);
-  return config.checksum == expected;
-}
-
-void ConfigManager::safe_strcpy(char* dest, const char* src, uint8_t max_len) {
-  if (max_len == 0)
-    return;
-  size_t i = 0;
-  while (i < static_cast<size_t>(max_len - 1) && src[i] != '\0') {
-    dest[i] = src[i];
-    i++;
+  else if (starts_with(command, "config save")) {
+    return save_to_eeprom();
   }
-  dest[i] = '\0';
+  else if (starts_with(command, "config load")) {
+    return load_from_eeprom();
+  }
+  else if (starts_with(command, "config defaults")) {
+    load_defaults();
+    uart_->send_string("[Config] Defaults loaded\r\n");
+    return true;
+  }
+  else if (starts_with(command, "set broker ")) {
+    return parse_set_broker(command + 11);
+  }
+  else if (starts_with(command, "set cred ")) {
+    return parse_set_credentials(command + 9);
+  }
+  else if (starts_with(command, "set topics ")) {
+    return parse_set_topics(command + 11);
+  }
+  else if (starts_with(command, "set dhcp ")) {
+    return parse_set_dhcp(command + 9);
+  }
+  else if (starts_with(command, "set ip ")) {
+    return parse_set_ip(command + 7);
+  }
+  else if (starts_with(command, "help")) {
+    uart_->send_string("\r\nAvailable commands:\r\n");
+    uart_->send_string("  config show - Show current configuration\r\n");
+    uart_->send_string("  config save - Save configuration to EEPROM\r\n");
+    uart_->send_string("  config load - Load configuration from EEPROM\r\n");
+    uart_->send_string("  config defaults - Load default configuration\r\n");
+    uart_->send_string("  set broker <host> <port> - Set MQTT broker\r\n");
+    uart_->send_string("  set cred <id> <user> <pass> - Set MQTT credentials\r\n");
+    uart_->send_string("  set topics <ring> <control> - Set MQTT topics\r\n");
+    uart_->send_string("  set dhcp <on|off> - Enable/disable DHCP\r\n");
+    uart_->send_string("  set ip <ip> <subnet> <gateway> - Set static IP\r\n");
+    uart_->send_string("  help - Show this help\r\n\r\n");
+    return true;
+  }
+  
+  return false;
 }
 
-}  // namespace Config
+// Private helper methods
+
+bool ConfigManager::parse_set_broker(const char* args) {
+  char broker[64];
+  uint16_t port;
+  
+  // Parse: <host> <port>
+  int parsed = sscanf(args, "%63s %hu", broker, &port);
+  if (parsed == 2) {
+    set_mqtt_broker(broker, port);
+    uart_->send_string("[Config] Broker set to: ");
+    uart_->send_string(broker);
+    uart_->send_string("\r\n");
+    return true;
+  }
+  
+  uart_->send_string("[Config] Usage: set broker <host> <port>\r\n");
+  return false;
+}
+
+bool ConfigManager::parse_set_credentials(const char* args) {
+  char client_id[32], username[32], password[32];
+  
+  // Parse: <client_id> <username> <password>
+  int parsed = sscanf(args, "%31s %31s %31s", client_id, username, password);
+  if (parsed == 3) {
+    set_mqtt_credentials(client_id, username, password);
+    uart_->send_string("[Config] Credentials updated\r\n");
+    return true;
+  }
+  
+  uart_->send_string("[Config] Usage: set cred <client_id> <username> <password>\r\n");
+  return false;
+}
+
+bool ConfigManager::parse_set_topics(const char* args) {
+  char topic_ring[48], topic_control[48];
+  
+  // Parse: <ring_topic> <control_topic>
+  int parsed = sscanf(args, "%47s %47s", topic_ring, topic_control);
+  if (parsed == 2) {
+    set_mqtt_topics(topic_ring, topic_control);
+    uart_->send_string("[Config] Topics updated\r\n");
+    return true;
+  }
+  
+  uart_->send_string("[Config] Usage: set topics <ring_topic> <control_topic>\r\n");
+  return false;
+}
+
+bool ConfigManager::parse_set_dhcp(const char* args) {
+  if (starts_with(args, "on")) {
+    set_dhcp(true);
+    uart_->send_string("[Config] DHCP enabled\r\n");
+    return true;
+  } else if (starts_with(args, "off")) {
+    set_dhcp(false);
+    uart_->send_string("[Config] DHCP disabled\r\n");
+    return true;
+  }
+  
+  uart_->send_string("[Config] Usage: set dhcp <on|off>\r\n");
+  return false;
+}
+
+bool ConfigManager::parse_set_ip(const char* args) {
+  uint8_t ip[4], subnet[4], gateway[4];
+  
+  // Parse: xxx.xxx.xxx.xxx xxx.xxx.xxx.xxx xxx.xxx.xxx.xxx
+  int parsed = sscanf(args, "%hhu.%hhu.%hhu.%hhu %hhu.%hhu.%hhu.%hhu %hhu.%hhu.%hhu.%hhu",
+                      &ip[0], &ip[1], &ip[2], &ip[3],
+                      &subnet[0], &subnet[1], &subnet[2], &subnet[3],
+                      &gateway[0], &gateway[1], &gateway[2], &gateway[3]);
+  
+  if (parsed == 12) {
+    set_static_ip(ip, subnet, gateway);
+    uart_->send_string("[Config] Static IP configured\r\n");
+    return true;
+  }
+  
+  uart_->send_string("[Config] Usage: set ip <ip> <subnet> <gateway>\r\n");
+  uart_->send_string("[Config] Example: set ip 192.168.1.100 255.255.255.0 192.168.1.1\r\n");
+  return false;
+}
+
+void ConfigManager::parse_ip_address(const char* str, uint8_t* ip) {
+  sscanf(str, "%hhu.%hhu.%hhu.%hhu", &ip[0], &ip[1], &ip[2], &ip[3]);
+}
+
+bool ConfigManager::starts_with(const char* str, const char* prefix) {
+  return strncmp(str, prefix, strlen(prefix)) == 0;
+}
+
+} // namespace Config

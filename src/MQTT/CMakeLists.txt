@@ -1,0 +1,6 @@
+set(LIB_MQTT_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/MQTTClient.cpp")
+set(LIB_MQTT_HEADERS "${PROJECT_SOURCE_DIR}/public/MQTT/MQTTClient.h")
+
+add_library("${LIB_MQTT}" STATIC ${LIB_MQTT_SOURCES} ${LIB_MQTT_HEADERS})
+target_include_directories("${LIB_MQTT}" PUBLIC ${LIBRARY_INCLUDES})
+target_link_libraries("${LIB_MQTT}" PUBLIC ${LIB_W5500_ETHERNET} ${LIB_USART})
