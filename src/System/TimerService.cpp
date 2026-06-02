@@ -4,13 +4,6 @@
 #include <avr/interrupt.h>
 #endif
 
-// Forward declarations for ioLibrary timer handlers
-#ifdef __AVR__
-extern "C" {
-void MilliTimer_Handler(void);
-}
-#endif
-
 namespace System {
 
 volatile uint32_t TimerService::millis_counter_ = 0;
@@ -18,10 +11,7 @@ volatile uint32_t TimerService::seconds_counter_ = 0;
 
 void TimerService::on_1ms_tick() {
   millis_counter_++;
-#ifdef __AVR__
-  // Call MQTT millisecond timer handler
-  MilliTimer_Handler();
-#endif
+  // Note: MinimalMQTT doesn't use timer callbacks
 }
 
 void TimerService::on_1s_tick() {

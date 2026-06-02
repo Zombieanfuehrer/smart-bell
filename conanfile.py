@@ -23,15 +23,13 @@ class Atmega328TemplateRecipe(ConanFile):
         "shared": [True, False],
         "fPIC": [True, False],
         "platform": ["avr", "linux"],
-        "tests": [True, False],
-        "W5500_support": [True, False]
+        "tests": [True, False]
     }
     default_options = {
         "shared": False,
         "fPIC": False,
         "platform": "avr",
-        "tests": False,
-        "W5500_support": False
+        "tests": False
     }
     ioLibrary_Driver_Version = "v3.2.0"
     exports_sources = "CMakeLists.txt", "*.cmake", "app/*", "src/*", "public/*", "private/*", "tests/*", "style/*", "docs/Doxyfile", "configure/*", ".github/workflows/*", "cmake/*",".gitignore", "LICENSE", "README.md", "requirements.txt", "conanfile.py"
@@ -41,8 +39,11 @@ class Atmega328TemplateRecipe(ConanFile):
             self.requires("gtest/1.16.0")
 
     def layout(self):
-        arch = str(self.settings.arch)
-        cmake_layout(self, build_folder=f"build/{arch}")
+        # Conan automatically prefixes with project root
+        # Result: build/x86_64/Release/ or build/avr/Release/
+        self.folders.build = f"{self.settings.arch}/{self.settings.build_type}"
+        self.folders.source = "."
+        self.folders.generators = "generators"
 
     def generate(self):
         tc = CMakeToolchain(self)
@@ -65,29 +66,25 @@ class Atmega328TemplateRecipe(ConanFile):
     def build(self):
         cmake = CMake(self)
         cmake.configure()
-        if self.options.platform == "linux":
+        if self.options.platform == "linux" and self.options.tests:
+            # Build only tests for Linux
             cmake.build(target="run_gTest")
             self.perform_ctest()
-        else:
+        elif self.options.platform == "avr":
+            # Build AVR firmware
             cmake.build(target="ATmega328_WTD")
             cmake.build(target="ATmega328_PIN_INT")
             cmake.build(target="ATmega328_TIMER_INT")
             cmake.build(target="ATmega328_USART")
             cmake.build(target="ATmega328_SPI")
             cmake.build(target="ATmega328_UTILS")
-
-            cmake.build(target="ATmega328_UART_EXAMPLE_FW")
-            cmake.build(target="ATmega328_UART_EXAMPLE_FW_hex")
-            
-            if self.options.W5500_support:
-                cmake.build(target="ATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY")
-                cmake.build(target="ATmega328_W5500_ETHERNET")
-                cmake.build(target="ATmega328_MQTT")
-                cmake.build(target="ATmega328_CONFIG")
-                cmake.build(target="ATmega328_TCP_SERVER_EXAMPLE_FW")
-                cmake.build(target="ATmega328_TCP_SERVER_EXAMPLE_FW_hex")
-                cmake.build(target="ATmega328_SMART_BELL_FW")
-                cmake.build(target="ATmega328_SMART_BELL_FW_hex")
+            cmake.build(target="ATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY")
+            cmake.build(target="ATmega328_W5500_ETHERNET")
+            cmake.build(target="ATmega328_MQTT")
+            cmake.build(target="ATmega328_CONFIG")
+            cmake.build(target="ATmega328_TIMER_SERVICE")
+            cmake.build(target="ATmega328_SMART_BELL_FW")
+            cmake.build(target="ATmega328_SMART_BELL_FW_hex")
 
     def package(self):
         cmake = CMake(self)
@@ -108,15 +105,13 @@ class Atmega328TemplateRecipe(ConanFile):
             "ATmega328_TIMER_INT",
             "ATmega328_USART",
             "ATmega328_SPI",
-            "ATmega328_UTILS"
+            "ATmega328_UTILS",
+            "ATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY",
+            "ATmega328_W5500_ETHERNET",
+            "ATmega328_MQTT",
+            "ATmega328_CONFIG",
+            "ATmega328_TIMER_SERVICE"
         ]
-
-        if self.options.W5500_support:
-            self.cpp_info.libs.extend([
-                "ATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY",
-                "ATmega328_W5500_ETHERNET",
-                "ATmega328_TCP_SERVER_EXAMPLE_FW"
-            ])
 
         self.cpp_info.includedirs = ["public"]
         self.cpp_info.libdirs = ['lib']

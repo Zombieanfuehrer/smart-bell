@@ -47,8 +47,15 @@ set_target_properties("${LIB_IOLIBRARY_INTERNET}" PROPERTIES LINKER_LANGUAGE C)
 
 target_link_libraries("${LIB_IOLIBRARY_INTERNET}" PUBLIC "${LIB_WIZNET_IOLIBRARY}")
 
-add_subdirectory(Serial)
 add_subdirectory(Utils)
-add_subdirectory(Ethernet)
+add_subdirectory(System)
 add_subdirectory(MQTT)
 add_subdirectory(Config)
+
+# Serial/Ethernet/Network/App only for AVR target (not for tests)
+if(NOT ENABLE_UNIT_TESTS)
+    add_subdirectory(Serial)
+    add_subdirectory(Ethernet)
+    add_subdirectory(Network)
+    add_subdirectory(App)
+endif()

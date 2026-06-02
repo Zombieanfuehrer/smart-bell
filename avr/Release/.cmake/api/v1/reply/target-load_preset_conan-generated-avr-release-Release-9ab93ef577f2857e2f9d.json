@@ -1,0 +1,43 @@
+{
+	"backtrace" : 2,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_custom_target",
+			"create_target_load_cmake_preset"
+		],
+		"files" : 
+		[
+			"cmake/ConanInstall.cmake",
+			"CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 1
+			},
+			{
+				"command" : 1,
+				"file" : 1,
+				"line" : 119,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 189,
+				"parent" : 1
+			}
+		]
+	},
+	"id" : "load_preset_conan-generated-avr-release::@6890427a1f51a3e7e1df",
+	"name" : "load_preset_conan-generated-avr-release",
+	"paths" : 
+	{
+		"build" : ".",
+		"source" : "."
+	},
+	"sources" : [],
+	"type" : "UTILITY"
+}

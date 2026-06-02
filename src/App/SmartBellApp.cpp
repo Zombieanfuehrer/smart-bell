@@ -15,8 +15,9 @@ SmartBellApp* SmartBellApp::instance_ = nullptr;
 SmartBellApp::SmartBellApp(Ethernet::W5500Interface* w5500, serial::Interface* uart)
     : w5500_(w5500),
       uart_(uart),
-      command_parser_(uart, &config_manager_),
-      mqtt_client_(uart),
+      config_manager_(static_cast<serial::UART*>(uart)),
+      command_parser_(static_cast<serial::UART*>(uart), &config_manager_),
+      mqtt_client_(static_cast<serial::UART*>(uart)),
       gong_controller_(),
       frontdoor_button_{false, true, true},  // interrupt_pending=false, last=HIGH, current=HIGH
       office_button_{false, true, true},
@@ -36,10 +37,8 @@ SmartBellApp::~SmartBellApp() {
 void SmartBellApp::init() {
   log("[APP] Init\r\n");
 
-  // Initialize MQTT client
-  mqtt_client_.init();
-  mqtt_client_.set_reconnect_interval(kReconnectIntervalSec);
-  mqtt_client_.set_default_message_handler(on_mqtt_message);
+  // MinimalMQTT initialization happens via constructor - no init() needed
+  // No reconnect_interval setting - managed internally by state machine
 
   // Start state machine
   transition_to(AppState::kConfigCheck);
@@ -147,21 +146,23 @@ void SmartBellApp::handle_init() {
 void SmartBellApp::handle_config_check() {
   log("[APP] Checking EEPROM configuration...\r\n");
 
-  if (config_manager_.load()) {
-    log("[APP] Configuration loaded from EEPROM\r\n");
-
-    // Check if broker is set
-    if (config_manager_.is_valid()) {
-      log("[APP] Configuration valid, starting network...\r\n");
+  // Try to load configuration from EEPROM
+  if (config_manager_.load_from_eeprom()) {
+    // Config loaded successfully - validate broker IP is not 0.0.0.0
+    const Config::SmartBellConfig& cfg = config_manager_.get_config();
+    if (cfg.mqtt_broker_ip[0] != 0 || cfg.mqtt_broker_ip[1] != 0 || cfg.mqtt_broker_ip[2] != 0 ||
+        cfg.mqtt_broker_ip[3] != 0) {
+      log("[APP] Valid config loaded\r\n");
       transition_to(AppState::kNetworkInit);
     } else {
-      log("[APP] Configuration incomplete\r\n");
-      command_parser_.init(true);
+      log("[APP] Invalid broker IP, entering config mode\r\n");
+      config_manager_.load_defaults();
       transition_to(AppState::kConfigMode);
     }
   } else {
-    log("[APP] No valid configuration in EEPROM\r\n");
-    command_parser_.init(true);
+    // EEPROM empty or corrupted - enter configuration mode
+    log("[APP] No valid config, entering config mode\r\n");
+    config_manager_.load_defaults();
     transition_to(AppState::kConfigMode);
   }
 }
@@ -170,30 +171,29 @@ void SmartBellApp::handle_config_mode() {
   // Process UART commands
   command_parser_.process();
 
-  // Check if configuration was saved
-  if (command_parser_.config_saved()) {
-    command_parser_.clear_flags();
-
-    if (config_manager_.is_valid()) {
-      log("[APP] Configuration complete, starting network...\r\n");
-      transition_to(AppState::kNetworkInit);
-    }
+  // Check if configuration is now complete (broker IP set)
+  const Config::SmartBellConfig& cfg = config_manager_.get_config();
+  if (cfg.mqtt_broker_ip[0] != 0 || cfg.mqtt_broker_ip[1] != 0 || cfg.mqtt_broker_ip[2] != 0 ||
+      cfg.mqtt_broker_ip[3] != 0) {
+    log("[APP] Configuration complete\r\n");
+    config_manager_.save_to_eeprom();
+    transition_to(AppState::kNetworkInit);
   }
 }
 
 void SmartBellApp::handle_network_init() {
   log("[APP] Configuring static IP...\r\n");
 
-  // Get static IP configuration from ConfigManager
-  const Config::RuntimeConfig& cfg = config_manager_.get_runtime_config();
+  // Get configuration
+  const Config::SmartBellConfig& cfg = config_manager_.get_config();
 
   // Configure W5500 with static IP using proper types
   Ethernet::IpAddress ip;
   Ethernet::SubnetMask subnet;
   Ethernet::GatewayAddress gateway;
 
-  memcpy(ip.addr, cfg.device_ip, 4);
-  memcpy(subnet.addr, cfg.subnet, 4);
+  memcpy(ip.addr, cfg.static_ip, 4);
+  memcpy(subnet.addr, cfg.subnet_mask, 4);
   memcpy(gateway.addr, cfg.gateway, 4);
 
   w5500_->set_IP(&ip);
@@ -205,26 +205,30 @@ void SmartBellApp::handle_network_init() {
 }
 
 void SmartBellApp::handle_mqtt_connecting() {
-  // Build MQTT config from static IP settings
-  SmartBell::MQTTConfig mqtt_config;
-  memcpy(mqtt_config.broker_ip, config_manager_.get_broker_ip(), 4);
-  mqtt_config.broker_port = config_manager_.get_port();
-  mqtt_config.client_id = config_manager_.get_client_id();
-  mqtt_config.keepalive_sec = kMQTTKeepAlive;
-  mqtt_config.clean_session = true;
+  log("[APP] MQTT Connecting...\r\n");
 
-  // Build credentials if available
-  SmartBell::MQTTCredentials credentials;
-  SmartBell::MQTTCredentials* creds_ptr = nullptr;
+  // Build MQTT::Config from ConfigManager
+  const Config::SmartBellConfig& cfg = config_manager_.get_config();
+  MQTT::Config mqtt_cfg;
+  memcpy(mqtt_cfg.broker_ip, cfg.mqtt_broker_ip, 4);
+  mqtt_cfg.broker_port = cfg.mqtt_port;
+  strncpy(mqtt_cfg.client_id, cfg.mqtt_client_id, sizeof(mqtt_cfg.client_id) - 1);
+  mqtt_cfg.client_id[sizeof(mqtt_cfg.client_id) - 1] = '\0';
+  mqtt_cfg.keepalive = cfg.mqtt_keepalive;
 
-  if (config_manager_.get_username()[0] != '\0') {
-    credentials.username = config_manager_.get_username();
-    credentials.password = config_manager_.get_password();
-    creds_ptr = &credentials;
+  // Set credentials if configured
+  if (cfg.mqtt_username[0] != '\0') {
+    mqtt_cfg.use_auth = true;
+    strncpy(mqtt_cfg.username, cfg.mqtt_username, sizeof(mqtt_cfg.username) - 1);
+    mqtt_cfg.username[sizeof(mqtt_cfg.username) - 1] = '\0';
+    strncpy(mqtt_cfg.password, cfg.mqtt_password, sizeof(mqtt_cfg.password) - 1);
+    mqtt_cfg.password[sizeof(mqtt_cfg.password) - 1] = '\0';
+  } else {
+    mqtt_cfg.use_auth = false;
   }
 
   // Connect
-  if (mqtt_client_.connect(mqtt_config, creds_ptr)) {
+  if (mqtt_client_.connect(mqtt_cfg)) {
     // Subscribe to all required topics
     subscribe_to_topics();
 
@@ -237,8 +241,8 @@ void SmartBellApp::handle_mqtt_connecting() {
 }
 
 void SmartBellApp::handle_running() {
-  // Process MQTT messages
-  mqtt_client_.yield(100);
+  // Process MQTT messages (keepalive, receive)
+  mqtt_client_.loop();
 
   // Process button state changes and publish events
   process_button_events();
@@ -347,7 +351,8 @@ void SmartBellApp::publish_button_event(ButtonId button, bool active) {
   }
 
   // Publish with empty payload (topic itself indicates the event)
-  if (mqtt_client_.publish_string(topic, "", SmartBell::MQTTQoS::kQoS1)) {
+  const uint8_t empty_payload = 0;
+  if (mqtt_client_.publish(topic, &empty_payload, 0)) {
     log("[APP] Button event published\r\n");
   } else {
     log("[APP] Failed to publish button event\r\n");
@@ -357,33 +362,25 @@ void SmartBellApp::publish_button_event(ButtonId button, bool active) {
 void SmartBellApp::subscribe_to_topics() {
   log("[APP] Subscribing to topics...\r\n");
 
-  // Gong status topics
-  mqtt_client_.subscribe(SmartBellTopics::kGongUpperfloorStatus, on_mqtt_message,
-                         SmartBell::MQTTQoS::kQoS1);
-  mqtt_client_.subscribe(SmartBellTopics::kGongGroundfloorStatus, on_mqtt_message,
-                         SmartBell::MQTTQoS::kQoS1);
+  // MinimalMQTT supports max 2 subscriptions with single callback
+  // For multiple topics, use wildcard or handle in callback
+  // Subscribe to test gong topics (most important for user interaction)
+  mqtt_client_.subscribe(SmartBellTopics::kTestGongUpperfloor, on_mqtt_message);
+  mqtt_client_.subscribe(SmartBellTopics::kTestGongBoth, on_mqtt_message);
 
-  // Test gong topics
-  mqtt_client_.subscribe(SmartBellTopics::kTestGongUpperfloor, on_mqtt_message,
-                         SmartBell::MQTTQoS::kQoS1);
-  mqtt_client_.subscribe(SmartBellTopics::kTestGongGroundfloor, on_mqtt_message,
-                         SmartBell::MQTTQoS::kQoS1);
-  mqtt_client_.subscribe(SmartBellTopics::kTestGongBoth, on_mqtt_message,
-                         SmartBell::MQTTQoS::kQoS1);
+  // Note: Limited to 2 subscriptions - gong status, groundfloor, duration topics not subscribed
+  // Consider MQTT topic wildcards (e.g., "smartbell/gong/#") if broker supports
 
-  // Duration configuration topic
-  mqtt_client_.subscribe(SmartBellTopics::kGongDuration, on_mqtt_message,
-                         SmartBell::MQTTQoS::kQoS1);
-
-  log("[APP] Subscribed to all topics\r\n");
+  log("[APP] Subscribed to critical topics\r\n");
 }
 
-void SmartBellApp::on_mqtt_message(const SmartBell::MQTTMessageData* message) {
+void SmartBellApp::on_mqtt_message(const char* topic, const uint8_t* payload,
+                                   uint16_t payload_len) {
   if (instance_ == nullptr) {
     return;
   }
 
-  instance_->process_mqtt_message(message->topic, message->payload, message->payload_length);
+  instance_->process_mqtt_message(topic, payload, payload_len);
 }
 
 void SmartBellApp::process_mqtt_message(const char* topic, const uint8_t* payload,

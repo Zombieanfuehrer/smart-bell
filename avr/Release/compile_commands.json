@@ -1,0 +1,188 @@
+[
+{
+  "directory": "/home/david/dev/smart-bell/avr/Release/src",
+  "command": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-g++  -I/home/david/dev/smart-bell/public -I/home/david/dev/smart-bell/avr/Release/configured/include -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects  -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects -DF_CPU=16000000UL -Os -DNDEBUG -std=gnu++1z -o CMakeFiles/ATmega328_WTD.dir/SetupWDT.cpp.obj -c /home/david/dev/smart-bell/src/SetupWDT.cpp",
+  "file": "/home/david/dev/smart-bell/src/SetupWDT.cpp",
+  "output": "src/CMakeFiles/ATmega328_WTD.dir/SetupWDT.cpp.obj"
+},
+{
+  "directory": "/home/david/dev/smart-bell/avr/Release/src",
+  "command": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-g++  -I/home/david/dev/smart-bell/public -I/home/david/dev/smart-bell/avr/Release/configured/include -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects  -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects -DF_CPU=16000000UL -Os -DNDEBUG -std=gnu++1z -o CMakeFiles/ATmega328_PIN_INT.dir/SetupEXT_IN_Interrupt.cpp.obj -c /home/david/dev/smart-bell/src/SetupEXT_IN_Interrupt.cpp",
+  "file": "/home/david/dev/smart-bell/src/SetupEXT_IN_Interrupt.cpp",
+  "output": "src/CMakeFiles/ATmega328_PIN_INT.dir/SetupEXT_IN_Interrupt.cpp.obj"
+},
+{
+  "directory": "/home/david/dev/smart-bell/avr/Release/src",
+  "command": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-g++  -I/home/david/dev/smart-bell/public -I/home/david/dev/smart-bell/avr/Release/configured/include -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects  -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects -DF_CPU=16000000UL -Os -DNDEBUG -std=gnu++1z -o CMakeFiles/ATmega328_TIMER_INT.dir/SetupTimer.cpp.obj -c /home/david/dev/smart-bell/src/SetupTimer.cpp",
+  "file": "/home/david/dev/smart-bell/src/SetupTimer.cpp",
+  "output": "src/CMakeFiles/ATmega328_TIMER_INT.dir/SetupTimer.cpp.obj"
+},
+{
+  "directory": "/home/david/dev/smart-bell/avr/Release/src",
+  "command": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-gcc  -I/home/david/dev/smart-bell/public/Ethernet -I/home/david/dev/smart-bell/public/Ethernet/W5500 -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/DHCP -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/DNS -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects  -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects -DF_CPU=16000000UL -Os -DNDEBUG -o CMakeFiles/ATmega328_IOLIBRARY_INTERNET.dir/__/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/mqtt_interface.c.obj -c /home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/mqtt_interface.c",
+  "file": "/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/mqtt_interface.c",
+  "output": "src/CMakeFiles/ATmega328_IOLIBRARY_INTERNET.dir/__/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/mqtt_interface.c.obj"
+},
+{
+  "directory": "/home/david/dev/smart-bell/avr/Release/src",
+  "command": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-gcc  -I/home/david/dev/smart-bell/public/Ethernet -I/home/david/dev/smart-bell/public/Ethernet/W5500 -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/DHCP -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/DNS -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects  -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects -DF_CPU=16000000UL -Os -DNDEBUG -o CMakeFiles/ATmega328_IOLIBRARY_INTERNET.dir/__/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTClient.c.obj -c /home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTClient.c",
+  "file": "/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTClient.c",
+  "output": "src/CMakeFiles/ATmega328_IOLIBRARY_INTERNET.dir/__/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTClient.c.obj"
+},
+{
+  "directory": "/home/david/dev/smart-bell/avr/Release/src",
+  "command": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-gcc  -I/home/david/dev/smart-bell/public/Ethernet -I/home/david/dev/smart-bell/public/Ethernet/W5500 -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/DHCP -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/DNS -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects  -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects -DF_CPU=16000000UL -Os -DNDEBUG -o CMakeFiles/ATmega328_IOLIBRARY_INTERNET.dir/__/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTConnectClient.c.obj -c /home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTConnectClient.c",
+  "file": "/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTConnectClient.c",
+  "output": "src/CMakeFiles/ATmega328_IOLIBRARY_INTERNET.dir/__/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTConnectClient.c.obj"
+},
+{
+  "directory": "/home/david/dev/smart-bell/avr/Release/src",
+  "command": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-gcc  -I/home/david/dev/smart-bell/public/Ethernet -I/home/david/dev/smart-bell/public/Ethernet/W5500 -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/DHCP -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/DNS -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects  -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects -DF_CPU=16000000UL -Os -DNDEBUG -o CMakeFiles/ATmega328_IOLIBRARY_INTERNET.dir/__/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTConnectServer.c.obj -c /home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTConnectServer.c",
+  "file": "/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTConnectServer.c",
+  "output": "src/CMakeFiles/ATmega328_IOLIBRARY_INTERNET.dir/__/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTConnectServer.c.obj"
+},
+{
+  "directory": "/home/david/dev/smart-bell/avr/Release/src",
+  "command": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-gcc  -I/home/david/dev/smart-bell/public/Ethernet -I/home/david/dev/smart-bell/public/Ethernet/W5500 -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/DHCP -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/DNS -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects  -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects -DF_CPU=16000000UL -Os -DNDEBUG -o CMakeFiles/ATmega328_IOLIBRARY_INTERNET.dir/__/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTDeserializePublish.c.obj -c /home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTDeserializePublish.c",
+  "file": "/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTDeserializePublish.c",
+  "output": "src/CMakeFiles/ATmega328_IOLIBRARY_INTERNET.dir/__/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTDeserializePublish.c.obj"
+},
+{
+  "directory": "/home/david/dev/smart-bell/avr/Release/src",
+  "command": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-gcc  -I/home/david/dev/smart-bell/public/Ethernet -I/home/david/dev/smart-bell/public/Ethernet/W5500 -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/DHCP -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/DNS -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects  -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects -DF_CPU=16000000UL -Os -DNDEBUG -o CMakeFiles/ATmega328_IOLIBRARY_INTERNET.dir/__/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTFormat.c.obj -c /home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTFormat.c",
+  "file": "/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTFormat.c",
+  "output": "src/CMakeFiles/ATmega328_IOLIBRARY_INTERNET.dir/__/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTFormat.c.obj"
+},
+{
+  "directory": "/home/david/dev/smart-bell/avr/Release/src",
+  "command": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-gcc  -I/home/david/dev/smart-bell/public/Ethernet -I/home/david/dev/smart-bell/public/Ethernet/W5500 -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/DHCP -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/DNS -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects  -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects -DF_CPU=16000000UL -Os -DNDEBUG -o CMakeFiles/ATmega328_IOLIBRARY_INTERNET.dir/__/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTPacket.c.obj -c /home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTPacket.c",
+  "file": "/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTPacket.c",
+  "output": "src/CMakeFiles/ATmega328_IOLIBRARY_INTERNET.dir/__/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTPacket.c.obj"
+},
+{
+  "directory": "/home/david/dev/smart-bell/avr/Release/src",
+  "command": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-gcc  -I/home/david/dev/smart-bell/public/Ethernet -I/home/david/dev/smart-bell/public/Ethernet/W5500 -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/DHCP -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/DNS -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects  -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects -DF_CPU=16000000UL -Os -DNDEBUG -o CMakeFiles/ATmega328_IOLIBRARY_INTERNET.dir/__/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTSerializePublish.c.obj -c /home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTSerializePublish.c",
+  "file": "/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTSerializePublish.c",
+  "output": "src/CMakeFiles/ATmega328_IOLIBRARY_INTERNET.dir/__/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTSerializePublish.c.obj"
+},
+{
+  "directory": "/home/david/dev/smart-bell/avr/Release/src",
+  "command": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-gcc  -I/home/david/dev/smart-bell/public/Ethernet -I/home/david/dev/smart-bell/public/Ethernet/W5500 -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/DHCP -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/DNS -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects  -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects -DF_CPU=16000000UL -Os -DNDEBUG -o CMakeFiles/ATmega328_IOLIBRARY_INTERNET.dir/__/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTSubscribeClient.c.obj -c /home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTSubscribeClient.c",
+  "file": "/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTSubscribeClient.c",
+  "output": "src/CMakeFiles/ATmega328_IOLIBRARY_INTERNET.dir/__/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTSubscribeClient.c.obj"
+},
+{
+  "directory": "/home/david/dev/smart-bell/avr/Release/src",
+  "command": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-gcc  -I/home/david/dev/smart-bell/public/Ethernet -I/home/david/dev/smart-bell/public/Ethernet/W5500 -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/DHCP -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/DNS -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects  -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects -DF_CPU=16000000UL -Os -DNDEBUG -o CMakeFiles/ATmega328_IOLIBRARY_INTERNET.dir/__/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTSubscribeServer.c.obj -c /home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTSubscribeServer.c",
+  "file": "/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTSubscribeServer.c",
+  "output": "src/CMakeFiles/ATmega328_IOLIBRARY_INTERNET.dir/__/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTSubscribeServer.c.obj"
+},
+{
+  "directory": "/home/david/dev/smart-bell/avr/Release/src",
+  "command": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-gcc  -I/home/david/dev/smart-bell/public/Ethernet -I/home/david/dev/smart-bell/public/Ethernet/W5500 -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/DHCP -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/DNS -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects  -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects -DF_CPU=16000000UL -Os -DNDEBUG -o CMakeFiles/ATmega328_IOLIBRARY_INTERNET.dir/__/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTUnsubscribeClient.c.obj -c /home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTUnsubscribeClient.c",
+  "file": "/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTUnsubscribeClient.c",
+  "output": "src/CMakeFiles/ATmega328_IOLIBRARY_INTERNET.dir/__/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTUnsubscribeClient.c.obj"
+},
+{
+  "directory": "/home/david/dev/smart-bell/avr/Release/src",
+  "command": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-gcc  -I/home/david/dev/smart-bell/public/Ethernet -I/home/david/dev/smart-bell/public/Ethernet/W5500 -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/DHCP -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/DNS -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects  -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects -DF_CPU=16000000UL -Os -DNDEBUG -o CMakeFiles/ATmega328_IOLIBRARY_INTERNET.dir/__/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTUnsubscribeServer.c.obj -c /home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTUnsubscribeServer.c",
+  "file": "/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTUnsubscribeServer.c",
+  "output": "src/CMakeFiles/ATmega328_IOLIBRARY_INTERNET.dir/__/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src/MQTTUnsubscribeServer.c.obj"
+},
+{
+  "directory": "/home/david/dev/smart-bell/avr/Release/src/Utils",
+  "command": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-g++  -I/home/david/dev/smart-bell/public -I/home/david/dev/smart-bell/avr/Release/configured/include -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects  -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects -DF_CPU=16000000UL -Os -DNDEBUG -std=gnu++1z -o CMakeFiles/ATmega328_UTILS.dir/new_delete.cpp.obj -c /home/david/dev/smart-bell/src/Utils/new_delete.cpp",
+  "file": "/home/david/dev/smart-bell/src/Utils/new_delete.cpp",
+  "output": "src/Utils/CMakeFiles/ATmega328_UTILS.dir/new_delete.cpp.obj"
+},
+{
+  "directory": "/home/david/dev/smart-bell/avr/Release/src/System",
+  "command": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-g++  -I/home/david/dev/smart-bell/public -I/home/david/dev/smart-bell/avr/Release/configured/include -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects  -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects -DF_CPU=16000000UL -Os -DNDEBUG -std=gnu++1z -o CMakeFiles/ATmega328_TIMER_SERVICE.dir/TimerService.cpp.obj -c /home/david/dev/smart-bell/src/System/TimerService.cpp",
+  "file": "/home/david/dev/smart-bell/src/System/TimerService.cpp",
+  "output": "src/System/CMakeFiles/ATmega328_TIMER_SERVICE.dir/TimerService.cpp.obj"
+},
+{
+  "directory": "/home/david/dev/smart-bell/avr/Release/src/MQTT",
+  "command": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-g++  -I/home/david/dev/smart-bell/public -I/home/david/dev/smart-bell/avr/Release/configured/include -I/home/david/dev/smart-bell/public/Ethernet -I/home/david/dev/smart-bell/public/Ethernet/W5500 -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects  -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects -DF_CPU=16000000UL -Os -DNDEBUG -std=gnu++1z -o CMakeFiles/ATmega328_MQTT.dir/MinimalMQTT.cpp.obj -c /home/david/dev/smart-bell/src/MQTT/MinimalMQTT.cpp",
+  "file": "/home/david/dev/smart-bell/src/MQTT/MinimalMQTT.cpp",
+  "output": "src/MQTT/CMakeFiles/ATmega328_MQTT.dir/MinimalMQTT.cpp.obj"
+},
+{
+  "directory": "/home/david/dev/smart-bell/avr/Release/src/Config",
+  "command": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-g++  -I/home/david/dev/smart-bell/public -I/home/david/dev/smart-bell/avr/Release/configured/include -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects  -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects -DF_CPU=16000000UL -Os -DNDEBUG -std=gnu++1z -o CMakeFiles/ATmega328_CONFIG.dir/ConfigManager.cpp.obj -c /home/david/dev/smart-bell/src/Config/ConfigManager.cpp",
+  "file": "/home/david/dev/smart-bell/src/Config/ConfigManager.cpp",
+  "output": "src/Config/CMakeFiles/ATmega328_CONFIG.dir/ConfigManager.cpp.obj"
+},
+{
+  "directory": "/home/david/dev/smart-bell/avr/Release/src/Config",
+  "command": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-g++  -I/home/david/dev/smart-bell/public -I/home/david/dev/smart-bell/avr/Release/configured/include -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects  -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects -DF_CPU=16000000UL -Os -DNDEBUG -std=gnu++1z -o CMakeFiles/ATmega328_CONFIG.dir/LightweightConfig.cpp.obj -c /home/david/dev/smart-bell/src/Config/LightweightConfig.cpp",
+  "file": "/home/david/dev/smart-bell/src/Config/LightweightConfig.cpp",
+  "output": "src/Config/CMakeFiles/ATmega328_CONFIG.dir/LightweightConfig.cpp.obj"
+},
+{
+  "directory": "/home/david/dev/smart-bell/avr/Release/src/Serial",
+  "command": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-g++  -I/home/david/dev/smart-bell/public -I/home/david/dev/smart-bell/avr/Release/configured/include -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects  -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects -DF_CPU=16000000UL -Os -DNDEBUG -std=gnu++1z -o CMakeFiles/ATmega328_USART.dir/UART.cpp.obj -c /home/david/dev/smart-bell/src/Serial/UART.cpp",
+  "file": "/home/david/dev/smart-bell/src/Serial/UART.cpp",
+  "output": "src/Serial/CMakeFiles/ATmega328_USART.dir/UART.cpp.obj"
+},
+{
+  "directory": "/home/david/dev/smart-bell/avr/Release/src/Serial",
+  "command": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-g++  -I/home/david/dev/smart-bell/public -I/home/david/dev/smart-bell/avr/Release/configured/include -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects  -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects -DF_CPU=16000000UL -Os -DNDEBUG -std=gnu++1z -o CMakeFiles/ATmega328_SPI.dir/SPI.cpp.obj -c /home/david/dev/smart-bell/src/Serial/SPI.cpp",
+  "file": "/home/david/dev/smart-bell/src/Serial/SPI.cpp",
+  "output": "src/Serial/CMakeFiles/ATmega328_SPI.dir/SPI.cpp.obj"
+},
+{
+  "directory": "/home/david/dev/smart-bell/avr/Release/src/Ethernet",
+  "command": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-gcc  -I/home/david/dev/smart-bell/public/Ethernet -I/home/david/dev/smart-bell/public/Ethernet/W5500 -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects  -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects -DF_CPU=16000000UL -Os -DNDEBUG -o CMakeFiles/ATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.dir/W5500/w5500.c.obj -c /home/david/dev/smart-bell/src/Ethernet/W5500/w5500.c",
+  "file": "/home/david/dev/smart-bell/src/Ethernet/W5500/w5500.c",
+  "output": "src/Ethernet/CMakeFiles/ATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.dir/W5500/w5500.c.obj"
+},
+{
+  "directory": "/home/david/dev/smart-bell/avr/Release/src/Ethernet",
+  "command": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-gcc  -I/home/david/dev/smart-bell/public/Ethernet -I/home/david/dev/smart-bell/public/Ethernet/W5500 -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects  -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects -DF_CPU=16000000UL -Os -DNDEBUG -o CMakeFiles/ATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.dir/socket.c.obj -c /home/david/dev/smart-bell/src/Ethernet/socket.c",
+  "file": "/home/david/dev/smart-bell/src/Ethernet/socket.c",
+  "output": "src/Ethernet/CMakeFiles/ATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.dir/socket.c.obj"
+},
+{
+  "directory": "/home/david/dev/smart-bell/avr/Release/src/Ethernet",
+  "command": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-gcc  -I/home/david/dev/smart-bell/public/Ethernet -I/home/david/dev/smart-bell/public/Ethernet/W5500 -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects  -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects -DF_CPU=16000000UL -Os -DNDEBUG -o CMakeFiles/ATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.dir/wizchip_conf.c.obj -c /home/david/dev/smart-bell/src/Ethernet/wizchip_conf.c",
+  "file": "/home/david/dev/smart-bell/src/Ethernet/wizchip_conf.c",
+  "output": "src/Ethernet/CMakeFiles/ATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.dir/wizchip_conf.c.obj"
+},
+{
+  "directory": "/home/david/dev/smart-bell/avr/Release/src/Ethernet",
+  "command": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-g++  -I/home/david/dev/smart-bell/public/Ethernet -I/home/david/dev/smart-bell/public/Ethernet/W5500 -I/home/david/dev/smart-bell/public -I/home/david/dev/smart-bell/avr/Release/configured/include -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects  -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects -DF_CPU=16000000UL -Os -DNDEBUG -std=gnu++1z -o CMakeFiles/ATmega328_W5500_ETHERNET.dir/W5500/W5500Interface.cpp.obj -c /home/david/dev/smart-bell/src/Ethernet/W5500/W5500Interface.cpp",
+  "file": "/home/david/dev/smart-bell/src/Ethernet/W5500/W5500Interface.cpp",
+  "output": "src/Ethernet/CMakeFiles/ATmega328_W5500_ETHERNET.dir/W5500/W5500Interface.cpp.obj"
+},
+{
+  "directory": "/home/david/dev/smart-bell/avr/Release/src/Ethernet",
+  "command": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-g++  -I/home/david/dev/smart-bell/public/Ethernet -I/home/david/dev/smart-bell/public/Ethernet/W5500 -I/home/david/dev/smart-bell/public -I/home/david/dev/smart-bell/avr/Release/configured/include -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects  -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects -DF_CPU=16000000UL -Os -DNDEBUG -std=gnu++1z -o CMakeFiles/ATmega328_W5500_ETHERNET.dir/EmbeddedSocketInterface.cpp.obj -c /home/david/dev/smart-bell/src/Ethernet/EmbeddedSocketInterface.cpp",
+  "file": "/home/david/dev/smart-bell/src/Ethernet/EmbeddedSocketInterface.cpp",
+  "output": "src/Ethernet/CMakeFiles/ATmega328_W5500_ETHERNET.dir/EmbeddedSocketInterface.cpp.obj"
+},
+{
+  "directory": "/home/david/dev/smart-bell/avr/Release/src/Network",
+  "command": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-g++  -I/home/david/dev/smart-bell/public -I/home/david/dev/smart-bell/avr/Release/configured/include -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src -I/home/david/dev/smart-bell/public/Ethernet -I/home/david/dev/smart-bell/public/Ethernet/W5500 -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/DHCP -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/DNS -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects  -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects -DF_CPU=16000000UL -Os -DNDEBUG -std=gnu++1z -o CMakeFiles/ATmega328_NETWORK.dir/MQTTClient.cpp.obj -c /home/david/dev/smart-bell/src/Network/MQTTClient.cpp",
+  "file": "/home/david/dev/smart-bell/src/Network/MQTTClient.cpp",
+  "output": "src/Network/CMakeFiles/ATmega328_NETWORK.dir/MQTTClient.cpp.obj"
+},
+{
+  "directory": "/home/david/dev/smart-bell/avr/Release/src/App",
+  "command": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-g++  -I/home/david/dev/smart-bell/public -I/home/david/dev/smart-bell/avr/Release/configured/include -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src -I/home/david/dev/smart-bell/public/Ethernet -I/home/david/dev/smart-bell/public/Ethernet/W5500 -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/DHCP -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/DNS -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects  -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects -DF_CPU=16000000UL -Os -DNDEBUG -std=gnu++1z -o CMakeFiles/ATmega328_APP.dir/SmartBellApp.cpp.obj -c /home/david/dev/smart-bell/src/App/SmartBellApp.cpp",
+  "file": "/home/david/dev/smart-bell/src/App/SmartBellApp.cpp",
+  "output": "src/App/CMakeFiles/ATmega328_APP.dir/SmartBellApp.cpp.obj"
+},
+{
+  "directory": "/home/david/dev/smart-bell/avr/Release/src/App",
+  "command": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-g++  -I/home/david/dev/smart-bell/public -I/home/david/dev/smart-bell/avr/Release/configured/include -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/MQTT/MQTTPacket/src -I/home/david/dev/smart-bell/public/Ethernet -I/home/david/dev/smart-bell/public/Ethernet/W5500 -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/DHCP -I/home/david/dev/smart-bell/extern/ioLibrary_Driver/ioLibrary_Driver-3.2.0/Internet/DNS -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects  -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects -DF_CPU=16000000UL -Os -DNDEBUG -std=gnu++1z -o CMakeFiles/ATmega328_APP.dir/GongController.cpp.obj -c /home/david/dev/smart-bell/src/App/GongController.cpp",
+  "file": "/home/david/dev/smart-bell/src/App/GongController.cpp",
+  "output": "src/App/CMakeFiles/ATmega328_APP.dir/GongController.cpp.obj"
+},
+{
+  "directory": "/home/david/dev/smart-bell/avr/Release/app",
+  "command": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-g++  -I/home/david/dev/smart-bell/public -I/home/david/dev/smart-bell/avr/Release/configured/include -I/home/david/dev/smart-bell/public/Ethernet -I/home/david/dev/smart-bell/public/Ethernet/W5500 -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects  -mmcu=atmega328 -Os -ffunction-sections -fdata-sections -fno-exceptions -ffat-lto-objects -DF_CPU=16000000UL -Os -DNDEBUG -std=gnu++1z -o CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj -c /home/david/dev/smart-bell/app/smart_bell.cpp",
+  "file": "/home/david/dev/smart-bell/app/smart_bell.cpp",
+  "output": "app/CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj"
+}
+]

@@ -67,10 +67,7 @@ set(LIB_W5500_ETHERNET "ATmega328_W5500_ETHERNET")
 set(LIB_WIZNET_IOLIBRARY "ATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY")
 set(LIB_MQTT "ATmega328_MQTT")
 set(LIB_CONFIG "ATmega328_CONFIG")
-
-# New libraries for MQTT/DHCP/DNS support
 set(LIB_TIMER_SERVICE "ATmega328_TIMER_SERVICE")
-set(LIB_CONFIG "ATmega328_CONFIG")
 set(LIB_IOLIBRARY_INTERNET "ATmega328_IOLIBRARY_INTERNET")
 set(LIB_NETWORK "ATmega328_NETWORK")
 set(LIB_APP "ATmega328_APP")
@@ -136,34 +133,26 @@ include(Install)
 install_target(${LIB_WTD})
 install_target(${LIB_PININT})
 install_target(${LIB_TIMERINT})
-install_target(${LIB_USART})
-install_target(${LIB_SPI})
 install_target(${LIB_UTILS})
-install_target(${LIB_W5500_ETHERNET})
-install_target(${LIB_MQTT})
-install_target(${LIB_CONFIG})
-install_target(${LIB_TIMER_SERVICE})
-install_target(${LIB_CONFIG})
-install_target(${LIB_IOLIBRARY_INTERNET})
-install_target(${LIB_NETWORK})
-install_target(${LIB_APP})
-install_target(${EXECUTABLE_UART_EXAMPLE})
-install_target(${EXECUTABLE_TCP_SERVER_EXAMPLE})
-install_target(${EXECUTABLE_SMART_BELL})
 
-set(FW_EXAMPLES_LIST
-    ${EXECUTABLE_UART_EXAMPLE}
-    ${EXECUTABLE_TCP_SERVER_EXAMPLE}
-    ${EXECUTABLE_SMART_BELL})
-
-include(Objcopy)
-
-foreach(FW_2_hex_item IN LISTS FW_EXAMPLES_LIST)
-    run_bin2hex(
-        TARGET
-        ${FW_2_hex_item}
-        TARGET_ARTIFACT
-        "${CMAKE_BINARY_DIR}/app/${FW_2_hex_item}"
-        HEX_FILE
-        "${CMAKE_BINARY_DIR}/app/${FW_2_hex_item}.hex")
-endforeach()
+# Only install these targets when not building tests
+if(NOT ${ENABLE_UNIT_TESTS})
+    install_target(${LIB_USART})
+    install_target(${LIB_SPI})
+    install_target(${LIB_W5500_ETHERNET})
+    install_target(${LIB_MQTT})
+    install_target(${LIB_CONFIG})
+    install_target(${LIB_IOLIBRARY_INTERNET})
+    # Note: UART_EXAMPLE and TCP_SERVER_EXAMPLE removed (examples only)
+    install_target(${EXECUTABLE_SMART_BELL})
+    
+    set(FW_EXAMPLES_LIST ${EXECUTABLE_SMART_BELL})
+    
+    include(Objcopy)
+    foreach(FW_2_hex_item IN LISTS FW_EXAMPLES_LIST)
+        run_bin2hex(
+            TARGET ${FW_2_hex_item}
+            TARGET_ARTIFACT ${CMAKE_BINARY_DIR}/app/${FW_2_hex_item}
+            HEX_FILE ${CMAKE_BINARY_DIR}/${FW_2_hex_item}.hex)
+    endforeach()
+endif()

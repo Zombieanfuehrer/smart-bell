@@ -1,0 +1,52 @@
+{
+    "version": 3,
+    "vendor": {
+        "conan": {}
+    },
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 15,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "conan-generated-avr-release",
+            "displayName": "'conan-generated-avr-release' config",
+            "description": "'conan-generated-avr-release' configure using 'Unix Makefiles' generator",
+            "generator": "Unix Makefiles",
+            "cacheVariables": {
+                "CMAKE_POLICY_DEFAULT_CMP0091": "NEW",
+                "CMAKE_BUILD_TYPE": "Release"
+            },
+            "environment": {
+                "STRIP": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-strip",
+                "CXX": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-g++",
+                "CC": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-gcc",
+                "RANLIB": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-ranlib",
+                "AS": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-as",
+                "AR": "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-ar",
+                "PATH": "/opt/avr8-gnu-toolchain-linux_x86_64/bin:$PATH",
+                "CONAN_CMAKE_FIND_ROOT": "/opt/avr8-gnu-toolchain-linux_x86_64",
+                "CHOST": "avr"
+            },
+            "toolchainFile": "../../generators/conan_toolchain.cmake",
+            "binaryDir": "/home/david/dev/smart-bell/avr/Release"
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "conan-generated-avr-release",
+            "configurePreset": "conan-generated-avr-release",
+            "jobs": 8
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "conan-generated-avr-release",
+            "configurePreset": "conan-generated-avr-release",
+            "execution": {
+                "jobs": 8
+            }
+        }
+    ]
+}

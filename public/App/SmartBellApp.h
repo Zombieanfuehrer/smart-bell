@@ -6,7 +6,7 @@
 #include "Config/ConfigManager.h"
 #include "Config/UARTCommandParser.h"
 #include "Ethernet/W5500/W5500Interface.h"
-#include "Network/MQTTClient.h"
+#include "MQTT/MinimalMQTT.h"
 #include "Serial/Interface.h"
 #include "SetupEXT_IN_Interrupt.h"
 
@@ -143,8 +143,8 @@ class SmartBellApp {
   Config::ConfigManager config_manager_;
   Config::UARTCommandParser command_parser_;
 
-  // Network client - embedded to avoid dynamic allocation
-  SmartBell::MQTTClient mqtt_client_;
+  // MQTT client - using MinimalMQTT for resource-constrained environment
+  MQTT::MinimalMQTT mqtt_client_;
 
   // Gong controller - embedded
   GongController gong_controller_;
@@ -217,10 +217,13 @@ class SmartBellApp {
   void subscribe_to_topics();
 
   /**
-   * @brief Handle received MQTT message.
-   * @param message Received message data.
+   * @brief Static MQTT message callback (trampoline to instance method).
+   * Signature matches MQTT::MinimalMQTT::MessageCallback.
+   * @param topic Topic string.
+   * @param payload Message payload bytes.
+   * @param payload_len Payload length.
    */
-  static void on_mqtt_message(const SmartBell::MQTTMessageData* message);
+  static void on_mqtt_message(const char* topic, const uint8_t* payload, uint16_t payload_len);
 
   /**
    * @brief Process received MQTT message.

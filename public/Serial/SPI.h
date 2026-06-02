@@ -43,7 +43,7 @@ class SPI : public Interface {
  public:
   SPI(const SPI_parameters &parameters, const uint8_t slave_select);
   ~SPI() = default;
-  static constexpr const uint8_t kTXRX_buffer_size{32};
+  static constexpr const uint8_t kTXRX_buffer_size{16};
 
   void set_slave_select(const uint8_t slave_select);
   void send(const uint8_t byte) override;

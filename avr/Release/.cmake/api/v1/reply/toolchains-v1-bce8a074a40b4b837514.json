@@ -1,0 +1,103 @@
+{
+	"kind" : "toolchains",
+	"toolchains" : 
+	[
+		{
+			"compiler" : 
+			{
+				"id" : "GNU",
+				"implicit" : 
+				{
+					"includeDirectories" : 
+					[
+						"/opt/avr8-gnu-toolchain-linux_x86_64/lib/gcc/avr/7.3.0/include",
+						"/opt/avr8-gnu-toolchain-linux_x86_64/lib/gcc/avr/7.3.0/include-fixed",
+						"/opt/avr8-gnu-toolchain-linux_x86_64/avr/include"
+					],
+					"linkDirectories" : 
+					[
+						"/opt/avr8-gnu-toolchain-linux_x86_64/lib/gcc/avr/7.3.0/avr5",
+						"/opt/avr8-gnu-toolchain-linux_x86_64/avr/lib/avr5",
+						"/opt/avr8-gnu-toolchain-linux_x86_64/lib/gcc/avr/7.3.0",
+						"/opt/avr8-gnu-toolchain-linux_x86_64/lib/gcc",
+						"/opt/avr8-gnu-toolchain-linux_x86_64/avr/lib"
+					],
+					"linkFrameworkDirectories" : [],
+					"linkLibraries" : 
+					[
+						"gcc",
+						"m",
+						"c",
+						"atmega328"
+					]
+				},
+				"path" : "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-gcc",
+				"version" : "7.3.0"
+			},
+			"language" : "C",
+			"sourceFileExtensions" : 
+			[
+				"c",
+				"m"
+			]
+		},
+		{
+			"compiler" : 
+			{
+				"id" : "GNU",
+				"implicit" : 
+				{
+					"includeDirectories" : 
+					[
+						"/opt/avr8-gnu-toolchain-linux_x86_64/lib/gcc/avr/7.3.0/include",
+						"/opt/avr8-gnu-toolchain-linux_x86_64/lib/gcc/avr/7.3.0/include-fixed",
+						"/opt/avr8-gnu-toolchain-linux_x86_64/avr/include"
+					],
+					"linkDirectories" : 
+					[
+						"/opt/avr8-gnu-toolchain-linux_x86_64/lib/gcc/avr/7.3.0/avr5",
+						"/opt/avr8-gnu-toolchain-linux_x86_64/avr/lib/avr5",
+						"/opt/avr8-gnu-toolchain-linux_x86_64/lib/gcc/avr/7.3.0",
+						"/opt/avr8-gnu-toolchain-linux_x86_64/lib/gcc",
+						"/opt/avr8-gnu-toolchain-linux_x86_64/avr/lib"
+					],
+					"linkFrameworkDirectories" : [],
+					"linkLibraries" : 
+					[
+						"gcc",
+						"m",
+						"gcc",
+						"m",
+						"c",
+						"atmega328"
+					]
+				},
+				"path" : "/opt/avr8-gnu-toolchain-linux_x86_64/bin/avr-g++",
+				"version" : "7.3.0"
+			},
+			"language" : "CXX",
+			"sourceFileExtensions" : 
+			[
+				"C",
+				"M",
+				"c++",
+				"cc",
+				"cpp",
+				"cxx",
+				"mm",
+				"mpp",
+				"CPP",
+				"ixx",
+				"cppm",
+				"ccm",
+				"cxxm",
+				"c++m"
+			]
+		}
+	],
+	"version" : 
+	{
+		"major" : 1,
+		"minor" : 0
+	}
+}

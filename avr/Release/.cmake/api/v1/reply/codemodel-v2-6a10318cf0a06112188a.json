@@ -1,0 +1,398 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						10
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Release-4ba7a4de4d6186df11d1.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						7,
+						16,
+						17,
+						18,
+						19
+					]
+				},
+				{
+					"build" : "src",
+					"childIndexes" : 
+					[
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9
+					],
+					"jsonFile" : "directory-src-Release-b6cf2213fc5053b67c22.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "src",
+					"targetIndexes" : 
+					[
+						2,
+						5,
+						9,
+						15
+					]
+				},
+				{
+					"build" : "src/Utils",
+					"jsonFile" : "directory-src.Utils-Release-5a3062a8dc7bbade5c8e.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 0,
+					"source" : "src/Utils",
+					"targetIndexes" : 
+					[
+						12
+					]
+				},
+				{
+					"build" : "src/System",
+					"jsonFile" : "directory-src.System-Release-380890ed585335ad841f.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 0,
+					"source" : "src/System",
+					"targetIndexes" : 
+					[
+						10
+					]
+				},
+				{
+					"build" : "src/MQTT",
+					"jsonFile" : "directory-src.MQTT-Release-78c20745f503597d33d5.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 0,
+					"source" : "src/MQTT",
+					"targetIndexes" : 
+					[
+						3
+					]
+				},
+				{
+					"build" : "src/Config",
+					"jsonFile" : "directory-src.Config-Release-b06ab958f7ddab230cf4.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 0,
+					"source" : "src/Config",
+					"targetIndexes" : 
+					[
+						1
+					]
+				},
+				{
+					"build" : "src/Serial",
+					"jsonFile" : "directory-src.Serial-Release-7292ca645a39228b8fa2.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 0,
+					"source" : "src/Serial",
+					"targetIndexes" : 
+					[
+						8,
+						11
+					]
+				},
+				{
+					"build" : "src/Ethernet",
+					"jsonFile" : "directory-src.Ethernet-Release-5d82b88201750d631d6b.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 0,
+					"source" : "src/Ethernet",
+					"targetIndexes" : 
+					[
+						13,
+						14
+					]
+				},
+				{
+					"build" : "src/Network",
+					"jsonFile" : "directory-src.Network-Release-e95d71b7562505e1a061.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 0,
+					"source" : "src/Network",
+					"targetIndexes" : 
+					[
+						4
+					]
+				},
+				{
+					"build" : "src/App",
+					"jsonFile" : "directory-src.App-Release-9d25c4701583ee0ac040.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 0,
+					"source" : "src/App",
+					"targetIndexes" : 
+					[
+						0
+					]
+				},
+				{
+					"build" : "app",
+					"jsonFile" : "directory-app-Release-94c5f210ca04b1028ae5.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "app",
+					"targetIndexes" : 
+					[
+						6
+					]
+				}
+			],
+			"name" : "Release",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10
+					],
+					"name" : "ATmega328__T_",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16,
+						17,
+						18,
+						19
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 9,
+					"id" : "ATmega328_APP::@12714508d24a4bb4e515",
+					"jsonFile" : "target-ATmega328_APP-Release-9a2c0d6d6904121348de.json",
+					"name" : "ATmega328_APP",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 5,
+					"id" : "ATmega328_CONFIG::@17c6f809233a4485d317",
+					"jsonFile" : "target-ATmega328_CONFIG-Release-9857c9c46d957eefb837.json",
+					"name" : "ATmega328_CONFIG",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "ATmega328_IOLIBRARY_INTERNET::@145eef247bfb46b6828c",
+					"jsonFile" : "target-ATmega328_IOLIBRARY_INTERNET-Release-b3018ff37e52f3698826.json",
+					"name" : "ATmega328_IOLIBRARY_INTERNET",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 4,
+					"id" : "ATmega328_MQTT::@8fbab1279b791e14bbb9",
+					"jsonFile" : "target-ATmega328_MQTT-Release-13d8ebd7bfb4d6192c92.json",
+					"name" : "ATmega328_MQTT",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 8,
+					"id" : "ATmega328_NETWORK::@74203e91351527032032",
+					"jsonFile" : "target-ATmega328_NETWORK-Release-11b6f724d3d6dc739851.json",
+					"name" : "ATmega328_NETWORK",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "ATmega328_PIN_INT::@145eef247bfb46b6828c",
+					"jsonFile" : "target-ATmega328_PIN_INT-Release-31d5255db81be022a219.json",
+					"name" : "ATmega328_PIN_INT",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 10,
+					"id" : "ATmega328_SMART_BELL_FW::@5f5a17c01335469806cb",
+					"jsonFile" : "target-ATmega328_SMART_BELL_FW-Release-456dbf7a6fd2810ae6a2.json",
+					"name" : "ATmega328_SMART_BELL_FW",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ATmega328_SMART_BELL_FW_hex::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ATmega328_SMART_BELL_FW_hex-Release-1fef224d5a49526b6a75.json",
+					"name" : "ATmega328_SMART_BELL_FW_hex",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 6,
+					"id" : "ATmega328_SPI::@390e621396972bcae2a5",
+					"jsonFile" : "target-ATmega328_SPI-Release-cc8619a59aa7c1c70dd2.json",
+					"name" : "ATmega328_SPI",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "ATmega328_TIMER_INT::@145eef247bfb46b6828c",
+					"jsonFile" : "target-ATmega328_TIMER_INT-Release-33d20f72b909cc570e7c.json",
+					"name" : "ATmega328_TIMER_INT",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "ATmega328_TIMER_SERVICE::@40bfa67b44beb23e51aa",
+					"jsonFile" : "target-ATmega328_TIMER_SERVICE-Release-ef8204b2af742a230cb5.json",
+					"name" : "ATmega328_TIMER_SERVICE",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 6,
+					"id" : "ATmega328_USART::@390e621396972bcae2a5",
+					"jsonFile" : "target-ATmega328_USART-Release-3f47376195720ea57706.json",
+					"name" : "ATmega328_USART",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "ATmega328_UTILS::@2bf0476c1cf7fa9b5346",
+					"jsonFile" : "target-ATmega328_UTILS-Release-6f9a15ad138c9931b45d.json",
+					"name" : "ATmega328_UTILS",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 7,
+					"id" : "ATmega328_W5500_ETHERNET::@7066713c7ac865d62b54",
+					"jsonFile" : "target-ATmega328_W5500_ETHERNET-Release-a258b9210df5e6a4032e.json",
+					"name" : "ATmega328_W5500_ETHERNET",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 7,
+					"id" : "ATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY::@7066713c7ac865d62b54",
+					"jsonFile" : "target-ATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY-Release-f603295d3211a36893a1.json",
+					"name" : "ATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "ATmega328_WTD::@145eef247bfb46b6828c",
+					"jsonFile" : "target-ATmega328_WTD-Release-e06177ab3fe8b0cfd45e.json",
+					"name" : "ATmega328_WTD",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "docs::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-docs-Release-02e5209c563d8de9d992.json",
+					"name" : "docs",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "load_preset_conan-generated-avr-release::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-load_preset_conan-generated-avr-release-Release-9ab93ef577f2857e2f9d.json",
+					"name" : "load_preset_conan-generated-avr-release",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "run_cmake_format::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-run_cmake_format-Release-700b267e2a674c2c41a4.json",
+					"name" : "run_cmake_format",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "run_cpplint::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-run_cpplint-Release-d9dd645d6df8fe9d9e00.json",
+					"name" : "run_cpplint",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/david/dev/smart-bell/avr/Release",
+		"source" : "/home/david/dev/smart-bell"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 7
+	}
+}

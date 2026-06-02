@@ -1,5 +1,4 @@
 set(LIB_UTILS_SOURCE 
-    "${CMAKE_CURRENT_SOURCE_DIR}/CircularBuffer.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/new_delete.cpp")
 set(LIB_UTILS_HEADERS "${PROJECT_SOURCE_DIR}/public/Utils/CircularBuffer.h")
 
