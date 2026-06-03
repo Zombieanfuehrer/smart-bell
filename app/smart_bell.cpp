@@ -230,9 +230,7 @@ int main() {
           cmd_buffer[cmd_index] = '\0';
           uart.send_string("\r\n");
 
-          if (!g_config->process_command(cmd_buffer)) {
-            uart.send_string("[ERR] Unknown cmd\r\n");
-          }
+          g_config->process_command(cmd_buffer);
 
           cmd_index = 0;
         }

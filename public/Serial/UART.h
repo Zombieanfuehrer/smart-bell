@@ -60,7 +60,7 @@ class UART : public Interface {
  public:
   static constexpr const uint8_t is_busy{1};
   static constexpr const uint8_t is_not_busy{0};
-  static constexpr const size_t kRX_buffer_size{32};
+  static constexpr const size_t kRX_buffer_size{64};
   static constexpr const size_t kTX_buffer_size{256};  // Large buffer for startup messages
 
   UART(const Serial_parameters &serial_parameters);
