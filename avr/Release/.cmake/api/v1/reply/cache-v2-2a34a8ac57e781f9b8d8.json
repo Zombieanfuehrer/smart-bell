@@ -127,7 +127,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "28"
+			"value" : "31"
 		},
 		{
 			"name" : "CMAKE_CACHE_PATCH_VERSION",
@@ -139,7 +139,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "3"
+			"value" : "6"
 		},
 		{
 			"name" : "CMAKE_COLOR_MAKEFILE",
@@ -167,7 +167,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/usr/bin/cmake"
+			"value" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/bin/cmake"
 		},
 		{
 			"name" : "CMAKE_CPACK_COMMAND",
@@ -179,7 +179,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/usr/bin/cpack"
+			"value" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/bin/cpack"
 		},
 		{
 			"name" : "CMAKE_CTEST_COMMAND",
@@ -191,7 +191,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/usr/bin/ctest"
+			"value" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/bin/ctest"
 		},
 		{
 			"name" : "CMAKE_CXX_COMPILER",
@@ -1027,7 +1027,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/usr/share/cmake-3.28"
+			"value" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31"
 		},
 		{
 			"name" : "CMAKE_SHARED_LINKER_FLAGS",
@@ -1455,7 +1455,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "[/home/david/dev/smart-bell/.venv/bin/python3][cfound components: Interpreter ][v3.12.3()]"
+			"value" : "[/home/david/dev/smart-bell/.venv/bin/python3.12][cfound components: Interpreter ][v3.12.3()]"
 		},
 		{
 			"name" : "Python3_DIR",
@@ -1503,7 +1503,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/home/david/dev/smart-bell/.venv/bin/python3"
+			"value" : "/home/david/dev/smart-bell/.venv/bin/python3.12"
 		},
 		{
 			"name" : "_Python3_INTERPRETER_PROPERTIES",
@@ -1527,7 +1527,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "984da9b834a7b34dfc9120a988e51a63"
+			"value" : "6e9a7ec63bfab9e19e6fcd9bb938385d"
 		},
 		{
 			"name" : "_Python3_NumPy_REASON_FAILURE",

@@ -1,0 +1,217 @@
+{
+	"inputs" : 
+	[
+		{
+			"path" : "CMakeLists.txt"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "avr/Release/CMakeFiles/3.31.6/CMakeSystem.cmake"
+		},
+		{
+			"path" : "generators/conan_toolchain.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/CMakeSystemSpecificInitialize.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "avr/Release/CMakeFiles/3.31.6/CMakeCCompiler.cmake"
+		},
+		{
+			"isGenerated" : true,
+			"path" : "avr/Release/CMakeFiles/3.31.6/CMakeCXXCompiler.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/CMakeSystemSpecificInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/CMakeGenericSystem.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/CMakeInitializeConfigs.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/Platform/Generic.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/CMakeCInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/CMakeLanguageInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/Compiler/GNU-C.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/Compiler/GNU.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/Compiler/CMakeCommonCompilerMacros.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/Platform/Generic.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/CMakeCommonLanguageInclude.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/Internal/CMakeCLinkerInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/Internal/CMakeCommonLinkerInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/CMakeCXXInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/CMakeLanguageInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/Compiler/GNU-CXX.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/Compiler/GNU.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/Platform/Generic.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/CMakeCommonLanguageInclude.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/Internal/CMakeCXXLinkerInformation.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/Internal/CMakeCommonLinkerInformation.cmake"
+		},
+		{
+			"path" : "cmake/PythonVEnv.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/FindPython3.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/FindPython/Support.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/FindPackageHandleStandardArgs.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/FindPackageMessage.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/FindPython3.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/FindPython/Support.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/FindPackageHandleStandardArgs.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/FindPackageMessage.cmake"
+		},
+		{
+			"path" : "cmake/CppLinter.cmake"
+		},
+		{
+			"path" : "cmake/CMakeFormat.cmake"
+		},
+		{
+			"path" : "cmake/DoxygenDocu.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/FindDoxygen.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/FindPackageHandleStandardArgs.cmake"
+		},
+		{
+			"isCMake" : true,
+			"path" : "/home/david/dev/smart-bell/.venv/lib/python3.12/site-packages/cmake/data/share/cmake-3.31/Modules/FindPackageMessage.cmake"
+		},
+		{
+			"path" : "cmake/ConanInstall.cmake"
+		},
+		{
+			"path" : "cmake/Install.cmake"
+		},
+		{
+			"path" : "cmake/Objcopy.cmake"
+		},
+		{
+			"path" : "src/CMakeLists.txt"
+		},
+		{
+			"path" : "src/Utils/CMakeLists.txt"
+		},
+		{
+			"path" : "src/System/CMakeLists.txt"
+		},
+		{
+			"path" : "src/MQTT/CMakeLists.txt"
+		},
+		{
+			"path" : "src/Config/CMakeLists.txt"
+		},
+		{
+			"path" : "src/Serial/CMakeLists.txt"
+		},
+		{
+			"path" : "src/Ethernet/CMakeLists.txt"
+		},
+		{
+			"path" : "src/Network/CMakeLists.txt"
+		},
+		{
+			"path" : "src/App/CMakeLists.txt"
+		},
+		{
+			"path" : "app/CMakeLists.txt"
+		}
+	],
+	"kind" : "cmakeFiles",
+	"paths" : 
+	{
+		"build" : "/home/david/dev/smart-bell/avr/Release",
+		"source" : "/home/david/dev/smart-bell"
+	},
+	"version" : 
+	{
+		"major" : 1,
+		"minor" : 1
+	}
+}

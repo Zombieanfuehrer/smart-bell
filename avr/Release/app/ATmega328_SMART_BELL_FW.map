@@ -37,7 +37,7 @@ Archive member included to satisfy reference by file (symbol)
 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/avr5/libgcc.a(_clear_bss.o)
                               CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj (__do_clear_bss)
 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/avr5/libgcc.a(_ctors.o)
-                              ../src/Serial/libATmega328_USART.a(UART.cpp.obj) (__do_global_ctors)
+                              ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj) (__do_global_ctors)
 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/../../../../avr/lib/avr5/libc.a(malloc.o)
                               ../src/Utils/libATmega328_UTILS.a(new_delete.cpp.obj) (malloc)
 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/../../../../avr/lib/avr5/libc.a(memcpy.o)
@@ -84,7 +84,6 @@ Discarded input sections
  .text          0x0000000000000000        0x0 ../src/libATmega328_TIMER_INT.a(SetupTimer.cpp.obj)
  .data          0x0000000000000000        0x0 ../src/libATmega328_TIMER_INT.a(SetupTimer.cpp.obj)
  .bss           0x0000000000000000        0x0 ../src/libATmega328_TIMER_INT.a(SetupTimer.cpp.obj)
- .group         0x0000000000000000        0x8 ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
  .group         0x0000000000000000        0x8 ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
  .text          0x0000000000000000        0x0 ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
  .data          0x0000000000000000        0x0 ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
@@ -477,7 +476,7 @@ END GROUP
 .rela.plt
  *(.rela.plt)
 
-.text           0x0000000000000000     0x3876
+.text           0x0000000000000000     0x374a
  *(.vectors)
  .vectors       0x0000000000000000       0x68 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/../../../../avr/lib/avr5/crtatmega328.o
                 0x0000000000000000                __vectors
@@ -503,441 +502,435 @@ END GROUP
  *(.lowtext*)
                 0x0000000000000168                __ctors_start = .
  *(.ctors)
- .ctors         0x0000000000000168        0x2 ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
- .ctors         0x000000000000016a        0x2 ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
-                0x000000000000016c                __ctors_end = .
-                0x000000000000016c                __dtors_start = .
+ .ctors         0x0000000000000168        0x2 ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
+                0x000000000000016a                __ctors_end = .
+                0x000000000000016a                __dtors_start = .
  *(.dtors)
-                0x000000000000016c                __dtors_end = .
+                0x000000000000016a                __dtors_end = .
  SORT(*)(.ctors)
  SORT(*)(.dtors)
  *(.init0)
- .init0         0x000000000000016c        0x0 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/../../../../avr/lib/avr5/crtatmega328.o
-                0x000000000000016c                __init
+ .init0         0x000000000000016a        0x0 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/../../../../avr/lib/avr5/crtatmega328.o
+                0x000000000000016a                __init
  *(.init0)
  *(.init1)
  *(.init1)
  *(.init2)
- .init2         0x000000000000016c        0xc /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/../../../../avr/lib/avr5/crtatmega328.o
+ .init2         0x000000000000016a        0xc /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/../../../../avr/lib/avr5/crtatmega328.o
  *(.init2)
  *(.init3)
  *(.init3)
  *(.init4)
- .init4         0x0000000000000178       0x16 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/avr5/libgcc.a(_copy_data.o)
-                0x0000000000000178                __do_copy_data
- .init4         0x000000000000018e       0x10 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/avr5/libgcc.a(_clear_bss.o)
-                0x000000000000018e                __do_clear_bss
+ .init4         0x0000000000000176       0x16 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/avr5/libgcc.a(_copy_data.o)
+                0x0000000000000176                __do_copy_data
+ .init4         0x000000000000018c       0x10 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/avr5/libgcc.a(_clear_bss.o)
+                0x000000000000018c                __do_clear_bss
  *(.init4)
  *(.init5)
  *(.init5)
  *(.init6)
- .init6         0x000000000000019e       0x16 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/avr5/libgcc.a(_ctors.o)
-                0x000000000000019e                __do_global_ctors
+ .init6         0x000000000000019c       0x16 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/avr5/libgcc.a(_ctors.o)
+                0x000000000000019c                __do_global_ctors
  *(.init6)
  *(.init7)
  *(.init7)
  *(.init8)
  *(.init8)
  *(.init9)
- .init9         0x00000000000001b4        0x8 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/../../../../avr/lib/avr5/crtatmega328.o
+ .init9         0x00000000000001b2        0x8 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/../../../../avr/lib/avr5/crtatmega328.o
  *(.init9)
  *(.text)
- .text          0x00000000000001bc        0x4 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/../../../../avr/lib/avr5/crtatmega328.o
-                0x00000000000001bc                __vector_22
-                0x00000000000001bc                __vector_24
-                0x00000000000001bc                __vector_12
-                0x00000000000001bc                __bad_interrupt
-                0x00000000000001bc                __vector_6
-                0x00000000000001bc                __vector_3
-                0x00000000000001bc                __vector_23
-                0x00000000000001bc                __vector_25
-                0x00000000000001bc                __vector_13
-                0x00000000000001bc                __vector_7
-                0x00000000000001bc                __vector_5
-                0x00000000000001bc                __vector_4
-                0x00000000000001bc                __vector_9
-                0x00000000000001bc                __vector_2
-                0x00000000000001bc                __vector_21
-                0x00000000000001bc                __vector_15
-                0x00000000000001bc                __vector_8
-                0x00000000000001bc                __vector_10
-                0x00000000000001bc                __vector_16
-                0x00000000000001bc                __vector_20
-                0x00000000000001c0                . = ALIGN (0x2)
+ .text          0x00000000000001ba        0x4 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/../../../../avr/lib/avr5/crtatmega328.o
+                0x00000000000001ba                __vector_22
+                0x00000000000001ba                __vector_24
+                0x00000000000001ba                __vector_12
+                0x00000000000001ba                __bad_interrupt
+                0x00000000000001ba                __vector_6
+                0x00000000000001ba                __vector_3
+                0x00000000000001ba                __vector_23
+                0x00000000000001ba                __vector_25
+                0x00000000000001ba                __vector_13
+                0x00000000000001ba                __vector_7
+                0x00000000000001ba                __vector_5
+                0x00000000000001ba                __vector_4
+                0x00000000000001ba                __vector_9
+                0x00000000000001ba                __vector_2
+                0x00000000000001ba                __vector_21
+                0x00000000000001ba                __vector_15
+                0x00000000000001ba                __vector_8
+                0x00000000000001ba                __vector_10
+                0x00000000000001ba                __vector_16
+                0x00000000000001ba                __vector_20
+                0x00000000000001be                . = ALIGN (0x2)
  *(.text.*)
  .text._ZZ4mainENUlvE_4_FUNEv
-                0x00000000000001c0       0x1e CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
+                0x00000000000001be       0x1e CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
  .text._ZZ4mainENUlvE0_4_FUNEv
-                0x00000000000001de        0xa CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
+                0x00000000000001dc        0xa CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
  .text._ZZ4mainENUlvE1_4_FUNEv
-                0x00000000000001e8        0xa CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
+                0x00000000000001e6        0xa CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
  .text.__vector_1
-                0x00000000000001f2       0x38 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
-                0x00000000000001f2                __vector_1
+                0x00000000000001f0       0x38 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
+                0x00000000000001f0                __vector_1
  .text.__vector_14
-                0x000000000000022a       0x48 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
-                0x000000000000022a                __vector_14
+                0x0000000000000228       0x48 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
+                0x0000000000000228                __vector_14
  .text.__vector_11
-                0x0000000000000272       0x22 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
-                0x0000000000000272                __vector_11
+                0x0000000000000270       0x22 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
+                0x0000000000000270                __vector_11
  .text._Z10setup_GPIOv
-                0x0000000000000294        0xe CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
-                0x0000000000000294                _Z10setup_GPIOv
+                0x0000000000000292        0xe CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
+                0x0000000000000292                _Z10setup_GPIOv
  .text.startup.main
-                0x00000000000002a2      0x522 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
-                0x00000000000002a2                main
+                0x00000000000002a0      0x50e CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
+                0x00000000000002a0                main
  .text._ZN22external_pin_interrupt10setup_INT0ENS_8EdgeTypeE
-                0x00000000000007c4       0x42 ../src/libATmega328_PIN_INT.a(SetupEXT_IN_Interrupt.cpp.obj)
-                0x00000000000007c4                _ZN22external_pin_interrupt10setup_INT0ENS_8EdgeTypeE
+                0x00000000000007ae       0x42 ../src/libATmega328_PIN_INT.a(SetupEXT_IN_Interrupt.cpp.obj)
+                0x00000000000007ae                _ZN22external_pin_interrupt10setup_INT0ENS_8EdgeTypeE
  .text._ZN22external_pin_interrupt36setup_INT0_PullUpResistorFallingEdgeEv
-                0x0000000000000806        0x6 ../src/libATmega328_PIN_INT.a(SetupEXT_IN_Interrupt.cpp.obj)
-                0x0000000000000806                _ZN22external_pin_interrupt36setup_INT0_PullUpResistorFallingEdgeEv
+                0x00000000000007f0        0x6 ../src/libATmega328_PIN_INT.a(SetupEXT_IN_Interrupt.cpp.obj)
+                0x00000000000007f0                _ZN22external_pin_interrupt36setup_INT0_PullUpResistorFallingEdgeEv
  .text._ZN15timer_interrupt8ctc_mode21setup_timer0_ctc_modeENS_9PrescalerEj
-                0x000000000000080c       0x28 ../src/libATmega328_TIMER_INT.a(SetupTimer.cpp.obj)
-                0x000000000000080c                _ZN15timer_interrupt8ctc_mode21setup_timer0_ctc_modeENS_9PrescalerEj
+                0x00000000000007f6       0x28 ../src/libATmega328_TIMER_INT.a(SetupTimer.cpp.obj)
+                0x00000000000007f6                _ZN15timer_interrupt8ctc_mode21setup_timer0_ctc_modeENS_9PrescalerEj
  .text._ZN15timer_interrupt8ctc_mode16setup_timer0_1msEv
-                0x0000000000000834       0x1c ../src/libATmega328_TIMER_INT.a(SetupTimer.cpp.obj)
-                0x0000000000000834                _ZN15timer_interrupt8ctc_mode16setup_timer0_1msEv
+                0x000000000000081e       0x1c ../src/libATmega328_TIMER_INT.a(SetupTimer.cpp.obj)
+                0x000000000000081e                _ZN15timer_interrupt8ctc_mode16setup_timer0_1msEv
  .text._ZNK6serial4UART22is_read_data_availableEv
-                0x0000000000000850       0x12 ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
-                0x0000000000000850                _ZNK6serial4UART22is_read_data_availableEv
+                0x000000000000083a       0x12 ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
+                0x000000000000083a                _ZNK6serial4UART22is_read_data_availableEv
  .text._ZN6serial4UART9read_byteEv
-                0x0000000000000862       0x4c ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
-                0x0000000000000862                _ZN6serial4UART9read_byteEv
+                0x000000000000084c       0x2a ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
+                0x000000000000084c                _ZN6serial4UART9read_byteEv
  .text.__vector_18
-                0x00000000000008ae       0x74 ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
-                0x00000000000008ae                __vector_18
+                0x0000000000000876       0x4c ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
+                0x0000000000000876                __vector_18
  .text.__vector_19
-                0x0000000000000922       0x7c ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
-                0x0000000000000922                __vector_19
+                0x00000000000008c2       0x5a ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
+                0x00000000000008c2                __vector_19
  .text._ZN6serial4UART28calculate_baudrate_prescalerERKNS_8BaudrateERKNS_17Asynchronous_modeE
-                0x000000000000099e       0x42 ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
-                0x000000000000099e                _ZN6serial4UART28calculate_baudrate_prescalerERKNS_8BaudrateERKNS_17Asynchronous_modeE
+                0x000000000000091c       0x42 ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
+                0x000000000000091c                _ZN6serial4UART28calculate_baudrate_prescalerERKNS_8BaudrateERKNS_17Asynchronous_modeE
  .text._ZN6serial4UARTC2ERKNS_17Serial_parametersE
-                0x00000000000009e0       0x6e ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
-                0x00000000000009e0                _ZN6serial4UARTC2ERKNS_17Serial_parametersE
-                0x00000000000009e0                _ZN6serial4UARTC1ERKNS_17Serial_parametersE
+                0x000000000000095e       0x6e ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
+                0x000000000000095e                _ZN6serial4UARTC2ERKNS_17Serial_parametersE
+                0x000000000000095e                _ZN6serial4UARTC1ERKNS_17Serial_parametersE
  .text._ZN6serial4UART5send_Ev
-                0x0000000000000a4e       0x6a ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
-                0x0000000000000a4e                _ZN6serial4UART5send_Ev
- .text._ZN5utils14CircularBufferILj256EE9push_backEh
-                0x0000000000000ab8       0x4e ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
-                0x0000000000000ab8                _ZN5utils14CircularBufferILj256EE9push_backEh
+                0x00000000000009cc       0x40 ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
+                0x00000000000009cc                _ZN6serial4UART5send_Ev
  .text._ZN6serial4UART4sendEh
-                0x0000000000000b06       0x24 ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
-                0x0000000000000b06                _ZN6serial4UART4sendEh
+                0x0000000000000a0c       0x30 ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
+                0x0000000000000a0c                _ZN6serial4UART4sendEh
  .text._ZN6serial4UART10send_bytesEPKhj
-                0x0000000000000b2a       0x40 ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
-                0x0000000000000b2a                _ZN6serial4UART10send_bytesEPKhj
+                0x0000000000000a3c       0x40 ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
+                0x0000000000000a3c                _ZN6serial4UART10send_bytesEPKhj
  .text._ZN6serial4UART11send_stringEPKc
-                0x0000000000000b6a       0x32 ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
-                0x0000000000000b6a                _ZN6serial4UART11send_stringEPKc
- .text.startup._GLOBAL__sub_I___vector_18
-                0x0000000000000b9c       0x48 ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
+                0x0000000000000a7c       0x3c ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
+                0x0000000000000a7c                _ZN6serial4UART11send_stringEPKc
  .text._ZNK6serial3SPI22is_read_data_availableEv
-                0x0000000000000be4       0x12 ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
-                0x0000000000000be4                _ZNK6serial3SPI22is_read_data_availableEv
+                0x0000000000000ab8       0x12 ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
+                0x0000000000000ab8                _ZNK6serial3SPI22is_read_data_availableEv
  .text._ZN6serial3SPI9read_byteEv
-                0x0000000000000bf6       0x4c ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
-                0x0000000000000bf6                _ZN6serial3SPI9read_byteEv
+                0x0000000000000aca       0x4c ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
+                0x0000000000000aca                _ZN6serial3SPI9read_byteEv
  .text._ZN6serial3SPIC2ERKNS_14SPI_parametersEh
-                0x0000000000000c42       0x30 ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
-                0x0000000000000c42                _ZN6serial3SPIC2ERKNS_14SPI_parametersEh
-                0x0000000000000c42                _ZN6serial3SPIC1ERKNS_14SPI_parametersEh
+                0x0000000000000b16       0x30 ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
+                0x0000000000000b16                _ZN6serial3SPIC2ERKNS_14SPI_parametersEh
+                0x0000000000000b16                _ZN6serial3SPIC1ERKNS_14SPI_parametersEh
  .text._ZN6serial3SPI5send_Ev
-                0x0000000000000c72       0xa0 ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
-                0x0000000000000c72                _ZN6serial3SPI5send_Ev
+                0x0000000000000b46       0xa0 ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
+                0x0000000000000b46                _ZN6serial3SPI5send_Ev
  .text._ZN5utils14CircularBufferILj16EE9push_backEh
-                0x0000000000000d12       0x34 ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
-                0x0000000000000d12                _ZN5utils14CircularBufferILj16EE9push_backEh
+                0x0000000000000be6       0x34 ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
+                0x0000000000000be6                _ZN5utils14CircularBufferILj16EE9push_backEh
  .text.__vector_17
-                0x0000000000000d46       0x66 ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
-                0x0000000000000d46                __vector_17
+                0x0000000000000c1a       0x66 ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
+                0x0000000000000c1a                __vector_17
  .text._ZN6serial3SPI4sendEh
-                0x0000000000000dac       0x18 ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
-                0x0000000000000dac                _ZN6serial3SPI4sendEh
+                0x0000000000000c80       0x18 ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
+                0x0000000000000c80                _ZN6serial3SPI4sendEh
  .text._ZN6serial3SPI10send_bytesEPKhj
-                0x0000000000000dc4       0x3a ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
-                0x0000000000000dc4                _ZN6serial3SPI10send_bytesEPKhj
+                0x0000000000000c98       0x3a ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
+                0x0000000000000c98                _ZN6serial3SPI10send_bytesEPKhj
  .text._ZN6serial3SPI11send_stringEPKc
-                0x0000000000000dfe       0x2a ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
-                0x0000000000000dfe                _ZN6serial3SPI11send_stringEPKc
+                0x0000000000000cd2       0x2a ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
+                0x0000000000000cd2                _ZN6serial3SPI11send_stringEPKc
  .text.startup._GLOBAL__sub_I_err_dummy_
-                0x0000000000000e28       0x36 ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
+                0x0000000000000cfc       0x36 ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
  .text.__cxa_guard_acquire
-                0x0000000000000e5e       0x12 ../src/Utils/libATmega328_UTILS.a(new_delete.cpp.obj)
-                0x0000000000000e5e                __cxa_guard_acquire
+                0x0000000000000d32       0x12 ../src/Utils/libATmega328_UTILS.a(new_delete.cpp.obj)
+                0x0000000000000d32                __cxa_guard_acquire
  .text.__cxa_guard_release
-                0x0000000000000e70        0x8 ../src/Utils/libATmega328_UTILS.a(new_delete.cpp.obj)
-                0x0000000000000e70                __cxa_guard_release
+                0x0000000000000d44        0x8 ../src/Utils/libATmega328_UTILS.a(new_delete.cpp.obj)
+                0x0000000000000d44                __cxa_guard_release
  .text._ZN8Ethernet14W5500Interface11cb_spi_readEv
-                0x0000000000000e78        0xe ../src/Ethernet/libATmega328_W5500_ETHERNET.a(W5500Interface.cpp.obj)
-                0x0000000000000e78                _ZN8Ethernet14W5500Interface11cb_spi_readEv
+                0x0000000000000d4c        0xe ../src/Ethernet/libATmega328_W5500_ETHERNET.a(W5500Interface.cpp.obj)
+                0x0000000000000d4c                _ZN8Ethernet14W5500Interface11cb_spi_readEv
  .text._ZN8Ethernet14W5500Interface12cb_spi_writeEh
-                0x0000000000000e86        0xc ../src/Ethernet/libATmega328_W5500_ETHERNET.a(W5500Interface.cpp.obj)
-                0x0000000000000e86                _ZN8Ethernet14W5500Interface12cb_spi_writeEh
+                0x0000000000000d5a        0xc ../src/Ethernet/libATmega328_W5500_ETHERNET.a(W5500Interface.cpp.obj)
+                0x0000000000000d5a                _ZN8Ethernet14W5500Interface12cb_spi_writeEh
  .text._ZN8Ethernet14W5500Interface17cb_spi_read_burstEPhj
-                0x0000000000000e92       0x20 ../src/Ethernet/libATmega328_W5500_ETHERNET.a(W5500Interface.cpp.obj)
-                0x0000000000000e92                _ZN8Ethernet14W5500Interface17cb_spi_read_burstEPhj
+                0x0000000000000d66       0x20 ../src/Ethernet/libATmega328_W5500_ETHERNET.a(W5500Interface.cpp.obj)
+                0x0000000000000d66                _ZN8Ethernet14W5500Interface17cb_spi_read_burstEPhj
  .text._ZN8Ethernet14W5500Interface18cb_spi_write_burstEPhj
-                0x0000000000000eb2       0x1e ../src/Ethernet/libATmega328_W5500_ETHERNET.a(W5500Interface.cpp.obj)
-                0x0000000000000eb2                _ZN8Ethernet14W5500Interface18cb_spi_write_burstEPhj
+                0x0000000000000d86       0x1e ../src/Ethernet/libATmega328_W5500_ETHERNET.a(W5500Interface.cpp.obj)
+                0x0000000000000d86                _ZN8Ethernet14W5500Interface18cb_spi_write_burstEPhj
  .text._ZN8Ethernet14W5500InterfaceC2EPN6serial3SPIENS_14W5500CallbacksE
-                0x0000000000000ed0       0x7c ../src/Ethernet/libATmega328_W5500_ETHERNET.a(W5500Interface.cpp.obj)
-                0x0000000000000ed0                _ZN8Ethernet14W5500InterfaceC2EPN6serial3SPIENS_14W5500CallbacksE
-                0x0000000000000ed0                _ZN8Ethernet14W5500InterfaceC1EPN6serial3SPIENS_14W5500CallbacksE
+                0x0000000000000da4       0x7c ../src/Ethernet/libATmega328_W5500_ETHERNET.a(W5500Interface.cpp.obj)
+                0x0000000000000da4                _ZN8Ethernet14W5500InterfaceC2EPN6serial3SPIENS_14W5500CallbacksE
+                0x0000000000000da4                _ZN8Ethernet14W5500InterfaceC1EPN6serial3SPIENS_14W5500CallbacksE
  .text._ZN8Ethernet14W5500Interface10soft_resetEv
-                0x0000000000000f4c       0x20 ../src/Ethernet/libATmega328_W5500_ETHERNET.a(W5500Interface.cpp.obj)
-                0x0000000000000f4c                _ZN8Ethernet14W5500Interface10soft_resetEv
+                0x0000000000000e20       0x20 ../src/Ethernet/libATmega328_W5500_ETHERNET.a(W5500Interface.cpp.obj)
+                0x0000000000000e20                _ZN8Ethernet14W5500Interface10soft_resetEv
  .text._ZN8Ethernet14W5500Interface4initEv
-                0x0000000000000f6c       0xb0 ../src/Ethernet/libATmega328_W5500_ETHERNET.a(W5500Interface.cpp.obj)
-                0x0000000000000f6c                _ZN8Ethernet14W5500Interface4initEv
+                0x0000000000000e40       0xb0 ../src/Ethernet/libATmega328_W5500_ETHERNET.a(W5500Interface.cpp.obj)
+                0x0000000000000e40                _ZN8Ethernet14W5500Interface4initEv
  .text._ZN8Ethernet14W5500Interface7set_MACEPKNS_10MacAddressE
-                0x000000000000101c       0x2a ../src/Ethernet/libATmega328_W5500_ETHERNET.a(W5500Interface.cpp.obj)
-                0x000000000000101c                _ZN8Ethernet14W5500Interface7set_MACEPKNS_10MacAddressE
+                0x0000000000000ef0       0x2a ../src/Ethernet/libATmega328_W5500_ETHERNET.a(W5500Interface.cpp.obj)
+                0x0000000000000ef0                _ZN8Ethernet14W5500Interface7set_MACEPKNS_10MacAddressE
  .text._ZN8Ethernet14W5500Interface6set_IPEPKNS_9IpAddressE
-                0x0000000000001046       0x32 ../src/Ethernet/libATmega328_W5500_ETHERNET.a(W5500Interface.cpp.obj)
-                0x0000000000001046                _ZN8Ethernet14W5500Interface6set_IPEPKNS_9IpAddressE
+                0x0000000000000f1a       0x32 ../src/Ethernet/libATmega328_W5500_ETHERNET.a(W5500Interface.cpp.obj)
+                0x0000000000000f1a                _ZN8Ethernet14W5500Interface6set_IPEPKNS_9IpAddressE
  .text._ZN8Ethernet14W5500Interface10set_subnetEPKNS_10SubnetMaskE
-                0x0000000000001078       0x32 ../src/Ethernet/libATmega328_W5500_ETHERNET.a(W5500Interface.cpp.obj)
-                0x0000000000001078                _ZN8Ethernet14W5500Interface10set_subnetEPKNS_10SubnetMaskE
+                0x0000000000000f4c       0x32 ../src/Ethernet/libATmega328_W5500_ETHERNET.a(W5500Interface.cpp.obj)
+                0x0000000000000f4c                _ZN8Ethernet14W5500Interface10set_subnetEPKNS_10SubnetMaskE
  .text._ZN8Ethernet14W5500Interface11set_gatewayEPKNS_14GatewayAddressE
-                0x00000000000010aa       0x32 ../src/Ethernet/libATmega328_W5500_ETHERNET.a(W5500Interface.cpp.obj)
-                0x00000000000010aa                _ZN8Ethernet14W5500Interface11set_gatewayEPKNS_14GatewayAddressE
+                0x0000000000000f7e       0x32 ../src/Ethernet/libATmega328_W5500_ETHERNET.a(W5500Interface.cpp.obj)
+                0x0000000000000f7e                _ZN8Ethernet14W5500Interface11set_gatewayEPKNS_14GatewayAddressE
  .text._ZN8Ethernet14W5500Interface18set_network_configEPKNS_10MacAddressEPKNS_9IpAddressEPKNS_10SubnetMaskEPKNS_14GatewayAddressE
-                0x00000000000010dc       0x42 ../src/Ethernet/libATmega328_W5500_ETHERNET.a(W5500Interface.cpp.obj)
-                0x00000000000010dc                _ZN8Ethernet14W5500Interface18set_network_configEPKNS_10MacAddressEPKNS_9IpAddressEPKNS_10SubnetMaskEPKNS_14GatewayAddressE
+                0x0000000000000fb0       0x42 ../src/Ethernet/libATmega328_W5500_ETHERNET.a(W5500Interface.cpp.obj)
+                0x0000000000000fb0                _ZN8Ethernet14W5500Interface18set_network_configEPKNS_10MacAddressEPKNS_9IpAddressEPKNS_10SubnetMaskEPKNS_14GatewayAddressE
  .text._ZN4MQTT11MinimalMQTTC2EPN6serial4UARTE
-                0x000000000000111e       0x6a ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
-                0x000000000000111e                _ZN4MQTT11MinimalMQTTC2EPN6serial4UARTE
-                0x000000000000111e                _ZN4MQTT11MinimalMQTTC1EPN6serial4UARTE
+                0x0000000000000ff2       0x6a ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
+                0x0000000000000ff2                _ZN4MQTT11MinimalMQTTC2EPN6serial4UARTE
+                0x0000000000000ff2                _ZN4MQTT11MinimalMQTTC1EPN6serial4UARTE
  .text._ZN4MQTT11MinimalMQTT17socket_disconnectEv
-                0x0000000000001188        0xc ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
-                0x0000000000001188                _ZN4MQTT11MinimalMQTT17socket_disconnectEv
+                0x000000000000105c        0xc ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
+                0x000000000000105c                _ZN4MQTT11MinimalMQTT17socket_disconnectEv
  .text._ZN4MQTT11MinimalMQTT11socket_sendEPKhj
-                0x0000000000001194       0x26 ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
-                0x0000000000001194                _ZN4MQTT11MinimalMQTT11socket_sendEPKhj
+                0x0000000000001068       0x26 ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
+                0x0000000000001068                _ZN4MQTT11MinimalMQTT11socket_sendEPKhj
  .text._ZN4MQTT11MinimalMQTT11socket_recvEPhj
-                0x00000000000011ba       0x54 ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
-                0x00000000000011ba                _ZN4MQTT11MinimalMQTT11socket_recvEPhj
+                0x000000000000108e       0x54 ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
+                0x000000000000108e                _ZN4MQTT11MinimalMQTT11socket_recvEPhj
  .text._ZN4MQTT11MinimalMQTT19socket_is_connectedEv
-                0x000000000000120e       0x18 ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
-                0x000000000000120e                _ZN4MQTT11MinimalMQTT19socket_is_connectedEv
+                0x00000000000010e2       0x18 ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
+                0x00000000000010e2                _ZN4MQTT11MinimalMQTT19socket_is_connectedEv
  .text._ZN4MQTT11MinimalMQTT19send_connect_packetEv
-                0x0000000000001226      0x1a8 ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
-                0x0000000000001226                _ZN4MQTT11MinimalMQTT19send_connect_packetEv
+                0x00000000000010fa      0x1a8 ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
+                0x00000000000010fa                _ZN4MQTT11MinimalMQTT19send_connect_packetEv
  .text._ZN4MQTT11MinimalMQTT12send_pingreqEv
-                0x00000000000013ce       0x3a ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
-                0x00000000000013ce                _ZN4MQTT11MinimalMQTT12send_pingreqEv
+                0x00000000000012a2       0x3a ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
+                0x00000000000012a2                _ZN4MQTT11MinimalMQTT12send_pingreqEv
  .text._ZN4MQTT11MinimalMQTT23process_incoming_packetEv
-                0x0000000000001408       0xe0 ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
-                0x0000000000001408                _ZN4MQTT11MinimalMQTT23process_incoming_packetEv
+                0x00000000000012dc       0xe0 ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
+                0x00000000000012dc                _ZN4MQTT11MinimalMQTT23process_incoming_packetEv
  .text._ZN4MQTT11MinimalMQTT3logEPKc
-                0x00000000000014e8       0x1a ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
-                0x00000000000014e8                _ZN4MQTT11MinimalMQTT3logEPKc
+                0x00000000000013bc       0x1a ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
+                0x00000000000013bc                _ZN4MQTT11MinimalMQTT3logEPKc
  .text._ZN4MQTT11MinimalMQTT7publishEPKcPKhj
-                0x0000000000001502      0x114 ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
-                0x0000000000001502                _ZN4MQTT11MinimalMQTT7publishEPKcPKhj
+                0x00000000000013d6      0x114 ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
+                0x00000000000013d6                _ZN4MQTT11MinimalMQTT7publishEPKcPKhj
  .text._ZN4MQTT11MinimalMQTT4loopEv
-                0x0000000000001616       0xe6 ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
-                0x0000000000001616                _ZN4MQTT11MinimalMQTT4loopEv
+                0x00000000000014ea       0xe6 ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
+                0x00000000000014ea                _ZN4MQTT11MinimalMQTT4loopEv
  .text._ZN4MQTT11MinimalMQTT14socket_connectEv
-                0x00000000000016fc       0x8c ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
-                0x00000000000016fc                _ZN4MQTT11MinimalMQTT14socket_connectEv
+                0x00000000000015d0       0x8c ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
+                0x00000000000015d0                _ZN4MQTT11MinimalMQTT14socket_connectEv
  .text._ZN4MQTT11MinimalMQTT16wait_for_connackEv
-                0x0000000000001788       0x98 ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
-                0x0000000000001788                _ZN4MQTT11MinimalMQTT16wait_for_connackEv
+                0x000000000000165c       0x98 ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
+                0x000000000000165c                _ZN4MQTT11MinimalMQTT16wait_for_connackEv
  .text._ZN4MQTT11MinimalMQTT7connectERKNS_6ConfigE
-                0x0000000000001820       0xaa ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
-                0x0000000000001820                _ZN4MQTT11MinimalMQTT7connectERKNS_6ConfigE
+                0x00000000000016f4       0xaa ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
+                0x00000000000016f4                _ZN4MQTT11MinimalMQTT7connectERKNS_6ConfigE
  .text._ZN6Config17LightweightConfig17reset_to_defaultsEv
-                0x00000000000018ca       0x76 ../src/Config/libATmega328_CONFIG.a(LightweightConfig.cpp.obj)
-                0x00000000000018ca                _ZN6Config17LightweightConfig17reset_to_defaultsEv
+                0x000000000000179e       0x76 ../src/Config/libATmega328_CONFIG.a(LightweightConfig.cpp.obj)
+                0x000000000000179e                _ZN6Config17LightweightConfig17reset_to_defaultsEv
  .text._ZN6Config17LightweightConfigC2ERN6serial9InterfaceE
-                0x0000000000001940        0xc ../src/Config/libATmega328_CONFIG.a(LightweightConfig.cpp.obj)
-                0x0000000000001940                _ZN6Config17LightweightConfigC1ERN6serial9InterfaceE
-                0x0000000000001940                _ZN6Config17LightweightConfigC2ERN6serial9InterfaceE
+                0x0000000000001814        0xc ../src/Config/libATmega328_CONFIG.a(LightweightConfig.cpp.obj)
+                0x0000000000001814                _ZN6Config17LightweightConfigC1ERN6serial9InterfaceE
+                0x0000000000001814                _ZN6Config17LightweightConfigC2ERN6serial9InterfaceE
  .text._ZN6Config17LightweightConfig8parse_ipEPKcPh
-                0x000000000000194c       0x70 ../src/Config/libATmega328_CONFIG.a(LightweightConfig.cpp.obj)
-                0x000000000000194c                _ZN6Config17LightweightConfig8parse_ipEPKcPh
+                0x0000000000001820       0x70 ../src/Config/libATmega328_CONFIG.a(LightweightConfig.cpp.obj)
+                0x0000000000001820                _ZN6Config17LightweightConfig8parse_ipEPKcPh
  .text._ZN6Config17LightweightConfig3msgEPKc
-                0x00000000000019bc       0x1c ../src/Config/libATmega328_CONFIG.a(LightweightConfig.cpp.obj)
-                0x00000000000019bc                _ZN6Config17LightweightConfig3msgEPKc
+                0x0000000000001890       0x1c ../src/Config/libATmega328_CONFIG.a(LightweightConfig.cpp.obj)
+                0x0000000000001890                _ZN6Config17LightweightConfig3msgEPKc
  .text._ZN6Config17LightweightConfig4loadEv
-                0x00000000000019d8       0x70 ../src/Config/libATmega328_CONFIG.a(LightweightConfig.cpp.obj)
-                0x00000000000019d8                _ZN6Config17LightweightConfig4loadEv
+                0x00000000000018ac       0x70 ../src/Config/libATmega328_CONFIG.a(LightweightConfig.cpp.obj)
+                0x00000000000018ac                _ZN6Config17LightweightConfig4loadEv
  .text._ZN6Config17LightweightConfig4saveEv
-                0x0000000000001a48       0x36 ../src/Config/libATmega328_CONFIG.a(LightweightConfig.cpp.obj)
-                0x0000000000001a48                _ZN6Config17LightweightConfig4saveEv
+                0x000000000000191c       0x36 ../src/Config/libATmega328_CONFIG.a(LightweightConfig.cpp.obj)
+                0x000000000000191c                _ZN6Config17LightweightConfig4saveEv
  .text._ZN6Config17LightweightConfig15process_commandEPKc
-                0x0000000000001a7e      0x4b8 ../src/Config/libATmega328_CONFIG.a(LightweightConfig.cpp.obj)
-                0x0000000000001a7e                _ZN6Config17LightweightConfig15process_commandEPKc
+                0x0000000000001952      0x4b8 ../src/Config/libATmega328_CONFIG.a(LightweightConfig.cpp.obj)
+                0x0000000000001952                _ZN6Config17LightweightConfig15process_commandEPKc
  .text.WIZCHIP_READ
-                0x0000000000001f36       0xcc ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(w5500.c.obj)
-                0x0000000000001f36                WIZCHIP_READ
+                0x0000000000001e0a       0xcc ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(w5500.c.obj)
+                0x0000000000001e0a                WIZCHIP_READ
  .text.WIZCHIP_WRITE
-                0x0000000000002002       0xcc ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(w5500.c.obj)
-                0x0000000000002002                WIZCHIP_WRITE
+                0x0000000000001ed6       0xcc ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(w5500.c.obj)
+                0x0000000000001ed6                WIZCHIP_WRITE
  .text.WIZCHIP_READ_BUF
-                0x00000000000020ce      0x106 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(w5500.c.obj)
-                0x00000000000020ce                WIZCHIP_READ_BUF
+                0x0000000000001fa2      0x106 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(w5500.c.obj)
+                0x0000000000001fa2                WIZCHIP_READ_BUF
  .text.WIZCHIP_WRITE_BUF
-                0x00000000000021d4       0xf6 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(w5500.c.obj)
-                0x00000000000021d4                WIZCHIP_WRITE_BUF
+                0x00000000000020a8       0xf6 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(w5500.c.obj)
+                0x00000000000020a8                WIZCHIP_WRITE_BUF
  .text.getSn_TX_FSR
-                0x00000000000022ca       0xae ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(w5500.c.obj)
-                0x00000000000022ca                getSn_TX_FSR
+                0x000000000000219e       0xae ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(w5500.c.obj)
+                0x000000000000219e                getSn_TX_FSR
  .text.getSn_RX_RSR
-                0x0000000000002378       0xae ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(w5500.c.obj)
-                0x0000000000002378                getSn_RX_RSR
+                0x000000000000224c       0xae ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(w5500.c.obj)
+                0x000000000000224c                getSn_RX_RSR
  .text.wiz_send_data
-                0x0000000000002426      0x10c ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(w5500.c.obj)
-                0x0000000000002426                wiz_send_data
+                0x00000000000022fa      0x10c ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(w5500.c.obj)
+                0x00000000000022fa                wiz_send_data
  .text.wiz_recv_data
-                0x0000000000002532      0x10c ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(w5500.c.obj)
-                0x0000000000002532                wiz_recv_data
- .text.close    0x000000000000263e       0xf0 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(socket.c.obj)
-                0x000000000000263e                close
- .text.socket   0x000000000000272e      0x206 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(socket.c.obj)
-                0x000000000000272e                socket
- .text.connect  0x0000000000002934      0x1ba ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(socket.c.obj)
-                0x0000000000002934                connect
+                0x0000000000002406      0x10c ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(w5500.c.obj)
+                0x0000000000002406                wiz_recv_data
+ .text.close    0x0000000000002512       0xf0 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(socket.c.obj)
+                0x0000000000002512                close
+ .text.socket   0x0000000000002602      0x206 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(socket.c.obj)
+                0x0000000000002602                socket
+ .text.connect  0x0000000000002808      0x1ba ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(socket.c.obj)
+                0x0000000000002808                connect
  .text.disconnect
-                0x0000000000002aee      0x102 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(socket.c.obj)
-                0x0000000000002aee                disconnect
- .text.send     0x0000000000002bf0      0x210 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(socket.c.obj)
-                0x0000000000002bf0                send
- .text.recv     0x0000000000002e00      0x1dc ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(socket.c.obj)
-                0x0000000000002e00                recv
+                0x00000000000029c2      0x102 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(socket.c.obj)
+                0x00000000000029c2                disconnect
+ .text.send     0x0000000000002ac4      0x210 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(socket.c.obj)
+                0x0000000000002ac4                send
+ .text.recv     0x0000000000002cd4      0x1dc ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(socket.c.obj)
+                0x0000000000002cd4                recv
  .text.wizchip_cris_enter
-                0x0000000000002fdc        0x2 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
-                0x0000000000002fdc                wizchip_cris_enter
+                0x0000000000002eb0        0x2 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
+                0x0000000000002eb0                wizchip_cris_enter
  .text.wizchip_bus_readdata
-                0x0000000000002fde        0x6 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
-                0x0000000000002fde                wizchip_bus_readdata
+                0x0000000000002eb2        0x6 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
+                0x0000000000002eb2                wizchip_bus_readdata
  .text.wizchip_bus_writedata
-                0x0000000000002fe4        0x6 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
-                0x0000000000002fe4                wizchip_bus_writedata
+                0x0000000000002eb8        0x6 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
+                0x0000000000002eb8                wizchip_bus_writedata
  .text.wizchip_spi_readbyte
-                0x0000000000002fea        0x4 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
-                0x0000000000002fea                wizchip_spi_readbyte
+                0x0000000000002ebe        0x4 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
+                0x0000000000002ebe                wizchip_spi_readbyte
  .text.wizchip_spi_writebyte
-                0x0000000000002fee        0x2 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
-                0x0000000000002fee                wizchip_spi_writebyte
+                0x0000000000002ec2        0x2 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
+                0x0000000000002ec2                wizchip_spi_writebyte
  .text.wizchip_spi_readburst
-                0x0000000000002ff0        0x2 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
-                0x0000000000002ff0                wizchip_spi_readburst
+                0x0000000000002ec4        0x2 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
+                0x0000000000002ec4                wizchip_spi_readburst
  .text.wizchip_spi_writeburst
-                0x0000000000002ff2        0x2 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
-                0x0000000000002ff2                wizchip_spi_writeburst
+                0x0000000000002ec6        0x2 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
+                0x0000000000002ec6                wizchip_spi_writeburst
  .text.wizchip_cris_exit
-                0x0000000000002ff4        0x2 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
-                0x0000000000002ff4                wizchip_cris_exit
+                0x0000000000002ec8        0x2 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
+                0x0000000000002ec8                wizchip_cris_exit
  .text.wizchip_cs_select
-                0x0000000000002ff6        0x2 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
-                0x0000000000002ff6                wizchip_cs_select
+                0x0000000000002eca        0x2 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
+                0x0000000000002eca                wizchip_cs_select
  .text.wizchip_cs_deselect
-                0x0000000000002ff8        0x2 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
-                0x0000000000002ff8                wizchip_cs_deselect
+                0x0000000000002ecc        0x2 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
+                0x0000000000002ecc                wizchip_cs_deselect
  .text.reg_wizchip_cs_cbfunc
-                0x0000000000002ffa       0x36 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
-                0x0000000000002ffa                reg_wizchip_cs_cbfunc
+                0x0000000000002ece       0x36 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
+                0x0000000000002ece                reg_wizchip_cs_cbfunc
  .text.reg_wizchip_spi_cbfunc
-                0x0000000000003030       0x48 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
-                0x0000000000003030                reg_wizchip_spi_cbfunc
+                0x0000000000002f04       0x48 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
+                0x0000000000002f04                reg_wizchip_spi_cbfunc
  .text.reg_wizchip_spiburst_cbfunc
-                0x0000000000003078       0x48 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
-                0x0000000000003078                reg_wizchip_spiburst_cbfunc
+                0x0000000000002f4c       0x48 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
+                0x0000000000002f4c                reg_wizchip_spiburst_cbfunc
  .text.wizchip_sw_reset
-                0x00000000000030c0       0xec ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
-                0x00000000000030c0                wizchip_sw_reset
+                0x0000000000002f94       0xec ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
+                0x0000000000002f94                wizchip_sw_reset
  .text.wizchip_init
-                0x00000000000031ac       0xce ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
-                0x00000000000031ac                wizchip_init
+                0x0000000000003080       0xce ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
+                0x0000000000003080                wizchip_init
  .text.wizchip_clrinterrupt
-                0x000000000000327a       0x7c ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
-                0x000000000000327a                wizchip_clrinterrupt
+                0x000000000000314e       0x7c ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
+                0x000000000000314e                wizchip_clrinterrupt
  .text.wizchip_getinterrupt
-                0x00000000000032f6       0x32 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
-                0x00000000000032f6                wizchip_getinterrupt
+                0x00000000000031ca       0x32 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
+                0x00000000000031ca                wizchip_getinterrupt
  .text.wizchip_setinterruptmask
-                0x0000000000003328       0x22 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
-                0x0000000000003328                wizchip_setinterruptmask
+                0x00000000000031fc       0x22 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
+                0x00000000000031fc                wizchip_setinterruptmask
  .text.wizchip_getinterruptmask
-                0x000000000000334a       0x2a ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
-                0x000000000000334a                wizchip_getinterruptmask
+                0x000000000000321e       0x2a ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
+                0x000000000000321e                wizchip_getinterruptmask
  .text.wizphy_getphylink
-                0x0000000000003374       0x10 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
-                0x0000000000003374                wizphy_getphylink
+                0x0000000000003248       0x10 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
+                0x0000000000003248                wizphy_getphylink
  .text.wizphy_getphypmode
-                0x0000000000003384       0x1a ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
-                0x0000000000003384                wizphy_getphypmode
+                0x0000000000003258       0x1a ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
+                0x0000000000003258                wizphy_getphypmode
  .text.wizphy_reset
-                0x000000000000339e       0x38 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
-                0x000000000000339e                wizphy_reset
+                0x0000000000003272       0x38 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
+                0x0000000000003272                wizphy_reset
  .text.wizphy_setphyconf
-                0x00000000000033d6       0x40 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
-                0x00000000000033d6                wizphy_setphyconf
+                0x00000000000032aa       0x40 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
+                0x00000000000032aa                wizphy_setphyconf
  .text.wizphy_getphyconf
-                0x0000000000003416       0x5a ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
-                0x0000000000003416                wizphy_getphyconf
+                0x00000000000032ea       0x5a ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
+                0x00000000000032ea                wizphy_getphyconf
  .text.wizphy_setphypmode
-                0x0000000000003470       0x56 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
-                0x0000000000003470                wizphy_setphypmode
+                0x0000000000003344       0x56 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
+                0x0000000000003344                wizphy_setphypmode
  .text.ctlwizchip
-                0x00000000000034c6      0x12c ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
-                0x00000000000034c6                ctlwizchip
+                0x000000000000339a      0x12c ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
+                0x000000000000339a                ctlwizchip
  .text.wizchip_setnetinfo
-                0x00000000000035f2       0x80 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
-                0x00000000000035f2                wizchip_setnetinfo
+                0x00000000000034c6       0x80 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
+                0x00000000000034c6                wizchip_setnetinfo
  .text.wizchip_getnetinfo
-                0x0000000000003672       0x80 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
-                0x0000000000003672                wizchip_getnetinfo
+                0x0000000000003546       0x80 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
+                0x0000000000003546                wizchip_getnetinfo
  .text._ZN6System12TimerService11on_1ms_tickEv
-                0x00000000000036f2       0x28 ../src/System/libATmega328_TIMER_SERVICE.a(TimerService.cpp.obj)
-                0x00000000000036f2                _ZN6System12TimerService11on_1ms_tickEv
+                0x00000000000035c6       0x28 ../src/System/libATmega328_TIMER_SERVICE.a(TimerService.cpp.obj)
+                0x00000000000035c6                _ZN6System12TimerService11on_1ms_tickEv
  .text._ZN6System12TimerService6millisEv
-                0x000000000000371a       0x18 ../src/System/libATmega328_TIMER_SERVICE.a(TimerService.cpp.obj)
-                0x000000000000371a                _ZN6System12TimerService6millisEv
+                0x00000000000035ee       0x18 ../src/System/libATmega328_TIMER_SERVICE.a(TimerService.cpp.obj)
+                0x00000000000035ee                _ZN6System12TimerService6millisEv
  .text.libgcc.div
-                0x0000000000003732       0x18 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/avr5/libgcc.a(_udivmodqi4.o)
-                0x0000000000003732                __udivmodqi4
+                0x0000000000003606       0x18 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/avr5/libgcc.a(_udivmodqi4.o)
+                0x0000000000003606                __udivmodqi4
  .text.libgcc.div
-                0x000000000000374a       0x44 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/avr5/libgcc.a(_udivmodsi4.o)
-                0x000000000000374a                __udivmodsi4
- .text.libgcc   0x000000000000378e        0xc /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/avr5/libgcc.a(_tablejump2.o)
-                0x000000000000378e                __tablejump2__
+                0x000000000000361e       0x44 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/avr5/libgcc.a(_udivmodsi4.o)
+                0x000000000000361e                __udivmodsi4
+ .text.libgcc   0x0000000000003662        0xc /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/avr5/libgcc.a(_tablejump2.o)
+                0x0000000000003662                __tablejump2__
  .text.avr-libc
-                0x000000000000379a       0x12 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/../../../../avr/lib/avr5/libc.a(memcpy.o)
-                0x000000000000379a                memcpy
+                0x000000000000366e       0x12 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/../../../../avr/lib/avr5/libc.a(memcpy.o)
+                0x000000000000366e                memcpy
  .text.avr-libc
-                0x00000000000037ac       0x16 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/../../../../avr/lib/avr5/libc.a(strchr.o)
-                0x00000000000037ac                strchr
+                0x0000000000003680       0x16 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/../../../../avr/lib/avr5/libc.a(strchr.o)
+                0x0000000000003680                strchr
  .text.avr-libc
-                0x00000000000037c2       0x12 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/../../../../avr/lib/avr5/libc.a(strcmp.o)
-                0x00000000000037c2                strcmp
+                0x0000000000003696       0x12 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/../../../../avr/lib/avr5/libc.a(strcmp.o)
+                0x0000000000003696                strcmp
  .text.avr-libc
-                0x00000000000037d4       0x1c /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/../../../../avr/lib/avr5/libc.a(strncmp.o)
-                0x00000000000037d4                strncmp
+                0x00000000000036a8       0x1c /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/../../../../avr/lib/avr5/libc.a(strncmp.o)
+                0x00000000000036a8                strncmp
  .text.avr-libc
-                0x00000000000037f0       0x1e /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/../../../../avr/lib/avr5/libc.a(strncpy.o)
-                0x00000000000037f0                strncpy
+                0x00000000000036c4       0x1e /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/../../../../avr/lib/avr5/libc.a(strncpy.o)
+                0x00000000000036c4                strncpy
  .text.avr-libc
-                0x000000000000380e       0x20 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/../../../../avr/lib/avr5/libatmega328.a(eerd_block.o)
-                0x000000000000380e                eeprom_read_block
-                0x0000000000003812                eeprom_read_blraw
+                0x00000000000036e2       0x20 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/../../../../avr/lib/avr5/libatmega328.a(eerd_block.o)
+                0x00000000000036e2                eeprom_read_block
+                0x00000000000036e6                eeprom_read_blraw
  .text.avr-libc
-                0x000000000000382e       0x20 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/../../../../avr/lib/avr5/libatmega328.a(eeupd_block.o)
-                0x000000000000382e                eeprom_update_block
+                0x0000000000003702       0x20 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/../../../../avr/lib/avr5/libatmega328.a(eeupd_block.o)
+                0x0000000000003702                eeprom_update_block
  .text.avr-libc
-                0x000000000000384e       0x24 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/../../../../avr/lib/avr5/libatmega328.a(eeupd_byte.o)
-                0x000000000000384e                eeprom_update_byte
-                0x0000000000003850                eeprom_update_r18
-                0x0000000000003872                . = ALIGN (0x2)
+                0x0000000000003722       0x24 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/../../../../avr/lib/avr5/libatmega328.a(eeupd_byte.o)
+                0x0000000000003722                eeprom_update_byte
+                0x0000000000003724                eeprom_update_r18
+                0x0000000000003746                . = ALIGN (0x2)
  *(.fini9)
- .fini9         0x0000000000003872        0x0 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/avr5/libgcc.a(_exit.o)
-                0x0000000000003872                exit
-                0x0000000000003872                _exit
+ .fini9         0x0000000000003746        0x0 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/avr5/libgcc.a(_exit.o)
+                0x0000000000003746                exit
+                0x0000000000003746                _exit
  *(.fini9)
  *(.fini8)
  *(.fini8)
@@ -956,11 +949,11 @@ END GROUP
  *(.fini1)
  *(.fini1)
  *(.fini0)
- .fini0         0x0000000000003872        0x4 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/avr5/libgcc.a(_exit.o)
+ .fini0         0x0000000000003746        0x4 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/avr5/libgcc.a(_exit.o)
  *(.fini0)
-                0x0000000000003876                _etext = .
+                0x000000000000374a                _etext = .
 
-.data           0x0000000000800100      0x3e8 load address 0x0000000000003876
+.data           0x0000000000800100      0x3d4 load address 0x000000000000374a
                 0x0000000000800100                PROVIDE (__data_start, .)
  *(.data)
  *(.data*)
@@ -977,134 +970,142 @@ END GROUP
  .rodata        0x000000000080012c       0x10 ../src/Ethernet/libATmega328_W5500_ETHERNET.a(W5500Interface.cpp.obj)
  *(.rodata*)
  .rodata.main.str1.1
-                0x000000000080013c      0x110 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
-                                        0x113 (size before relaxing)
+                0x000000000080013c       0xfc CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
+                                         0xff (size before relaxing)
  .rodata._ZZ4mainE10kTopicRing
-                0x000000000080024c        0xf CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
+                0x0000000000800238        0xf CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
  .rodata._ZTVN6serial4UARTE
-                0x000000000080025b        0xe ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
-                0x000000000080025b                _ZTVN6serial4UARTE
+                0x0000000000800247        0xe ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
+                0x0000000000800247                _ZTVN6serial4UARTE
  .rodata._ZTVN6serial3SPIE
-                0x0000000000800269        0xe ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
-                0x0000000000800269                _ZTVN6serial3SPIE
+                0x0000000000800255        0xe ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
+                0x0000000000800255                _ZTVN6serial3SPIE
  .rodata._ZN8Ethernet14W5500Interface4initEv.str1.1
-                0x0000000000800277       0x14 ../src/Ethernet/libATmega328_W5500_ETHERNET.a(W5500Interface.cpp.obj)
+                0x0000000000800263       0x14 ../src/Ethernet/libATmega328_W5500_ETHERNET.a(W5500Interface.cpp.obj)
  .rodata._ZN4MQTT11MinimalMQTT7publishEPKcPKhj.str1.1
-                0x000000000080028b       0x1b ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
+                0x0000000000800277       0x1b ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
  .rodata._ZN4MQTT11MinimalMQTT4loopEv.str1.1
-                0x00000000008002a6       0x38 ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
+                0x0000000000800292       0x38 ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
  .rodata._ZN4MQTT11MinimalMQTT14socket_connectEv.str1.1
-                0x00000000008002de       0x11 ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
+                0x00000000008002ca       0x11 ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
  .rodata._ZN4MQTT11MinimalMQTT16wait_for_connackEv.str1.1
-                0x00000000008002ef       0x32 ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
+                0x00000000008002db       0x32 ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
  .rodata._ZN4MQTT11MinimalMQTT7connectERKNS_6ConfigE.str1.1
-                0x0000000000800321       0x62 ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
+                0x000000000080030d       0x62 ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
                                          0x79 (size before relaxing)
  .rodata._ZN6Config17LightweightConfig17reset_to_defaultsEv.str1.1
-                0x0000000000800383        0xa ../src/Config/libATmega328_CONFIG.a(LightweightConfig.cpp.obj)
+                0x000000000080036f        0xa ../src/Config/libATmega328_CONFIG.a(LightweightConfig.cpp.obj)
  .rodata._ZN6Config17LightweightConfig4loadEv.str1.1
-                0x000000000080038d       0x2f ../src/Config/libATmega328_CONFIG.a(LightweightConfig.cpp.obj)
+                0x0000000000800379       0x2f ../src/Config/libATmega328_CONFIG.a(LightweightConfig.cpp.obj)
  .rodata._ZN6Config17LightweightConfig4saveEv.str1.1
-                0x00000000008003bc        0xe ../src/Config/libATmega328_CONFIG.a(LightweightConfig.cpp.obj)
+                0x00000000008003a8        0xe ../src/Config/libATmega328_CONFIG.a(LightweightConfig.cpp.obj)
  .rodata._ZN6Config17LightweightConfig15process_commandEPKc.str1.1
-                0x00000000008003ca      0x11d ../src/Config/libATmega328_CONFIG.a(LightweightConfig.cpp.obj)
+                0x00000000008003b6      0x11d ../src/Config/libATmega328_CONFIG.a(LightweightConfig.cpp.obj)
                                         0x120 (size before relaxing)
  *(.gnu.linkonce.r*)
-                0x00000000008004e8                . = ALIGN (0x2)
- *fill*         0x00000000008004e7        0x1 
-                0x00000000008004e8                _edata = .
-                0x00000000008004e8                PROVIDE (__data_end, .)
+                0x00000000008004d4                . = ALIGN (0x2)
+ *fill*         0x00000000008004d3        0x1 
+                0x00000000008004d4                _edata = .
+                0x00000000008004d4                PROVIDE (__data_end, .)
 
-.bss            0x00000000008004e8      0x373
-                0x00000000008004e8                PROVIDE (__bss_start, .)
+.bss            0x00000000008004d4      0x38b
+                0x00000000008004d4                PROVIDE (__bss_start, .)
  *(.bss)
  *(.bss*)
  .bss._ZZ4mainE13reconnect_cfg
-                0x00000000008004e8       0x51 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
+                0x00000000008004d4       0x51 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
  .bss._ZGVZ4mainE20mqtt_client_instance
-                0x0000000000800539        0x8 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
+                0x0000000000800525        0x8 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
  .bss._ZZ4mainE20mqtt_client_instance
-                0x0000000000800541      0x101 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
+                0x000000000080052d      0x101 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
  .bss._ZGVZ4mainE5w5500
-                0x0000000000800642        0x8 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
+                0x000000000080062e        0x8 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
  .bss._ZZ4mainE5w5500
-                0x000000000080064a        0xb CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
+                0x0000000000800636        0xb CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
  .bss._ZGVZ4mainE3spi
-                0x0000000000800655        0x8 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
+                0x0000000000800641        0x8 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
  .bss._ZZ4mainE3spi
-                0x000000000080065d        0x3 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
+                0x0000000000800649        0x3 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
  .bss._ZGVZ4mainE6config
-                0x0000000000800660        0x8 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
+                0x000000000080064c        0x8 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
  .bss._ZZ4mainE6config
-                0x0000000000800668       0x2f CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
+                0x0000000000800654       0x2f CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
  .bss.cmd_index
-                0x0000000000800697        0x1 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
-                0x0000000000800697                cmd_index
+                0x0000000000800683        0x1 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
+                0x0000000000800683                cmd_index
  .bss.cmd_buffer
-                0x0000000000800698       0x20 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
-                0x0000000000800698                cmd_buffer
+                0x0000000000800684       0x20 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
+                0x0000000000800684                cmd_buffer
  .bss._ZL8g_config
-                0x00000000008006b8        0x2 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
+                0x00000000008006a4        0x2 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
  .bss._ZL13g_mqtt_client
-                0x00000000008006ba        0x2 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
+                0x00000000008006a6        0x2 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
  .bss.mqtt_ring_sent
-                0x00000000008006bc        0x1 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
-                0x00000000008006bc                mqtt_ring_sent
+                0x00000000008006a8        0x1 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
+                0x00000000008006a8                mqtt_ring_sent
  .bss.ring_active
-                0x00000000008006bd        0x1 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
-                0x00000000008006bd                ring_active
+                0x00000000008006a9        0x1 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
+                0x00000000008006a9                ring_active
  .bss.button_pressed
-                0x00000000008006be        0x1 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
-                0x00000000008006be                button_pressed
+                0x00000000008006aa        0x1 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
+                0x00000000008006aa                button_pressed
  .bss.timer_counter
-                0x00000000008006bf        0x1 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
-                0x00000000008006bf                timer_counter
+                0x00000000008006ab        0x1 CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
+                0x00000000008006ab                timer_counter
+ .bss._ZN12_GLOBAL__N_110tx_buffer_E
+                0x00000000008006ac      0x100 ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
+ .bss._ZN12_GLOBAL__N_18tx_tail_E
+                0x00000000008007ac        0x1 ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
+ .bss._ZN12_GLOBAL__N_18tx_head_E
+                0x00000000008007ad        0x1 ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
+ .bss._ZN12_GLOBAL__N_110rx_buffer_E
+                0x00000000008007ae       0x40 ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
+ .bss._ZN12_GLOBAL__N_18rx_tail_E
+                0x00000000008007ee        0x1 ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
+ .bss._ZN12_GLOBAL__N_18rx_head_E
+                0x00000000008007ef        0x1 ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
+ .bss._ZN12_GLOBAL__N_18tx_busy_E
+                0x00000000008007f0        0x1 ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
  .bss._ZL10tx_buffer_
-                0x00000000008006c0      0x106 ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
+                0x00000000008007f1       0x16 ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
  .bss._ZL10rx_buffer_
-                0x00000000008007c6       0x26 ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
- .bss._ZL8tx_busy_
-                0x00000000008007ec        0x1 ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
- .bss._ZL10tx_buffer_
-                0x00000000008007ed       0x16 ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
- .bss._ZL10rx_buffer_
-                0x0000000000800803       0x16 ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
+                0x0000000000800807       0x16 ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
  .bss.err_dummy_
-                0x0000000000800819        0x1 ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
-                0x0000000000800819                err_dummy_
+                0x000000000080081d        0x1 ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
+                0x000000000080081d                err_dummy_
  .bss._ZL10tx_rx_done
-                0x000000000080081a        0x1 ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
+                0x000000000080081e        0x1 ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
  .bss._ZN8Ethernet14W5500Interface8netInfo_E
-                0x000000000080081b       0x18 ../src/Ethernet/libATmega328_W5500_ETHERNET.a(W5500Interface.cpp.obj)
-                0x000000000080081b                _ZN8Ethernet14W5500Interface8netInfo_E
+                0x000000000080081f       0x18 ../src/Ethernet/libATmega328_W5500_ETHERNET.a(W5500Interface.cpp.obj)
+                0x000000000080081f                _ZN8Ethernet14W5500Interface8netInfo_E
  .bss._ZN8Ethernet14W5500Interface9instance_E
-                0x0000000000800833        0x2 ../src/Ethernet/libATmega328_W5500_ETHERNET.a(W5500Interface.cpp.obj)
-                0x0000000000800833                _ZN8Ethernet14W5500Interface9instance_E
+                0x0000000000800837        0x2 ../src/Ethernet/libATmega328_W5500_ETHERNET.a(W5500Interface.cpp.obj)
+                0x0000000000800837                _ZN8Ethernet14W5500Interface9instance_E
  .bss.sock_pack_info
-                0x0000000000800835        0x8 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(socket.c.obj)
-                0x0000000000800835                sock_pack_info
+                0x0000000000800839        0x8 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(socket.c.obj)
+                0x0000000000800839                sock_pack_info
  .bss.sock_remained_size
-                0x000000000080083d       0x10 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(socket.c.obj)
+                0x0000000000800841       0x10 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(socket.c.obj)
  .bss.sock_is_sending
-                0x000000000080084d        0x2 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(socket.c.obj)
+                0x0000000000800851        0x2 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(socket.c.obj)
  .bss.sock_io_mode
-                0x000000000080084f        0x2 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(socket.c.obj)
- .bss._DHCP_    0x0000000000800851        0x2 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
- .bss._DNS_     0x0000000000800853        0x4 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
+                0x0000000000800853        0x2 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(socket.c.obj)
+ .bss._DHCP_    0x0000000000800855        0x2 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
+ .bss._DNS_     0x0000000000800857        0x4 ../src/Ethernet/libATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY.a(wizchip_conf.c.obj)
  .bss._ZN6System12TimerService15millis_counter_E
-                0x0000000000800857        0x4 ../src/System/libATmega328_TIMER_SERVICE.a(TimerService.cpp.obj)
-                0x0000000000800857                _ZN6System12TimerService15millis_counter_E
+                0x000000000080085b        0x4 ../src/System/libATmega328_TIMER_SERVICE.a(TimerService.cpp.obj)
+                0x000000000080085b                _ZN6System12TimerService15millis_counter_E
  *(COMMON)
-                0x000000000080085b                PROVIDE (__bss_end, .)
-                0x0000000000003876                __data_load_start = LOADADDR (.data)
-                0x0000000000003c5e                __data_load_end = (__data_load_start + SIZEOF (.data))
+                0x000000000080085f                PROVIDE (__bss_end, .)
+                0x000000000000374a                __data_load_start = LOADADDR (.data)
+                0x0000000000003b1e                __data_load_end = (__data_load_start + SIZEOF (.data))
 
-.noinit         0x000000000080085b        0x0
+.noinit         0x000000000080085f        0x0
                 [!provide]                        PROVIDE (__noinit_start, .)
  *(.noinit*)
                 [!provide]                        PROVIDE (__noinit_end, .)
-                0x000000000080085b                _end = .
-                0x000000000080085b                PROVIDE (__heap_start, .)
+                0x000000000080085f                _end = .
+                0x000000000080085f                PROVIDE (__heap_start, .)
 
 .eeprom         0x0000000000810000        0x0
  *(.eeprom*)
@@ -1287,7 +1288,6 @@ _ZN4MQTT11MinimalMQTTC1EPN6serial4UARTE           ../src/MQTT/libATmega328_MQTT.
                                                   CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
 _ZN4MQTT11MinimalMQTTC2EPN6serial4UARTE           ../src/MQTT/libATmega328_MQTT.a(MinimalMQTT.cpp.obj)
 _ZN5utils14CircularBufferILj16EE9push_backEh      ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
-_ZN5utils14CircularBufferILj256EE9push_backEh     ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
 _ZN6Config17LightweightConfig15process_commandEPKc ../src/Config/libATmega328_CONFIG.a(LightweightConfig.cpp.obj)
                                                   CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
 _ZN6Config17LightweightConfig17reset_to_defaultsEv ../src/Config/libATmega328_CONFIG.a(LightweightConfig.cpp.obj)
@@ -1407,7 +1407,6 @@ __do_copy_data                                    /opt/avr8-gnu-toolchain-linux_
                                                   CMakeFiles/ATmega328_SMART_BELL_FW.dir/smart_bell.cpp.obj
 __do_global_ctors                                 /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/avr5/libgcc.a(_ctors.o)
                                                   ../src/Serial/libATmega328_SPI.a(SPI.cpp.obj)
-                                                  ../src/Serial/libATmega328_USART.a(UART.cpp.obj)
 __flp                                             /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/../../../../avr/lib/avr5/libc.a(malloc.o)
 __heap_end                                        /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/../../../../avr/lib/avr5/crtatmega328.o
                                                   /opt/avr8-gnu-toolchain-linux_x86_64/bin/../lib/gcc/avr/7.3.0/../../../../avr/lib/avr5/libc.a(malloc.o)
