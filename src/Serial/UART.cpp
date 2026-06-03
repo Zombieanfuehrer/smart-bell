@@ -87,9 +87,9 @@ UART::UART(const Serial_parameters &serial_parameters) {
 void UART::send(const uint8_t byte) {
   // Prevent silent character loss when TX buffer is temporarily full.
   const uint8_t mask = static_cast<uint8_t>(kTX_buffer_size - 1);
-  uint8_t next_head = ring_next(tx_head_, mask);
-  while (next_head == tx_tail_) {
+  while (ring_next(tx_head_, mask) == tx_tail_) {
   }
+  const uint8_t next_head = ring_next(tx_head_, mask);
   tx_buffer_[tx_head_] = byte;
   tx_head_ = next_head;
   if (!(UCSR0B & (1 << UDRIE0))) {
@@ -101,9 +101,9 @@ void UART::send(const uint8_t byte) {
 void UART::send_bytes(const uint8_t *const bytes, const uint16_t lengths) {
   const uint8_t mask = static_cast<uint8_t>(kTX_buffer_size - 1);
   for (uint16_t i = 0; i < lengths; i++) {
-    uint8_t next_head = ring_next(tx_head_, mask);
-    while (next_head == tx_tail_) {
+    while (ring_next(tx_head_, mask) == tx_tail_) {
     }
+    const uint8_t next_head = ring_next(tx_head_, mask);
     tx_buffer_[tx_head_] = bytes[i];
     tx_head_ = next_head;
   }
@@ -117,9 +117,9 @@ void UART::send_string(const char *string) {
   uint16_t nByte = 0;
   const uint8_t mask = static_cast<uint8_t>(kTX_buffer_size - 1);
   while (string[nByte] != '\0') {
-    uint8_t next_head = ring_next(tx_head_, mask);
-    while (next_head == tx_tail_) {
+    while (ring_next(tx_head_, mask) == tx_tail_) {
     }
+    const uint8_t next_head = ring_next(tx_head_, mask);
     tx_buffer_[tx_head_] = static_cast<uint8_t>(string[nByte]);
     tx_head_ = next_head;
     nByte++;
