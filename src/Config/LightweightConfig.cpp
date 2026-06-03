@@ -29,15 +29,76 @@
 
 namespace Config {
 
-constexpr uint16_t EEPROM_ADDR = 0;
+constexpr uint16_t EEPROM_ADDR = 128;
+constexpr uint16_t EEPROM_ADDR_LEGACY = 0;
 constexpr uint32_t MAGIC = 0xBEEFCAFE;
+
+inline bool is_valid_config(const SmartBellConfig& cfg) {
+  if (cfg.magic != MAGIC) {
+    return false;
+  }
+  if (cfg.broker_port == 0) {
+    return false;
+  }
+  return true;
+}
+
+void eeprom_read_cfg(SmartBellConfig* dst, uint16_t addr) {
+#ifdef __AVR__
+  eeprom_read_block(dst, reinterpret_cast<void*>(addr), sizeof(SmartBellConfig));
+#else
+  eeprom_read_block(dst, (void*)(uintptr_t)addr, sizeof(SmartBellConfig));
+#endif
+}
+
+void eeprom_write_cfg(const SmartBellConfig* src, uint16_t addr) {
+#ifdef __AVR__
+  eeprom_update_block(src, reinterpret_cast<void*>(addr), sizeof(SmartBellConfig));
+#else
+  eeprom_update_block(src, (void*)(uintptr_t)addr, sizeof(SmartBellConfig));
+#endif
+}
+
+inline bool parse_port_u16(const char* str, uint16_t* out_port) {
+  if (!str || !out_port) {
+    return false;
+  }
+
+  while (*str == ' ') {
+    str++;
+  }
+
+  if (*str < '0' || *str > '9') {
+    return false;
+  }
+
+  uint32_t port = 0;
+  while (*str >= '0' && *str <= '9') {
+    port = (port * 10U) + static_cast<uint32_t>(*str - '0');
+    if (port > 65535U) {
+      return false;
+    }
+    str++;
+  }
+
+  while (*str == ' ') {
+    str++;
+  }
+
+  if (*str != '\0' || port == 0U) {
+    return false;
+  }
+
+  *out_port = static_cast<uint16_t>(port);
+  return true;
+}
 
 // Help text in PROGMEM (saves SRAM)
 const char HELP_TEXT[] PROGMEM =
     "Commands:\r\n"
     "  ip <a.b.c.d>    - Set device IP\r\n"
     "  gw <a.b.c.d>    - Set gateway\r\n"
-    "  br <a.b.c.d> <port> - Set broker\r\n"
+    "  br <a.b.c.d>:<port> - Set broker\r\n"
     "  id <name>       - Set client ID\r\n"
     "  show            - Show config\r\n"
     "  save            - Save to EEPROM\r\n"
@@ -85,29 +146,29 @@ void LightweightConfig::reset_to_defaults() {
 
 void LightweightConfig::load() {
   SmartBellConfig temp;
-#ifdef __AVR__
-  eeprom_read_block(&temp, (void*)EEPROM_ADDR, sizeof(SmartBellConfig));
-#else
-  // Test build: use mock EEPROM (forward declared above)
-  eeprom_read_block(&temp, (void*)(uintptr_t)EEPROM_ADDR, sizeof(SmartBellConfig));
-#endif
 
-  if (temp.magic == MAGIC) {
+  eeprom_read_cfg(&temp, EEPROM_ADDR);
+  if (is_valid_config(temp)) {
     memcpy(&config_, &temp, sizeof(SmartBellConfig));
     msg("[CFG] Loaded\r\n");
     return;
   }
+
+  // One-time migration path for older firmware using EEPROM address 0.
+  eeprom_read_cfg(&temp, EEPROM_ADDR_LEGACY);
+  if (is_valid_config(temp)) {
+    memcpy(&config_, &temp, sizeof(SmartBellConfig));
+    eeprom_write_cfg(&config_, EEPROM_ADDR);
+    msg("[CFG] Loaded (migrated)\r\n");
+    return;
+  }
+
   msg("[CFG] Invalid, using defaults\r\n");
 }
 
 void LightweightConfig::save() {
   config_.magic = MAGIC;
-#ifdef __AVR__
-  eeprom_update_block(&config_, (void*)EEPROM_ADDR, sizeof(SmartBellConfig));
-#else
-  // Test build: use mock EEPROM (forward declared above)
-  eeprom_update_block(&config_, (void*)(uintptr_t)EEPROM_ADDR, sizeof(SmartBellConfig));
-#endif
+  eeprom_write_cfg(&config_, EEPROM_ADDR);
   save_flag_ = true;
   msg("[CFG] Saved\r\n");
 }
@@ -235,6 +296,25 @@ bool LightweightConfig::process_command(const char* cmd) {
       if (i < 3)
         uart_->send_string(".");
     }
+    msg(":");
+    char pbuf[6];
+    uint16_t p = config_.broker_port;
+    uint8_t pidx = 0;
+    if (p == 0) {
+      pbuf[pidx++] = '0';
+    } else {
+      char rev[5];
+      uint8_t ridx = 0;
+      while (p > 0 && ridx < sizeof(rev)) {
+        rev[ridx++] = static_cast<char>('0' + (p % 10));
+        p /= 10;
+      }
+      while (ridx > 0) {
+        pbuf[pidx++] = rev[--ridx];
+      }
+    }
+    pbuf[pidx] = '\0';
+    uart_->send_string(pbuf);
     msg("\r\nClient ID: ");
     uart_->send_string(config_.client_id);
     msg("\r\n");
@@ -261,24 +341,24 @@ bool LightweightConfig::process_command(const char* cmd) {
     return true;
   }
 
-  // "br 192.168.1.100 1883"
+  // "br 192.168.1.100:1883" or "br 192.168.1.100 1883"
   if (strncmp(cmd, "br ", 3) == 0) {
-    const char* space = strchr(cmd + 3, ' ');
-    if (space && parse_ip(cmd + 3, config_.broker_ip)) {
-      // Parse port manually
+    const char* arg = cmd + 3;
+    while (*arg == ' ') {
+      arg++;
+    }
+
+    const char* colon = strchr(arg, ':');
+    const char* sep = colon ? colon : strchr(arg, ' ');
+    if (sep && parse_ip(arg, config_.broker_ip)) {
       uint16_t port = 0;
-      space++;
-      while (*space >= '0' && *space <= '9') {
-        port = port * 10 + (*space - '0');
-        space++;
-      }
-      if (port > 0 && port < 65536) {
+      if (parse_port_u16(sep + 1, &port)) {
         config_.broker_port = port;
         msg("Broker set\r\n");
         return true;
       }
     }
-    msg("Error: Usage: br <ip> <port>\r\n");
+    msg("Error: Usage: br <ip>:<port>\r\n");
     return true;
   }
 

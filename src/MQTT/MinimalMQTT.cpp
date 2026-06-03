@@ -257,8 +257,21 @@ bool MinimalMQTT::socket_connect() {
   close(kMQTTSocketNumber);
 
 #ifdef __AVR__
-  // Abort immediately if no cable - avoids the ioLibrary blocking loop
-  if (!(getPHYCFGR() & PHYCFGR_LNK_ON)) {
+  // W5500 link negotiation can lag behind reset/init; wait up to ~5s.
+  uint8_t phy = 0;
+  bool link_up = false;
+  for (uint8_t i = 0; i < 50; i++) {
+    phy = getPHYCFGR();
+    if (phy & PHYCFGR_LNK_ON) {
+      link_up = true;
+      break;
+    }
+    wdt_reset();
+    for (uint16_t j = 0; j < 1000; j++) {
+      asm volatile("nop");
+    }
+  }
+  if (!link_up) {
     log("[MQTT] No link\r\n");
     return false;
   }

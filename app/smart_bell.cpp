@@ -19,6 +19,7 @@
 
 // ===== GLOBAL STATE =====
 volatile uint8_t timer_counter = 0;
+volatile bool button_irq_pending = false;
 volatile bool button_pressed = false;
 volatile bool ring_active = false;
 volatile bool bell_enabled = true;
@@ -40,11 +41,9 @@ static constexpr uint8_t kRING_OUTPUT = (1 << PORTB0);
 
 // ===== INTERRUPTS =====
 ISR(INT0_vect) {
-  if (!button_pressed && bell_enabled) {
-    button_pressed = true;
-    ring_active = true;
-    timer_counter = 0;
-    PORTB |= kRING_OUTPUT;  // Activate ring
+  if (bell_enabled) {
+    // Keep ISR minimal: just latch the button event.
+    button_irq_pending = true;
   }
 }
 
@@ -67,6 +66,9 @@ void setup_GPIO() {
 }
 
 int main() {
+  // Capture reset cause before clearing MCUSR.
+  uint8_t reset_cause = MCUSR;
+
   // Disable WDT immediately - must happen before anything else.
   // After a WDT reset, WDT stays active. The bootloader (~300ms) +
   // CRT startup is well under the 8s timeout, so this is sufficient.
@@ -89,6 +91,20 @@ int main() {
 
   uart.send_string("\r\n=== Smart Bell with Config ===\r\n");
   uart.send_string("Type 'help' for commands\r\n\r\n");
+
+  // Reset diagnostics: helps identify BOR/WDT/EXTRF causes in field logs.
+  if (reset_cause & (1 << WDRF)) {
+    uart.send_string("[RST] WDT\r\n");
+  }
+  if (reset_cause & (1 << BORF)) {
+    uart.send_string("[RST] BOR\r\n");
+  }
+  if (reset_cause & (1 << EXTRF)) {
+    uart.send_string("[RST] EXTERNAL\r\n");
+  }
+  if (reset_cause & (1 << PORF)) {
+    uart.send_string("[RST] POWERON\r\n");
+  }
 
   // Load configuration
   static Config::LightweightConfig config(uart);
@@ -196,6 +212,7 @@ int main() {
   // Re-enable WDT here once system is fully stable.
 
   uint32_t last_millis = 0;
+  uint32_t last_mqtt_retry_ms = 0;
   static const char kTopicRing[] = "home/bell/ring";
 
   // Main loop
@@ -203,11 +220,32 @@ int main() {
     // MQTT keepalive / state machine
     g_mqtt_client->loop();
 
+    // Auto-retry MQTT connect every 5s when broker is configured.
+    if (mqtt_configured && !g_mqtt_client->is_connected()) {
+      uint32_t now = System::TimerService::millis();
+      if ((now - last_mqtt_retry_ms) >= 5000) {
+        last_mqtt_retry_ms = now;
+
+        const Config::SmartBellConfig& live_cfg = g_config->config();
+        MQTT::Config retry_cfg;
+        memcpy(retry_cfg.broker_ip, live_cfg.broker_ip, 4);
+        retry_cfg.broker_port = live_cfg.broker_port;
+        strncpy(retry_cfg.client_id, live_cfg.client_id, MQTT::kMaxClientIdLength);
+        retry_cfg.client_id[MQTT::kMaxClientIdLength - 1] = '\0';
+        retry_cfg.use_auth = false;
+        retry_cfg.keepalive = 60;
+
+        uart.send_string("[MQTT] Reconnect...\r\n");
+        g_mqtt_client->connect(retry_cfg);
+      }
+    }
+
     // MQTT connect: only triggered after explicit 'save' command
     if (g_config->consume_save_flag()) {
       const Config::SmartBellConfig& live_cfg = g_config->config();
       bool has_broker = (live_cfg.broker_ip[0] | live_cfg.broker_ip[1] | live_cfg.broker_ip[2] |
                          live_cfg.broker_ip[3]) != 0;
+      mqtt_configured = has_broker;
       if (has_broker) {
         // Static to avoid 81-byte stack allocation (2KB SRAM limit!)
         static MQTT::Config reconnect_cfg;
@@ -218,6 +256,18 @@ int main() {
         reconnect_cfg.use_auth = false;
         reconnect_cfg.keepalive = 60;
         g_mqtt_client->connect(reconnect_cfg);
+      }
+    }
+
+    // Latch button event in main context to keep ISR side effects minimal.
+    if (button_irq_pending) {
+      button_irq_pending = false;
+      if (!ring_active && bell_enabled) {
+        button_pressed = true;
+        ring_active = true;
+        timer_counter = 0;
+        PORTB |= kRING_OUTPUT;  // Activate ring
+        mqtt_ring_sent = false;
       }
     }
 
