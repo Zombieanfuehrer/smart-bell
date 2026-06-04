@@ -1,1 +1,0 @@
-. "/home/david/dev/smart-bell/generators/conanbuildenv-release-avr.sh"

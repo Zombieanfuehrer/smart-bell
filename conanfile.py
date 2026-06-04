@@ -39,11 +39,10 @@ class Atmega328TemplateRecipe(ConanFile):
             self.requires("gtest/1.16.0")
 
     def layout(self):
-        # Conan automatically prefixes with project root
-        # Result: build/x86_64/Release/ or build/avr/Release/
-        self.folders.build = f"{self.settings.arch}/{self.settings.build_type}"
+        build_folder = f"build/{self.settings.arch}/{self.settings.build_type}"
+        self.folders.build = build_folder
         self.folders.source = "."
-        self.folders.generators = "generators"
+        self.folders.generators =  f"{build_folder}/generators"
 
     def generate(self):
         tc = CMakeToolchain(self)
