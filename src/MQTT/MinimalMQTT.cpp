@@ -93,6 +93,13 @@ void MinimalMQTT::disconnect() {
 
   socket_disconnect();
   state_ = State::DISCONNECTED;
+
+  // Remove all subscriptions
+  for (uint8_t i = 0; i < kMaxSubscriptions; i++) {
+    subscriptions_[i].active = false;
+    subscriptions_[i].callback = nullptr;
+  }
+
   log("[MQTT] Disconnected\r\n");
 }
 
@@ -237,7 +244,7 @@ void MinimalMQTT::loop() {
   uint32_t idle_time = now - last_activity_;
 
   // Send ping at 75% of keepalive interval
-  uint32_t ping_interval = (config_.keepalive * 1000 * 3) / 4;
+  uint32_t ping_interval = (config_.keepalive * 1000UL * 3) / 4;
 
   if ((now - last_ping_) > ping_interval) {
     send_pingreq();
@@ -440,42 +447,60 @@ void MinimalMQTT::send_pingreq() {
 
 void MinimalMQTT::process_incoming_packet() {
   int16_t len = socket_recv(recv_buffer_, kRecvBufferSize);
-  if (len <= 0) {
+  // Wir brauchen mindestens Header + Remaining Length
+  if (len < 2)
     return;
-  }
 
   last_activity_ = System::TimerService::millis();
 
   uint8_t msg_type = recv_buffer_[0] & 0xF0;
+  uint8_t qos = (recv_buffer_[0] & 0x06) >> 1;
 
-  // Handle PINGRESP
   if (msg_type == static_cast<uint8_t>(MessageType::PINGRESP)) {
-    return;  // Just update last_activity_
+    last_activity_ = System::TimerService::millis();
+    return;
   }
 
-  // Handle PUBLISH
   if (msg_type == static_cast<uint8_t>(MessageType::PUBLISH)) {
-    // Parse PUBLISH packet
     uint16_t pos = 1;
+    uint32_t multiplier = 1;
+    uint32_t rem_len = 0;
+    uint8_t encoded_byte;
 
-    // Remaining length (assume 1 byte)
-    pos++;
+    do {
+      if (pos >= len)
+        return;  // Out-of-Bounds Schutz
+      encoded_byte = recv_buffer_[pos++];
+      rem_len += (encoded_byte & 127) * multiplier;
+      multiplier *= 128;
+    } while ((encoded_byte & 128) != 0);
 
-    // Topic length
+    if (pos + 2 > len)
+      return;  // Out-of-Bounds Schutz
+
+    // Topic Length decodieren
     uint16_t topic_len = (recv_buffer_[pos] << 8) | recv_buffer_[pos + 1];
     pos += 2;
 
-    // Topic (temporarily null-terminate in buffer)
+    if (pos + topic_len > len)
+      return;  // Out-of-Bounds Schutz
+
+    // Topic String (Null-terminieren)
     char* topic = reinterpret_cast<char*>(&recv_buffer_[pos]);
     uint8_t original_byte = recv_buffer_[pos + topic_len];
     recv_buffer_[pos + topic_len] = '\0';
     pos += topic_len;
 
-    // Payload
+    if (qos > 0) {
+      if (pos + 2 > len)
+        return;  // Buffer-Überlauf verhindern
+      pos += 2;
+    }
+
     const uint8_t* payload = &recv_buffer_[pos];
     uint16_t payload_len = len - pos;
 
-    // Find matching subscription and call callback
+    // Callback aufrufen
     for (uint8_t i = 0; i < kMaxSubscriptions; i++) {
       if (subscriptions_[i].active && strcmp(subscriptions_[i].topic, topic) == 0 &&
           subscriptions_[i].callback != nullptr) {
@@ -483,8 +508,8 @@ void MinimalMQTT::process_incoming_packet() {
       }
     }
 
-    // Restore original byte
-    recv_buffer_[pos - payload_len] = original_byte;
+    // Byte wiederherstellen
+    recv_buffer_[pos - payload_len - ((qos > 0) ? 2 : 0)] = original_byte;
   }
 }
 

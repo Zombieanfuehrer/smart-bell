@@ -10,34 +10,48 @@
 #include "MQTT/MinimalMQTT.h"
 #include "Serial/SPI.h"
 #include "Serial/UART.h"
-#include "SetupEXT_IN_Interrupt.h"
 #include "SetupTimer.h"
 #include "SetupWDT.h"
 #include "System/TimerService.h"
 
-// ===== GLOBAL STATE =====
-volatile uint8_t timer_counter = 0;
-volatile bool button_irq_pending = false;
-volatile bool button_pressed = false;
-volatile bool ring_active = false;
-volatile bool bell_enabled = true;
-bool mqtt_ring_sent = false;
+// ===== HARDWARE KONSTANTEN =====
+static constexpr uint8_t kSPI_CS_W5500 = (1 << PORTB2);
+static constexpr uint8_t kRESET_W5500 = (1 << PORTD4);
 
-// Global to avoid stack overflow
+// ===== CHIME STATE MACHINE STRUCT =====
+struct ChimeState {
+  uint8_t out_pin;
+  volatile uint8_t* out_port;
+  uint8_t in_pin;
+  volatile uint8_t* in_port;
+
+  bool enabled;
+  bool trigger_pending;
+  bool is_ringing;
+  uint32_t ring_start_ms;
+
+  const char* pub_topic;
+  bool button_pressed;
+  bool mqtt_sent;
+
+  bool last_raw_state;
+  uint32_t last_debounce_ms;
+};
+
+// Definition der beiden Klingel-Module
+ChimeState chime1 = {(1 << PORTB0), &PORTB, (1 << PORTD2), &PIND, true, false, false, 0,
+                     nullptr,       false,  false,         true,  0};
+ChimeState chime2 = {(1 << PORTB1), &PORTB, (1 << PORTD3), &PIND, true, false, false, 0,
+                     nullptr,       false,  false,         true,  0};
+
 static serial::UART* g_uart = nullptr;
 static serial::SPI* g_spi = nullptr;
 static MQTT::MinimalMQTT* g_mqtt_client = nullptr;
 static Config::LightweightConfig* g_config = nullptr;
 static Ethernet::W5500Interface* g_w5500 = nullptr;
 
-// UART command buffer
 char cmd_buffer[64];
 uint8_t cmd_index = 0;
-
-// ===== HARDWARE PINS =====
-static constexpr uint8_t kSPI_CS_W5500 = (1 << PORTB2);
-static constexpr uint8_t kRESET_W5500 = (1 << PORTD4);
-static constexpr uint8_t kRING_OUTPUT = (1 << PORTB0);
 
 extern "C" {
 void disable_wdt_early(void) __attribute__((naked)) __attribute__((section(".init3")));
@@ -52,48 +66,150 @@ namespace {
 void print_log_ptr(serial::Interface* uart_ptr, const char* progmem_text) {
   if (!uart_ptr || !progmem_text)
     return;
-
   char ch;
-  // Liest das Zeichen direkt aus dem Flash-Speicher (PROGMEM)
   while ((ch = pgm_read_byte(progmem_text++)) != '\0') {
     uart_ptr->send(static_cast<uint8_t>(ch));
   }
 }
-}  // namespace
 
-// ===== INTERRUPTS =====
-ISR(INT0_vect) {
-  if (bell_enabled) {
-    // Keep ISR minimal: just latch the button event.
-    button_irq_pending = true;
+// Setzt den Zustand der State Machine sauber auf den aktuellen physikalischen Ist-Wert
+void init_chime(ChimeState& chime) {
+  chime.last_raw_state = (*chime.in_port & chime.in_pin) != 0;
+  chime.last_debounce_ms = System::TimerService::millis();
+  chime.button_pressed = false;
+  chime.mqtt_sent = false;
+  chime.is_ringing = false;
+  chime.trigger_pending = false;
+}
+
+void on_mqtt_message_received(const char* topic, const uint8_t* payload, uint16_t length) {
+  print_log_ptr(g_uart, PSTR("[MQTT] CMD RX on: "));
+  g_uart->send_string(topic);
+  print_log_ptr(g_uart, PSTR("\r\n"));
+
+  ChimeState* target_chime = nullptr;
+  uint16_t t_len = strlen(topic);
+
+  if (t_len >= 2 && topic[t_len - 2] == '/') {
+    if (topic[t_len - 1] == '1') {
+      target_chime = &chime1;
+    } else if (topic[t_len - 1] == '2') {
+      target_chime = &chime2;
+    }
+  }
+
+  if (!target_chime)
+    return;
+
+  if (length >= 2 && strncmp(reinterpret_cast<const char*>(payload), "ON", 2) == 0) {
+    target_chime->enabled = true;
+    print_log_ptr(g_uart, PSTR("[BELL] Chime enabled\r\n"));
+  } else if (length >= 3 && strncmp(reinterpret_cast<const char*>(payload), "OFF", 3) == 0) {
+    target_chime->enabled = false;
+    print_log_ptr(g_uart, PSTR("[BELL] Chime disabled\r\n"));
+  } else if (length >= 4 && strncmp(reinterpret_cast<const char*>(payload), "RING", 4) == 0) {
+    target_chime->trigger_pending = true;
+    print_log_ptr(g_uart, PSTR("[BELL] Ring triggered via MQTT\r\n"));
   }
 }
 
-// Timer0 fires every 1ms → millis() counter
+void mqtt_subscribe_topics(const Config::SmartBellConfig& cfg) {
+  if (!g_mqtt_client->is_connected())
+    return;
+
+  static char sub_topic[MQTT::kMaxTopicLength];
+
+  strncpy(sub_topic, cfg.gong_base_topic, MQTT::kMaxTopicLength - 3);
+  sub_topic[MQTT::kMaxTopicLength - 3] = '\0';
+  strcat(sub_topic, "/1");
+  g_mqtt_client->subscribe(sub_topic, on_mqtt_message_received);
+
+  strncpy(sub_topic, cfg.gong_base_topic, MQTT::kMaxTopicLength - 3);
+  sub_topic[MQTT::kMaxTopicLength - 3] = '\0';
+  strcat(sub_topic, "/2");
+  g_mqtt_client->subscribe(sub_topic, on_mqtt_message_received);
+}
+
+void process_chime(ChimeState& chime) {
+  uint32_t now = System::TimerService::millis();
+
+  // 1. Software-Polling & Debounce (Active-Low)
+  bool raw_state = (*chime.in_port & chime.in_pin) != 0;
+  if (raw_state != chime.last_raw_state) {
+    chime.last_debounce_ms = now;
+  }
+  chime.last_raw_state = raw_state;
+
+  if ((now - chime.last_debounce_ms) > 50) {
+    if (!raw_state) {
+      if (!chime.button_pressed && !chime.is_ringing) {
+        chime.button_pressed = true;
+        chime.mqtt_sent = false;
+        chime.trigger_pending = true;
+      }
+    } else {
+      if (!chime.is_ringing) {
+        chime.button_pressed = false;
+      }
+    }
+  }
+
+  // 2. Physischen Ausgang schalten
+  if (chime.trigger_pending) {
+    chime.trigger_pending = false;
+    if (chime.enabled && !chime.is_ringing) {
+      chime.is_ringing = true;
+      chime.ring_start_ms = now;
+      *chime.out_port |= chime.out_pin;
+    }
+  }
+
+  // 3. Timer für physischen Gong (1.5 Sekunden)
+  if (chime.is_ringing) {
+    if ((now - chime.ring_start_ms) >= 1500) {
+      chime.is_ringing = false;
+      *chime.out_port &= ~chime.out_pin;
+      print_log_ptr(g_uart, PSTR("[BELL] Ring ended\r\n"));
+    }
+  }
+
+  // 4. MQTT Event senden
+  if (chime.button_pressed && !chime.mqtt_sent && g_mqtt_client->is_connected() &&
+      chime.pub_topic) {
+    static const char* payload = "1";
+    if (g_mqtt_client->publish(chime.pub_topic, reinterpret_cast<const uint8_t*>(payload), 1)) {
+      chime.mqtt_sent = true;
+      print_log_ptr(g_uart, PSTR("[MQTT] Published button event\r\n"));
+    }
+  }
+}
+
+}  // namespace
+
 ISR(TIMER0_COMPA_vect) { System::TimerService::on_1ms_tick(); }
 
-// Timer1 fires every 250ms → ring tick counter
-ISR(TIMER1_COMPA_vect) { timer_counter++; }
-
-// ===== SETUP FUNCTIONS =====
 void setup_GPIO() {
-  DDRB |= kRING_OUTPUT;  // Ring output
-  PORTB &= ~kRING_OUTPUT;
+  // Globale Deaktivierung des Pull-up Disable Bits (Sicherheitshalber aktivieren)
+  MCUCR &= ~(1 << PUD);
 
-  DDRB |= kSPI_CS_W5500;  // SPI CS
+  DDRB |= (1 << PORTB0) | (1 << PORTB1);
+  PORTB &= ~((1 << PORTB0) | (1 << PORTB1));
+
+  DDRB |= kSPI_CS_W5500;
   PORTB |= kSPI_CS_W5500;
 
-  DDRD |= kRESET_W5500;  // W5500 Reset
+  DDRD |= kRESET_W5500;
   PORTD |= kRESET_W5500;
+
+  DDRD &= ~((1 << PORTD2) | (1 << PORTD3));
+  PORTD |= (1 << PORTD2) | (1 << PORTD3);  // Pull-ups ein
 }
 
 int main() {
-  // Capture reset cause before clearing MCUSR.
   uint8_t reset_cause = MCUSR;
   MCUSR = 0;
   wdt_disable();
 
-  // I/O Pins bereitstellen
   setup_GPIO();
 
   serial::Serial_parameters uart_params = {serial::Communication_mode::kAsynchronous,
@@ -107,45 +223,23 @@ int main() {
 
   print_log_ptr(g_uart, PSTR("\r\n=== Smart Bell Booting ===\r\n"));
 
-  if (reset_cause & (1 << WDRF))
-    print_log_ptr(g_uart, PSTR("[RST] Cause: Watchdog Timer\r\n"));
-  if (reset_cause & (1 << BORF))
-    print_log_ptr(g_uart, PSTR("[RST] Cause: Brown-Out\r\n"));
-  if (reset_cause & (1 << EXTRF))
-    print_log_ptr(g_uart, PSTR("[RST] Cause: External Pin\r\n"));
-  if (reset_cause & (1 << PORF))
-    print_log_ptr(g_uart, PSTR("[RST] Cause: Power-On\r\n"));
-
-  // Timer0 (System-Tick) &
-  // Timer1 initialisieren
-  print_log_ptr(g_uart, PSTR("[SYS] Initializing System Timers...\r\n"));
-  external_pin_interrupt::setup_INT0_PullUpResistorFallingEdge();
   timer_interrupt::ctc_mode::setup_timer0_1ms();
-  timer_interrupt::ctc_mode::setup_timer1_ctc_mode(timer_interrupt::Prescaler::DIV64, 62499);
-  print_log_ptr(g_uart, PSTR("[SYS] Timers OK\r\n"));
 
-  // Load configuration
-  print_log_ptr(g_uart, PSTR("[CFG] Loading EEPROM configuration...\r\n"));
   static Config::LightweightConfig config(uart);
   g_config = &config;
   config.load();
   const Config::SmartBellConfig& cfg = config.config();
-  print_log_ptr(g_uart, PSTR("[CFG] Configuration OK\r\n"));
 
-  // SPI init
-  print_log_ptr(g_uart, PSTR("[SPI] Initializing SPI Master interface...\r\n"));
+  chime1.pub_topic = cfg.input1_topic;
+  chime2.pub_topic = cfg.input2_topic;
+
   serial::SPI_parameters spi_params = {
       serial::SPI_mode::kMaster, serial::SPI_data_order::kMsb_first,
       serial::SPI_clock_polarity::kIdle_low, serial::SPI_clock_phase::kLeading,
       serial::SPI_clock_rate::k4mHz};
-
   serial::SPI spi(spi_params, kSPI_CS_W5500);
   g_spi = &spi;
-  print_log_ptr(g_uart, PSTR("[SPI] SPI Master OK\r\n"));
 
-  // W5500 callbacks
-  // chip_select disables SPIE so W5500 SPI callbacks can use direct SPDR
-  // polling without ISR interference. chip_deselect restores SPIE.
   Ethernet::W5500Callbacks w5500_callbacks = {.hard_reset =
                                                   []() {
                                                     PORTD &= ~kRESET_W5500;
@@ -155,35 +249,28 @@ int main() {
                                                   },
                                               .chip_select =
                                                   []() {
-                                                    SPCR &= ~(1 << SPIE);  // polling mode
+                                                    SPCR &= ~(1 << SPIE);
                                                     PORTB &= ~kSPI_CS_W5500;
                                                   },
                                               .chip_deselect =
                                                   []() {
                                                     PORTB |= kSPI_CS_W5500;
-                                                    SPCR |= (1 << SPIE);  // restore ISR mode
+                                                    SPCR |= (1 << SPIE);
                                                   }};
 
-  // W5500 init
-  print_log_ptr(g_uart, PSTR("[ETH] Triggering W5500 Hardware Reset...\r\n"));
-  // ALWAYS do hardware reset BEFORE creating W5500Interface object!
-  // This ensures W5500 starts in a clean state after ATmega reset
-  PORTB |= kSPI_CS_W5500;  // CS high (deselect)
-  PORTD &= ~kRESET_W5500;  // Reset LOW (active)
+  PORTB |= kSPI_CS_W5500;
+  PORTD &= ~kRESET_W5500;
   _delay_ms(50);
   wdt_reset();
-  PORTD |= kRESET_W5500;  // Reset HIGH (inactive)
+  PORTD |= kRESET_W5500;
   _delay_ms(100);
   wdt_reset();
-  _delay_ms(100);  // Total 200ms stabilization (datasheet: ~160ms)
+  _delay_ms(100);
 
-  print_log_ptr(g_uart, PSTR("[ETH] Initializing W5500 Core driver...\r\n"));
   static Ethernet::W5500Interface w5500(&spi, w5500_callbacks);
   g_w5500 = &w5500;
   w5500.init();
-  print_log_ptr(g_uart, PSTR("[ETH] Driver Init OK\r\n"));
 
-  // Network config from LightweightConfig
   Ethernet::MacAddress mac;
   Ethernet::IpAddress ip;
   Ethernet::SubnetMask subnet;
@@ -192,12 +279,8 @@ int main() {
   memcpy(ip.addr, cfg.device_ip, 4);
   memcpy(subnet.addr, cfg.subnet, 4);
   memcpy(gateway.addr, cfg.gateway, 4);
-
   w5500.set_network_config(&mac, &ip, &subnet, &gateway);
-  print_log_ptr(g_uart, PSTR("[ETH] IP Layer configured successfully\r\n"));
 
-  // MQTT init from config
-  print_log_ptr(g_uart, PSTR("[MQTT] Initializing stack...\r\n"));
   static MQTT::MinimalMQTT mqtt_client_instance{&uart};
   g_mqtt_client = &mqtt_client_instance;
 
@@ -209,38 +292,34 @@ int main() {
   mqtt_config.use_auth = false;
   mqtt_config.keepalive = 60;
 
-  // Store MQTT config, connect only if broker IP is non-zero
   bool mqtt_configured =
       (cfg.broker_ip[0] | cfg.broker_ip[1] | cfg.broker_ip[2] | cfg.broker_ip[3]) != 0;
   if (mqtt_configured) {
-    print_log_ptr(g_uart, PSTR("[MQTT] Connecting to broker...\r\n"));
-    mqtt_client_instance.connect(mqtt_config);
-  } else {
-    print_log_ptr(g_uart, PSTR("[MQTT] No broker configured - standing by\r\n"));
+    if (mqtt_client_instance.connect(mqtt_config)) {
+      mqtt_subscribe_topics(cfg);
+    }
   }
 
   print_log_ptr(g_uart, PSTR("[SYS] App Engine fully operational!\r\n\r\n"));
   wdt_enable(WDTO_4S);
+  sei();
 
   uint32_t last_millis = 0;
   uint32_t last_mqtt_retry_ms = 0;
 
-  // Main loop
-  while (1) {
-    wdt_reset();  // Watchdog füttern
+  init_chime(chime1);
+  init_chime(chime2);
 
-    // MQTT keepalive / state machine
+  while (1) {
+    wdt_reset();
     g_mqtt_client->loop();
 
-    // Auto-retry MQTT connect every 5s when broker is configured.
     if (mqtt_configured && !g_mqtt_client->is_connected()) {
       uint32_t now = System::TimerService::millis();
       if ((now - last_mqtt_retry_ms) >= 5000) {
         last_mqtt_retry_ms = now;
-
         const Config::SmartBellConfig& live_cfg = g_config->config();
 
-        // REPARIERT: "static" hinzugefügt, um SRAM-Stack-Overflow (max 2KB!) zu verhindern
         static MQTT::Config retry_cfg;
         memcpy(retry_cfg.broker_ip, live_cfg.broker_ip, 4);
         retry_cfg.broker_port = live_cfg.broker_port;
@@ -250,18 +329,18 @@ int main() {
         retry_cfg.keepalive = 60;
 
         print_log_ptr(g_uart, PSTR("[MQTT] Reconnect...\r\n"));
-        g_mqtt_client->connect(retry_cfg);
+        if (g_mqtt_client->connect(retry_cfg)) {
+          mqtt_subscribe_topics(live_cfg);
+        }
       }
     }
 
-    // MQTT connect: only triggered after explicit 'save' command
     if (g_config->consume_save_flag()) {
       const Config::SmartBellConfig& live_cfg = g_config->config();
       bool has_broker = (live_cfg.broker_ip[0] | live_cfg.broker_ip[1] | live_cfg.broker_ip[2] |
                          live_cfg.broker_ip[3]) != 0;
       mqtt_configured = has_broker;
       if (has_broker) {
-        // Statisch, um Stack-Größe zu minimieren
         static MQTT::Config reconnect_cfg;
         memcpy(reconnect_cfg.broker_ip, live_cfg.broker_ip, 4);
         reconnect_cfg.broker_port = live_cfg.broker_port;
@@ -269,37 +348,27 @@ int main() {
         reconnect_cfg.client_id[MQTT::kMaxClientIdLength - 1] = '\0';
         reconnect_cfg.use_auth = false;
         reconnect_cfg.keepalive = 60;
-        g_mqtt_client->connect(reconnect_cfg);
+        if (g_mqtt_client->connect(reconnect_cfg)) {
+          mqtt_subscribe_topics(live_cfg);
+        }
       }
     }
 
-    // Latch button event in main context to keep ISR side effects minimal.
-    if (button_irq_pending) {
-      button_irq_pending = false;
-      if (!ring_active && bell_enabled) {
-        button_pressed = true;
-        ring_active = true;
-        timer_counter = 0;
-        PORTB |= kRING_OUTPUT;  // Physischen Gong aktivieren
-        mqtt_ring_sent = false;
-      }
-    }
+    // State Machines ausführen
+    process_chime(chime1);
+    process_chime(chime2);
 
-    // Process UART commands - drain entire RX buffer per iteration
+    // UART Parser
     while (uart.is_read_data_available()) {
       char c = uart.read_byte();
-
       if (c == '\r' || c == '\n') {
         if (cmd_index > 0) {
           cmd_buffer[cmd_index] = '\0';
           print_log_ptr(g_uart, PSTR("\r\n"));
-
           g_config->process_command(cmd_buffer);
-
           cmd_index = 0;
         }
       } else if (c == '\b' || c == 0x7F) {
-        // Backspace / DEL: Zeichen löschen und Terminal-Echo bereinigen
         if (cmd_index > 0) {
           cmd_index--;
           print_log_ptr(g_uart, PSTR("\b \b"));
@@ -307,41 +376,15 @@ int main() {
       } else if (cmd_index < 31) {
         cmd_buffer[cmd_index++] = c;
         char echo[2] = {c, '\0'};
-        uart.send_string(echo);  // Echo
+        uart.send_string(echo);
       }
     }
 
-    // Ring timer (6 ticks × 250ms = 1.5 seconds)
-    if (ring_active && timer_counter >= 6) {
-      ring_active = false;
-      mqtt_ring_sent = false;
-      PORTB &= ~kRING_OUTPUT;  // Physischen Gong deaktivieren
-      print_log_ptr(g_uart, PSTR("[BELL] Ring ended\r\n"));
-    }
-
-    // MQTT publish on button press
-    if (button_pressed && !mqtt_ring_sent && g_mqtt_client->is_connected()) {
-      const char* payload = "1";
-
-      // REPARIERT: Nutzt nun das konfigurierte "cfg.input1_topic" statt des harten Strings!
-      if (g_mqtt_client->publish(cfg.input1_topic, reinterpret_cast<const uint8_t*>(payload), 1)) {
-        mqtt_ring_sent = true;
-        print_log_ptr(g_uart, PSTR("[MQTT] Published to Input 1 Topic\r\n"));
-      }
-    }
-
-    // Reset button flag after ring ends
-    if (!ring_active) {
-      button_pressed = false;
-    }
-
-    // Minimal delay to save CPU cycles
     uint32_t current_millis = System::TimerService::millis();
     if (current_millis - last_millis > 100) {
       last_millis = current_millis;
       _delay_ms(10);
     }
   }
-
   return 0;
 }

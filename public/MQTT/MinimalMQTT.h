@@ -17,7 +17,7 @@ constexpr uint8_t kMaxTopicLength = 32;
 constexpr uint8_t kMaxClientIdLength = 24;
 constexpr uint8_t kMaxUsernameLength = 24;
 constexpr uint8_t kMaxPasswordLength = 24;
-constexpr uint8_t kMaxSubscriptions = 1;
+constexpr uint8_t kMaxSubscriptions = 2;
 
 // MQTT Message Types
 enum class MessageType : uint8_t {
