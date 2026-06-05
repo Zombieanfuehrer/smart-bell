@@ -40,34 +40,34 @@ ISR(USART_UDRE_vect) {
 namespace serial {
 
 UART::UART(const Serial_parameters &serial_parameters) {
-  bool were_interrupts_enabled = (SREG & (1 << SREG_I));
-  if (were_interrupts_enabled) {
-    cli();
-  }
+  cli();
 
+  // 1. Register komplett nullen, um alten Bootloader-Müll loszuwerden
+  UCSR0A = 0;
+  UCSR0B = 0;
+  UCSR0C = 0;
+
+  // 2. Double Speed Modus konfigurieren
   if (serial_parameters.asynchronous_mode == Asynchronous_mode::kDouble_speed) {
-    UCSR0A |= (1 << U2X0);  // Enable double speed mode
-  } else {
-    UCSR0A &= ~(1 << U2X0);  // Disable double speed mode
+    UCSR0A |= (1 << U2X0);
   }
 
-  auto prescaler =
+  // REPARIERT: Nutzt nun uint16_t um Abschneidefehler über 255 zu verhindern!
+  uint16_t prescaler =
       calculate_baudrate_prescaler(serial_parameters.baudrate, serial_parameters.asynchronous_mode);
-  // Set baud rate
-  UBRR0L = static_cast<uint8_t>(prescaler & 0xFF);
+
+  // 16-Bit Baudratenregister sicher beschreiben
   UBRR0H = static_cast<uint8_t>(prescaler >> 8);
+  UBRR0L = static_cast<uint8_t>(prescaler & 0xFF);
 
-  // Receiver and transmitter enable with interrupts
+  // 3. Empfänger und Sender aktivieren + RX-Interrupt einschalten
   UCSR0B = (1 << RXEN0) | (1 << TXEN0) | (1 << RXCIE0);
-  // Set frame format and communication mode
-  UCSR0C = static_cast<uint8_t>(serial_parameters.communication_mode) |
-           static_cast<uint8_t>(serial_parameters.stop_bits) |
-           static_cast<uint8_t>(serial_parameters.data_bits) |
-           static_cast<uint8_t>(serial_parameters.parity_mode);
 
-  if (were_interrupts_enabled) {
-    sei();
-  }
+  // REPARIERT: Erzwingt ein sauberes 8N1 Frame-Format (8 Datenbits, keine Parität, 1 Stop-Bit)
+  // Das umgeht fehlerhafte Bit-Verschiebungen aus den abstrakten Enum-Klassen.
+  UCSR0C = (1 << UCSZ01) | (1 << UCSZ00);
+
+  sei();
 }
 
 void UART::send(const uint8_t byte) {
@@ -106,14 +106,14 @@ uint8_t UART::read_byte() {
   return 0;  // or any other default value or error code
 }
 
-uint8_t UART::calculate_baudrate_prescaler(const Baudrate &baudrate,
-                                           const Asynchronous_mode &asynchronous_mode) {
+uint16_t UART::calculate_baudrate_prescaler(const Baudrate &baudrate,
+                                            const Asynchronous_mode &asynchronous_mode) {
+  uint32_t target_baud = static_cast<uint32_t>(baudrate);
+
   if (asynchronous_mode == Asynchronous_mode::kDouble_speed) {
-    return static_cast<uint8_t>(
-        (F_CPU / (kAsynchronous_double_speed_mode * static_cast<uint32_t>(baudrate))) - 1);
+    return static_cast<uint16_t>((F_CPU / (8UL * target_baud)) - 1);
   }
-  return static_cast<uint8_t>(
-      (F_CPU / (kAsynchronous_normal_speed_mode * static_cast<uint32_t>(baudrate))) - 1);
+  return static_cast<uint16_t>((F_CPU / (16UL * target_baud)) - 1);
 }
 
 void UART::send_() {

@@ -1,0 +1,12 @@
+
+set(EXECUTABLE_UART_EXAMPLE_SRC "${CMAKE_CURRENT_SOURCE_DIR}/uart_test.cpp")
+
+add_executable(${EXECUTABLE_UART_EXAMPLE} ${EXECUTABLE_UART_EXAMPLE_SRC})
+
+target_link_libraries(${EXECUTABLE_UART_EXAMPLE} PUBLIC "${LIB_WTD}")
+target_link_libraries(${EXECUTABLE_UART_EXAMPLE} PUBLIC "${LIB_TIMERINT}")
+target_link_libraries(${EXECUTABLE_UART_EXAMPLE} PUBLIC "${LIB_USART}")
+target_link_libraries(${EXECUTABLE_UART_EXAMPLE} PUBLIC "${LIB_UTILS}")
+
+target_link_options(${EXECUTABLE_UART_EXAMPLE} PRIVATE "-Wl,-Map=${CMAKE_CURRENT_BINARY_DIR}/${EXECUTABLE_UART_EXAMPLE}.map,--cref,--noinhibit-exec")
+

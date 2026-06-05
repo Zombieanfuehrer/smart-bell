@@ -5,10 +5,15 @@
 #include <avr/io.h>
 #endif
 #include "Serial/Interface.h"
+
+// CircularBuffer wird nur inkludiert, wenn die gepufferte Variante aktiv ist
+#ifdef USE_SPI_BUFFERED
 #include "Utils/CircularBuffer.h"
+#endif
 
 #ifndef F_CPU
-#warning "F_CPU not defined for UART"
+#warning \
+    "F_CPU not defined for SPI. Defaulting to 16MHz. Define F_CPU to the correct value for your board to avoid this warning."
 #define F_CPU 16000000UL
 #endif
 
@@ -43,9 +48,14 @@ class SPI : public Interface {
  public:
   SPI(const SPI_parameters &parameters, const uint8_t slave_select);
   ~SPI() = default;
+
+#ifdef USE_SPI_BUFFERED
+  // Die Puffergröße wird nur für die interruptbasierte Variante benötigt
   static constexpr const uint8_t kTXRX_buffer_size{16};
+#endif
 
   void set_slave_select(const uint8_t slave_select);
+
   void send(const uint8_t byte) override;
   void send_bytes(const uint8_t *const bytes, const uint16_t length) override;
   void send_string(const char *string) override;
@@ -58,7 +68,10 @@ class SPI : public Interface {
   static const constexpr uint8_t kSCK = (1 << DDB5);
 
  private:
+#ifdef USE_SPI_BUFFERED
+  // Deine interne Hilfsmethode zum Anstoßen der Interrupt-Kette
   void send_();
+#endif
   uint8_t slave_select_;
 };
 

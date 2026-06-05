@@ -13,12 +13,17 @@ class UART;
 
 namespace Config {
 
-// Minimal configuration structure (~150 bytes)
+// Minimal configuration structure (~230 bytes)
 struct SmartBellConfig {
   // MQTT settings
   uint8_t broker_ip[4];
   uint16_t broker_port;
-  char client_id[16];  // Reduced from 24
+  char client_id[16];
+
+  // MQTT Topics (Added for Bell Inputs and Chime control)
+  char input1_topic[25];     // 24 chars + '\0'
+  char input2_topic[25];     // 24 chars + '\0'
+  char gong_base_topic[25];  // 24 chars + '\0'
 
   // Network settings (static only for simplicity)
   uint8_t device_ip[4];
@@ -64,8 +69,11 @@ class LightweightConfig {
   // Helper to parse "192.168.1.100" → uint8_t[4]
   bool parse_ip(const char* str, uint8_t* ip);
 
+  // Helper to stream IP bytes to UART without stack buffers (saves flash space)
+  void print_ip(const uint8_t* ip);
+
   // Helper to send short message
-  void msg(const char* text);
+  void msg_ptr(const char* progmem_text);
 };
 
 }  // namespace Config

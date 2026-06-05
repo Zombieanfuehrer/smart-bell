@@ -61,7 +61,7 @@ class UART : public Interface {
   static constexpr const uint8_t is_busy{1};
   static constexpr const uint8_t is_not_busy{0};
   static constexpr const size_t kRX_buffer_size{64};
-  static constexpr const size_t kTX_buffer_size{256};  // Large buffer for startup messages
+  static constexpr const size_t kTX_buffer_size{64};  // Large buffer for startup messages
 
   UART(const Serial_parameters &serial_parameters);
   ~UART() = default;
@@ -78,8 +78,8 @@ class UART : public Interface {
   static constexpr const uint8_t kAsynchronous_double_speed_mode{8};
 
  private:
-  static uint8_t calculate_baudrate_prescaler(const Baudrate &baudrate,
-                                              const Asynchronous_mode &asynchronous_mode);
+  static uint16_t calculate_baudrate_prescaler(const Baudrate &baudrate,
+                                               const Asynchronous_mode &asynchronous_mode);
 };  // UART
 
 }  // namespace serial

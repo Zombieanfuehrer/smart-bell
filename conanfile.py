@@ -23,18 +23,23 @@ class Atmega328TemplateRecipe(ConanFile):
         "shared": [True, False],
         "fPIC": [True, False],
         "platform": ["avr", "linux"],
-        "tests": [True, False]
+        "tests": [True, False],
+        "buffered_spi": [True, False],
+        "examples": [True, False]
     }
     default_options = {
         "shared": False,
         "fPIC": False,
         "platform": "avr",
-        "tests": False
+        "tests": False,
+        "buffered_spi": False,
+        "examples": False  
     }
     ioLibrary_Driver_Version = "v3.2.0"
     exports_sources = "CMakeLists.txt", "*.cmake", "app/*", "src/*", "public/*", "private/*", "tests/*", "style/*", "docs/Doxyfile", "configure/*", ".github/workflows/*", "cmake/*",".gitignore", "LICENSE", "README.md", "requirements.txt", "conanfile.py"
     
-    def requirements(self):
+    def build_requirements(self):
+        self.tool_requires("cmake/3.27.7")
         if self.options.platform == "linux" and self.options.tests:
             self.requires("gtest/1.16.0")
 
@@ -47,6 +52,8 @@ class Atmega328TemplateRecipe(ConanFile):
     def generate(self):
         tc = CMakeToolchain(self)
         tc.variables["ENABLE_UNIT_TESTS"] = "ON" if self.options.tests else "OFF"
+        tc.variables["ENABLE_EXAMPLES"] = "ON" if self.options.examples else "OFF" 
+        tc.variables["USE_SPI_BUFFERED"] = "ON" if self.options.buffered_spi else "OFF"
         tc.presets_prefix = "conan-generated-" + str(self.options.platform)
         deps = CMakeDeps(self)
         deps.generate()
@@ -70,28 +77,40 @@ class Atmega328TemplateRecipe(ConanFile):
             cmake.build(target="run_gTest")
             self.perform_ctest()
         elif self.options.platform == "avr":
-            # Build AVR firmware
-            cmake.build(target="ATmega328_WTD")
-            cmake.build(target="ATmega328_PIN_INT")
-            cmake.build(target="ATmega328_TIMER_INT")
-            cmake.build(target="ATmega328_USART")
-            cmake.build(target="ATmega328_SPI")
-            cmake.build(target="ATmega328_UTILS")
-            cmake.build(target="ATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY")
-            cmake.build(target="ATmega328_W5500_ETHERNET")
-            cmake.build(target="ATmega328_MQTT")
-            cmake.build(target="ATmega328_CONFIG")
-            cmake.build(target="ATmega328_TIMER_SERVICE")
-            cmake.build(target="ATmega328_SMART_BELL_FW")
-            cmake.build(target="ATmega328_SMART_BELL_FW_hex")
+            if self.options.examples:
+                cmake.build(target="ATmega328_WTD")
+                cmake.build(target="ATmega328_TIMER_INT")
+                cmake.build(target="ATmega328_USART")
+                cmake.build(target="ATmega328_UTILS")
+                cmake.build(target="ATmega328_UART_EXAMPLE_FW")
+                cmake.build(target="ATmega328_UART_EXAMPLE_FW_hex")
+            else:
+                # Standard-Build für die komplette Firmware
+                cmake.build(target="ATmega328_WTD")
+                cmake.build(target="ATmega328_PIN_INT")
+                cmake.build(target="ATmega328_TIMER_INT")
+                cmake.build(target="ATmega328_USART")
+                cmake.build(target="ATmega328_SPI")
+                cmake.build(target="ATmega328_UTILS")
+                cmake.build(target="ATmega328_W5500_ETHERNET_WIZNET_IOLIBRARY")
+                cmake.build(target="ATmega328_W5500_ETHERNET")
+                cmake.build(target="ATmega328_MQTT")
+                cmake.build(target="ATmega328_CONFIG")
+                cmake.build(target="ATmega328_TIMER_SERVICE")
+                cmake.build(target="ATmega328_SMART_BELL_FW")
+                cmake.build(target="ATmega328_SMART_BELL_FW_hex")
 
     def package(self):
         cmake = CMake(self)
         cmake.install()
-        # Copy the app folder to the package folder
         package_app_dir = os.path.join(self.package_folder, "app")
-        copy(self, "ATmega328_SMART_BELL_FW.hex", os.path.join(self.build_folder, "app"), package_app_dir)
-        # Copy libs to the package folder
+        
+        # NEU: Packt je nach Option das passende Hex-File ein
+        if self.options.examples:
+            copy(self, "ATmega328_UART_EXAMPLE_FW.hex", os.path.join(self.build_folder, "app/examples"), package_app_dir)
+        else:
+            copy(self, "ATmega328_SMART_BELL_FW.hex", os.path.join(self.build_folder, "app"), package_app_dir)
+            
         package_lib_dir = os.path.join(self.package_folder, "lib")
         copy(self, "*.a", os.path.join(self.build_folder, "lib"), package_lib_dir)
         package_public_dir = os.path.join(self.package_folder, "public")

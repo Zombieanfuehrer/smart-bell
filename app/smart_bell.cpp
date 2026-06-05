@@ -1,13 +1,11 @@
-// Smart Bell Firmware with Lightweight ConfigManager
-// Uses LightweightConfig for UART configuration (~200B vs ~1.7KB SRAM)
-
 #include <avr/interrupt.h>
 #include <avr/io.h>
+#include <avr/pgmspace.h>
 #include <avr/wdt.h>
 #include <string.h>
 #include <util/delay.h>
 
-#include "Config/LightweightConfig.h"  // Lightweight config manager
+#include "Config/LightweightConfig.h"
 #include "Ethernet/W5500/W5500Interface.h"
 #include "MQTT/MinimalMQTT.h"
 #include "Serial/SPI.h"
@@ -25,19 +23,43 @@ volatile bool ring_active = false;
 volatile bool bell_enabled = true;
 bool mqtt_ring_sent = false;
 
+// Global to avoid stack overflow
 static serial::UART* g_uart = nullptr;
+static serial::SPI* g_spi = nullptr;
 static MQTT::MinimalMQTT* g_mqtt_client = nullptr;
 static Config::LightweightConfig* g_config = nullptr;
-static Ethernet::W5500Interface* g_w5500 = nullptr;  // Global to avoid stack overflow
+static Ethernet::W5500Interface* g_w5500 = nullptr;
 
 // UART command buffer
-char cmd_buffer[32];
+char cmd_buffer[64];
 uint8_t cmd_index = 0;
 
 // ===== HARDWARE PINS =====
 static constexpr uint8_t kSPI_CS_W5500 = (1 << PORTB2);
 static constexpr uint8_t kRESET_W5500 = (1 << PORTD4);
 static constexpr uint8_t kRING_OUTPUT = (1 << PORTB0);
+
+extern "C" {
+void disable_wdt_early(void) __attribute__((naked)) __attribute__((section(".init3")));
+void disable_wdt_early(void) {
+  MCUSR = 0;
+  wdt_disable();
+}
+}
+
+namespace {
+
+void print_log_ptr(serial::Interface* uart_ptr, const char* progmem_text) {
+  if (!uart_ptr || !progmem_text)
+    return;
+
+  char ch;
+  // Liest das Zeichen direkt aus dem Flash-Speicher (PROGMEM)
+  while ((ch = pgm_read_byte(progmem_text++)) != '\0') {
+    uart_ptr->send(static_cast<uint8_t>(ch));
+  }
+}
+}  // namespace
 
 // ===== INTERRUPTS =====
 ISR(INT0_vect) {
@@ -68,15 +90,12 @@ void setup_GPIO() {
 int main() {
   // Capture reset cause before clearing MCUSR.
   uint8_t reset_cause = MCUSR;
-
-  // Disable WDT immediately - must happen before anything else.
-  // After a WDT reset, WDT stays active. The bootloader (~300ms) +
-  // CRT startup is well under the 8s timeout, so this is sufficient.
   MCUSR = 0;
   wdt_disable();
+
+  // I/O Pins bereitstellen
   setup_GPIO();
 
-  // UART init
   serial::Serial_parameters uart_params = {serial::Communication_mode::kAsynchronous,
                                            serial::Asynchronous_mode::kNormal,
                                            serial::Baudrate::kBaud_19200,
@@ -86,40 +105,43 @@ int main() {
   serial::UART uart(uart_params);
   g_uart = &uart;
 
-  // Enable interrupts early for UART TX to work
-  sei();
+  print_log_ptr(g_uart, PSTR("\r\n=== Smart Bell Booting ===\r\n"));
 
-  uart.send_string("\r\n=== Smart Bell with Config ===\r\n");
-  uart.send_string("Type 'help' for commands\r\n\r\n");
+  if (reset_cause & (1 << WDRF))
+    print_log_ptr(g_uart, PSTR("[RST] Cause: Watchdog Timer\r\n"));
+  if (reset_cause & (1 << BORF))
+    print_log_ptr(g_uart, PSTR("[RST] Cause: Brown-Out\r\n"));
+  if (reset_cause & (1 << EXTRF))
+    print_log_ptr(g_uart, PSTR("[RST] Cause: External Pin\r\n"));
+  if (reset_cause & (1 << PORF))
+    print_log_ptr(g_uart, PSTR("[RST] Cause: Power-On\r\n"));
 
-  // Reset diagnostics: helps identify BOR/WDT/EXTRF causes in field logs.
-  if (reset_cause & (1 << WDRF)) {
-    uart.send_string("[RST] WDT\r\n");
-  }
-  if (reset_cause & (1 << BORF)) {
-    uart.send_string("[RST] BOR\r\n");
-  }
-  if (reset_cause & (1 << EXTRF)) {
-    uart.send_string("[RST] EXTERNAL\r\n");
-  }
-  if (reset_cause & (1 << PORF)) {
-    uart.send_string("[RST] POWERON\r\n");
-  }
+  // Timer0 (System-Tick) &
+  // Timer1 initialisieren
+  print_log_ptr(g_uart, PSTR("[SYS] Initializing System Timers...\r\n"));
+  external_pin_interrupt::setup_INT0_PullUpResistorFallingEdge();
+  timer_interrupt::ctc_mode::setup_timer0_1ms();
+  timer_interrupt::ctc_mode::setup_timer1_ctc_mode(timer_interrupt::Prescaler::DIV64, 62499);
+  print_log_ptr(g_uart, PSTR("[SYS] Timers OK\r\n"));
 
   // Load configuration
+  print_log_ptr(g_uart, PSTR("[CFG] Loading EEPROM configuration...\r\n"));
   static Config::LightweightConfig config(uart);
   g_config = &config;
-
-  config.load();  // Loads from EEPROM or uses defaults if invalid
-
+  config.load();
   const Config::SmartBellConfig& cfg = config.config();
+  print_log_ptr(g_uart, PSTR("[CFG] Configuration OK\r\n"));
 
   // SPI init
+  print_log_ptr(g_uart, PSTR("[SPI] Initializing SPI Master interface...\r\n"));
   serial::SPI_parameters spi_params = {
       serial::SPI_mode::kMaster, serial::SPI_data_order::kMsb_first,
       serial::SPI_clock_polarity::kIdle_low, serial::SPI_clock_phase::kLeading,
       serial::SPI_clock_rate::k4mHz};
-  static serial::SPI spi(spi_params, kSPI_CS_W5500);  // Static to avoid stack overflow
+
+  serial::SPI spi(spi_params, kSPI_CS_W5500);
+  g_spi = &spi;
+  print_log_ptr(g_uart, PSTR("[SPI] SPI Master OK\r\n"));
 
   // W5500 callbacks
   // chip_select disables SPIE so W5500 SPI callbacks can use direct SPDR
@@ -143,8 +165,7 @@ int main() {
                                                   }};
 
   // W5500 init
-  uart.send_string("[ETH] Init W5500\r\n");
-
+  print_log_ptr(g_uart, PSTR("[ETH] Triggering W5500 Hardware Reset...\r\n"));
   // ALWAYS do hardware reset BEFORE creating W5500Interface object!
   // This ensures W5500 starts in a clean state after ATmega reset
   PORTB |= kSPI_CS_W5500;  // CS high (deselect)
@@ -156,28 +177,27 @@ int main() {
   wdt_reset();
   _delay_ms(100);  // Total 200ms stabilization (datasheet: ~160ms)
 
-  // Use STATIC to avoid stack overflow! W5500Interface is large (~200+ bytes)
+  print_log_ptr(g_uart, PSTR("[ETH] Initializing W5500 Core driver...\r\n"));
   static Ethernet::W5500Interface w5500(&spi, w5500_callbacks);
   g_w5500 = &w5500;
-
   w5500.init();
-  uart.send_string("[ETH] Init OK\r\n");
+  print_log_ptr(g_uart, PSTR("[ETH] Driver Init OK\r\n"));
 
   // Network config from LightweightConfig
   Ethernet::MacAddress mac;
   Ethernet::IpAddress ip;
   Ethernet::SubnetMask subnet;
   Ethernet::GatewayAddress gateway;
-
   memcpy(mac.addr, cfg.mac, 6);
   memcpy(ip.addr, cfg.device_ip, 4);
   memcpy(subnet.addr, cfg.subnet, 4);
   memcpy(gateway.addr, cfg.gateway, 4);
 
   w5500.set_network_config(&mac, &ip, &subnet, &gateway);
-  uart.send_string("[ETH] Network OK\r\n");
+  print_log_ptr(g_uart, PSTR("[ETH] IP Layer configured successfully\r\n"));
 
   // MQTT init from config
+  print_log_ptr(g_uart, PSTR("[MQTT] Initializing stack...\r\n"));
   static MQTT::MinimalMQTT mqtt_client_instance{&uart};
   g_mqtt_client = &mqtt_client_instance;
 
@@ -193,30 +213,22 @@ int main() {
   bool mqtt_configured =
       (cfg.broker_ip[0] | cfg.broker_ip[1] | cfg.broker_ip[2] | cfg.broker_ip[3]) != 0;
   if (mqtt_configured) {
-    uart.send_string("[MQTT] Connecting...\r\n");
+    print_log_ptr(g_uart, PSTR("[MQTT] Connecting to broker...\r\n"));
     mqtt_client_instance.connect(mqtt_config);
   } else {
-    uart.send_string("[MQTT] No broker configured - use 'br' to set\r\n");
+    print_log_ptr(g_uart, PSTR("[MQTT] No broker configured - standing by\r\n"));
   }
 
-  // Setup interrupts
-  external_pin_interrupt::setup_INT0_PullUpResistorFallingEdge();
-  // Timer0: 1ms tick for millis() → F_CPU/(N*(OCR0A+1)) = 16MHz/(64*250) = 1000 Hz
-  timer_interrupt::ctc_mode::setup_timer0_1ms();
-  // Timer1: 250ms tick for ring timer → OCR1A=62499, DIV64
-  timer_interrupt::ctc_mode::setup_timer0_ctc_mode(timer_interrupt::Prescaler::DIV64, 62499);
-
-  uart.send_string("[SYS] Started\r\n\r\n");
-
-  // WDT disabled - 8s is already the ATmega max, and init + MQTT connect can exceed it.
-  // Re-enable WDT here once system is fully stable.
+  print_log_ptr(g_uart, PSTR("[SYS] App Engine fully operational!\r\n\r\n"));
+  wdt_enable(WDTO_4S);
 
   uint32_t last_millis = 0;
   uint32_t last_mqtt_retry_ms = 0;
-  static const char kTopicRing[] = "home/bell/ring";
 
   // Main loop
   while (1) {
+    wdt_reset();  // Watchdog füttern
+
     // MQTT keepalive / state machine
     g_mqtt_client->loop();
 
@@ -227,7 +239,9 @@ int main() {
         last_mqtt_retry_ms = now;
 
         const Config::SmartBellConfig& live_cfg = g_config->config();
-        MQTT::Config retry_cfg;
+
+        // REPARIERT: "static" hinzugefügt, um SRAM-Stack-Overflow (max 2KB!) zu verhindern
+        static MQTT::Config retry_cfg;
         memcpy(retry_cfg.broker_ip, live_cfg.broker_ip, 4);
         retry_cfg.broker_port = live_cfg.broker_port;
         strncpy(retry_cfg.client_id, live_cfg.client_id, MQTT::kMaxClientIdLength);
@@ -235,7 +249,7 @@ int main() {
         retry_cfg.use_auth = false;
         retry_cfg.keepalive = 60;
 
-        uart.send_string("[MQTT] Reconnect...\r\n");
+        print_log_ptr(g_uart, PSTR("[MQTT] Reconnect...\r\n"));
         g_mqtt_client->connect(retry_cfg);
       }
     }
@@ -247,7 +261,7 @@ int main() {
                          live_cfg.broker_ip[3]) != 0;
       mqtt_configured = has_broker;
       if (has_broker) {
-        // Static to avoid 81-byte stack allocation (2KB SRAM limit!)
+        // Statisch, um Stack-Größe zu minimieren
         static MQTT::Config reconnect_cfg;
         memcpy(reconnect_cfg.broker_ip, live_cfg.broker_ip, 4);
         reconnect_cfg.broker_port = live_cfg.broker_port;
@@ -266,7 +280,7 @@ int main() {
         button_pressed = true;
         ring_active = true;
         timer_counter = 0;
-        PORTB |= kRING_OUTPUT;  // Activate ring
+        PORTB |= kRING_OUTPUT;  // Physischen Gong aktivieren
         mqtt_ring_sent = false;
       }
     }
@@ -278,17 +292,17 @@ int main() {
       if (c == '\r' || c == '\n') {
         if (cmd_index > 0) {
           cmd_buffer[cmd_index] = '\0';
-          uart.send_string("\r\n");
+          print_log_ptr(g_uart, PSTR("\r\n"));
 
           g_config->process_command(cmd_buffer);
 
           cmd_index = 0;
         }
       } else if (c == '\b' || c == 0x7F) {
-        // Backspace / DEL: erase last character
+        // Backspace / DEL: Zeichen löschen und Terminal-Echo bereinigen
         if (cmd_index > 0) {
           cmd_index--;
-          uart.send_string("\b \b");  // move back, overwrite with space, move back again
+          print_log_ptr(g_uart, PSTR("\b \b"));
         }
       } else if (cmd_index < 31) {
         cmd_buffer[cmd_index++] = c;
@@ -301,16 +315,18 @@ int main() {
     if (ring_active && timer_counter >= 6) {
       ring_active = false;
       mqtt_ring_sent = false;
-      PORTB &= ~kRING_OUTPUT;  // Deactivate ring
-      uart.send_string("[BELL] Ring ended\r\n");
+      PORTB &= ~kRING_OUTPUT;  // Physischen Gong deaktivieren
+      print_log_ptr(g_uart, PSTR("[BELL] Ring ended\r\n"));
     }
 
     // MQTT publish on button press
-    if (button_pressed && !mqtt_ring_sent) {
+    if (button_pressed && !mqtt_ring_sent && g_mqtt_client->is_connected()) {
       const char* payload = "1";
-      if (g_mqtt_client->publish(kTopicRing, reinterpret_cast<const uint8_t*>(payload), 1)) {
+
+      // REPARIERT: Nutzt nun das konfigurierte "cfg.input1_topic" statt des harten Strings!
+      if (g_mqtt_client->publish(cfg.input1_topic, reinterpret_cast<const uint8_t*>(payload), 1)) {
         mqtt_ring_sent = true;
-        uart.send_string("[MQTT] Published\r\n");
+        print_log_ptr(g_uart, PSTR("[MQTT] Published to Input 1 Topic\r\n"));
       }
     }
 
@@ -319,7 +335,7 @@ int main() {
       button_pressed = false;
     }
 
-    // Minimal delay
+    // Minimal delay to save CPU cycles
     uint32_t current_millis = System::TimerService::millis();
     if (current_millis - last_millis > 100) {
       last_millis = current_millis;

@@ -10,6 +10,8 @@
 #ifdef __AVR__
 #include <avr/eeprom.h>
 #include <avr/pgmspace.h>
+#include <avr/wdt.h>
+#include <util/delay.h>
 #else
 // Test/Linux build - use mocks
 #include "../../tests/Mocks/AVRHardwareMock.h"
@@ -26,6 +28,22 @@
 // For tests, use forward declaration only (mock provides interface)
 #include "Serial/Interface.h"
 #endif
+#include <avr/pgmspace.h>
+
+extern "C" {
+extern const char smart_bell_flash_help[] __attribute__((__progmem__));
+}
+
+void print_help_from_flash(serial::Interface* uart_ptr) {
+  if (!uart_ptr)
+    return;
+  const char* p = smart_bell_flash_help;
+  char ch;
+  // Liest den String direkt mittels pgm_read_byte über die Flash-Adresse aus
+  while ((ch = pgm_read_byte(p++)) != '\0') {
+    uart_ptr->send(static_cast<uint8_t>(ch));
+  }
+}
 
 namespace Config {
 
@@ -93,19 +111,17 @@ inline bool parse_port_u16(const char* str, uint16_t* out_port) {
   return true;
 }
 
-// Help text in PROGMEM (saves SRAM)
-const char HELP_TEXT[] PROGMEM =
-    "Commands:\r\n"
-    "  ip <a.b.c.d>    - Set device IP\r\n"
-    "  gw <a.b.c.d>    - Set gateway\r\n"
-    "  br <a.b.c.d>:<port> - Set broker\r\n"
-    "  id <name>       - Set client ID\r\n"
-    "  show            - Show config\r\n"
-    "  save            - Save to EEPROM\r\n"
-    "  reset           - Load defaults\r\n";
-
 LightweightConfig::LightweightConfig(serial::Interface& uart) : uart_(&uart) {
   reset_to_defaults();
+}
+
+void LightweightConfig::msg_ptr(const char* progmem_text) {
+  if (!uart_)
+    return;
+  char ch;
+  while ((ch = pgm_read_byte(progmem_text++)) != '\0') {
+    uart_->send(static_cast<uint8_t>(ch));
+  }
 }
 
 void LightweightConfig::reset_to_defaults() {
@@ -115,7 +131,7 @@ void LightweightConfig::reset_to_defaults() {
   config_.broker_ip[2] = 0;
   config_.broker_ip[3] = 0;
   config_.broker_port = 1883;
-  strncpy(config_.client_id, "smartbell", 15);
+  strncpy_P(config_.client_id, PSTR("smartbell"), 15);
   config_.client_id[15] = '\0';
 
   // Network defaults
@@ -150,7 +166,7 @@ void LightweightConfig::load() {
   eeprom_read_cfg(&temp, EEPROM_ADDR);
   if (is_valid_config(temp)) {
     memcpy(&config_, &temp, sizeof(SmartBellConfig));
-    msg("[CFG] Loaded\r\n");
+    msg_ptr(PSTR("[CFG] Loaded\r\n"));
     return;
   }
 
@@ -159,18 +175,18 @@ void LightweightConfig::load() {
   if (is_valid_config(temp)) {
     memcpy(&config_, &temp, sizeof(SmartBellConfig));
     eeprom_write_cfg(&config_, EEPROM_ADDR);
-    msg("[CFG] Loaded (migrated)\r\n");
+    msg_ptr(PSTR("[CFG] Loaded (migrated)\r\n"));
     return;
   }
 
-  msg("[CFG] Invalid, using defaults\r\n");
+  msg_ptr(PSTR("[CFG] Invalid, using defaults\r\n"));
 }
 
 void LightweightConfig::save() {
   config_.magic = MAGIC;
   eeprom_write_cfg(&config_, EEPROM_ADDR);
   save_flag_ = true;
-  msg("[CFG] Saved\r\n");
+  msg_ptr(PSTR("[CFG] Saved\r\n"));
 }
 
 // Manual IP parser: "192.168.1.100" → {192,168,1,100}
@@ -205,13 +221,30 @@ bool LightweightConfig::parse_ip(const char* str, uint8_t* ip) {
   return true;
 }
 
-void LightweightConfig::msg(const char* text) {
-  if (uart_) {
-    uart_->send_string(text);
+// Hilfsfunktion zum IP-Drucken (spart extrem viel Flash-Speicher bei 3-facher Nutzung)
+void LightweightConfig::print_ip(const uint8_t* ip) {
+  char buf[4];
+  for (int i = 0; i < 4; i++) {
+    uint8_t val = ip[i];
+    uint8_t idx = 0;
+    if (val >= 100) {
+      buf[idx++] = '0' + val / 100;
+      val %= 100;
+      buf[idx++] = '0' + val / 10;
+      val %= 10;
+    } else if (val >= 10) {
+      buf[idx++] = '0' + val / 10;
+      val %= 10;
+    }
+    buf[idx++] = '0' + val;
+    buf[idx] = '\0';
+    uart_->send_string(buf);
+    if (i < 3)
+      uart_->send_string(".");
   }
 }
 
-// Simple command parser - no complex logic
+// Simple command parser - erweiterte Version
 bool LightweightConfig::process_command(const char* cmd) {
   if (!cmd || !uart_)
     return false;
@@ -221,82 +254,27 @@ bool LightweightConfig::process_command(const char* cmd) {
     cmd++;
 
   // "help"
-  if (strncmp(cmd, "help", 4) == 0) {
+  if (strncmp_P(cmd, PSTR("help"), 4) == 0) {
 #ifdef __AVR__
-    // Send PROGMEM string byte-by-byte - avoids stack buffer entirely
-    const char* p = HELP_TEXT;
-    char ch;
-    while ((ch = pgm_read_byte(p++)) != '\0') {
-      uart_->send(static_cast<uint8_t>(ch));
-    }
+    print_help_from_flash(uart_);
 #else
-    uart_->send_string(HELP_TEXT);
+    uart_->send_string(smart_bell_flash_help);
 #endif
     return true;
   }
 
-  // "show"
-  if (strncmp(cmd, "show", 4) == 0) {
-    msg("Device IP: ");
-    // Manual IP printing to avoid sprintf (~400B)
-    char buf[4];
-    for (int i = 0; i < 4; i++) {
-      uint8_t val = config_.device_ip[i];
-      uint8_t idx = 0;
-      if (val >= 100) {
-        buf[idx++] = '0' + val / 100;
-        val %= 100;
-        buf[idx++] = '0' + val / 10;
-        val %= 10;
-      } else if (val >= 10) {
-        buf[idx++] = '0' + val / 10;
-        val %= 10;
-      }
-      buf[idx++] = '0' + val;
-      buf[idx] = '\0';
-      uart_->send_string(buf);
-      if (i < 3)
-        uart_->send_string(".");
-    }
-    msg("\r\nGateway: ");
-    for (int i = 0; i < 4; i++) {
-      uint8_t val = config_.gateway[i];
-      uint8_t idx = 0;
-      if (val >= 100) {
-        buf[idx++] = '0' + val / 100;
-        val %= 100;
-        buf[idx++] = '0' + val / 10;
-        val %= 10;
-      } else if (val >= 10) {
-        buf[idx++] = '0' + val / 10;
-        val %= 10;
-      }
-      buf[idx++] = '0' + val;
-      buf[idx] = '\0';
-      uart_->send_string(buf);
-      if (i < 3)
-        uart_->send_string(".");
-    }
-    msg("\r\nBroker: ");
-    for (int i = 0; i < 4; i++) {
-      uint8_t val = config_.broker_ip[i];
-      uint8_t idx = 0;
-      if (val >= 100) {
-        buf[idx++] = '0' + val / 100;
-        val %= 100;
-        buf[idx++] = '0' + val / 10;
-        val %= 10;
-      } else if (val >= 10) {
-        buf[idx++] = '0' + val / 10;
-        val %= 10;
-      }
-      buf[idx++] = '0' + val;
-      buf[idx] = '\0';
-      uart_->send_string(buf);
-      if (i < 3)
-        uart_->send_string(".");
-    }
-    msg(":");
+  // "show" (optimiert mit der print_ip Funktion)
+  if (strncmp_P(cmd, PSTR("show"), 4) == 0) {
+    msg_ptr(PSTR("Device IP: "));
+    print_ip(config_.device_ip);
+
+    msg_ptr(PSTR("\r\nGateway: "));
+    print_ip(config_.gateway);
+
+    msg_ptr(PSTR("\r\nBroker: "));
+    print_ip(config_.broker_ip);
+    msg_ptr(PSTR(":"));
+
     char pbuf[6];
     uint16_t p = config_.broker_port;
     uint8_t pidx = 0;
@@ -315,38 +293,58 @@ bool LightweightConfig::process_command(const char* cmd) {
     }
     pbuf[pidx] = '\0';
     uart_->send_string(pbuf);
-    msg("\r\nClient ID: ");
+
+    msg_ptr(PSTR("\r\nClient ID: "));
     uart_->send_string(config_.client_id);
-    msg("\r\n");
+
+    msg_ptr(PSTR("\r\nInput 1 Topic: "));
+    uart_->send_string(config_.input1_topic);
+
+    msg_ptr(PSTR("\r\nInput 2 Topic: "));
+    uart_->send_string(config_.input2_topic);
+
+    msg_ptr(PSTR("\r\nGong Base Topic: "));
+    uart_->send_string(config_.gong_base_topic);
+
+    msg_ptr(PSTR("\r\n"));
     return true;
   }
 
   // "ip 192.168.1.100"
-  if (strncmp(cmd, "ip ", 3) == 0) {
+  if (strncmp_P(cmd, PSTR("ip "), 3) == 0) {
     if (parse_ip(cmd + 3, config_.device_ip)) {
-      msg("Device IP set\r\n");
+      msg_ptr(PSTR("Device IP set\r\n"));
       return true;
     }
-    msg("Error: Invalid IP\r\n");
+    msg_ptr(PSTR("Error: Invalid IP\r\n"));
+    return true;
+  }
+
+  // "sn 255.255.255.0"
+  if (strncmp_P(cmd, PSTR("sn "), 3) == 0) {
+    if (parse_ip(cmd + 3, config_.subnet)) {
+      msg_ptr(PSTR("Subnet mask set\r\n"));
+      return true;
+    }
+    msg_ptr(PSTR("Error: Invalid subnet mask\r\n"));
     return true;
   }
 
   // "gw 192.168.1.1"
-  if (strncmp(cmd, "gw ", 3) == 0) {
+  if (strncmp_P(cmd, PSTR("gw "), 3) == 0) {
     if (parse_ip(cmd + 3, config_.gateway)) {
-      msg("Gateway set\r\n");
+      msg_ptr(PSTR("Gateway set\r\n"));
       return true;
     }
-    msg("Error: Invalid gateway\r\n");
+    msg_ptr(PSTR("Error: Invalid gateway\r\n"));
     return true;
   }
 
-  // "br 192.168.1.100:1883" or "br 192.168.1.100 1883"
-  if (strncmp(cmd, "br ", 3) == 0) {
+  // "br 192.168.1.100:1883"
+  if (strncmp_P(cmd, PSTR("br "), 3) == 0) {
     const char* arg = cmd + 3;
-    while (*arg == ' ') {
+    while (*arg == ' ')
       arg++;
-    }
 
     const char* colon = strchr(arg, ':');
     const char* sep = colon ? colon : strchr(arg, ' ');
@@ -354,42 +352,115 @@ bool LightweightConfig::process_command(const char* cmd) {
       uint16_t port = 0;
       if (parse_port_u16(sep + 1, &port)) {
         config_.broker_port = port;
-        msg("Broker set\r\n");
+        msg_ptr(PSTR("Broker set\r\n"));
         return true;
       }
     }
-    msg("Error: Usage: br <ip>:<port>\r\n");
+    msg_ptr(PSTR("Error: Usage: br <ip>:<port>\r\n"));
     return true;
   }
 
-  // "id smartbell123"
-  if (strncmp(cmd, "id ", 3) == 0) {
+  // "id <name>"
+  if (strncmp_P(cmd, PSTR("id "), 3) == 0) {
     const char* id = cmd + 3;
+    while (*id == ' ')
+      id++;
     if (*id) {
       strncpy(config_.client_id, id, 15);
       config_.client_id[15] = '\0';
-      msg("Client ID set\r\n");
+      msg_ptr(PSTR("Client ID set\r\n"));
       return true;
     }
-    msg("Error: Invalid ID\r\n");
+    msg_ptr(PSTR("Error: Invalid ID\r\n"));
+    return true;
+  }
+
+  // "input 1 pt <topic>" und "input 2 pt <topic>"
+  if (strncmp_P(cmd, PSTR("input "), 6) == 0) {
+    const char* arg = cmd + 6;
+    bool is_input1 = (strncmp_P(arg, PSTR("1 pt "), 5) == 0);
+    bool is_input2 = (strncmp_P(arg, PSTR("2 pt "), 5) == 0);
+
+    if (is_input1 || is_input2) {
+      const char* t = arg + 5;
+      while (*t == ' ')
+        t++;
+
+      if (*t && *t != '\r' && *t != '\n') {
+        // Ziel-Array und maximale Länge bestimmen (24 Zeichen)
+        char* dest = is_input1 ? config_.input1_topic : config_.input2_topic;
+        constexpr size_t max_len = 24;
+
+        // Kopieren und händisch nach max_len Zeichen oder bei Zeilenumbruch stoppen
+        size_t len = 0;
+        while (t[len] != '\0' && t[len] != '\r' && t[len] != '\n' && len < max_len) {
+          dest[len] = t[len];
+          len++;
+        }
+        dest[len] = '\0';  // Sichere Nullterminierung
+
+        if (is_input1)
+          msg_ptr(PSTR("Input 1 Topic set\r\n"));
+        else
+          msg_ptr(PSTR("Input 2 Topic set\r\n"));
+        return true;
+      }
+    }
+    msg_ptr(PSTR("Error: Usage: input [1|2] pt <topic>\r\n"));
+    return true;
+  }
+
+  // "gong sub <topic>"
+  if (strncmp_P(cmd, PSTR("gong sub "), 9) == 0) {
+    const char* t = cmd + 9;
+    while (*t == ' ')
+      t++;
+
+    if (*t && *t != '\r' && *t != '\n') {
+      constexpr size_t max_len = 24;
+      size_t len = 0;
+
+      while (t[len] != '\0' && t[len] != '\r' && t[len] != '\n' && len < max_len) {
+        config_.gong_base_topic[len] = t[len];
+        len++;
+      }
+      config_.gong_base_topic[len] = '\0';  // Sichere Nullterminierung
+
+      msg_ptr(PSTR("Gong Base Topic set\r\n"));
+      return true;
+    }
+    msg_ptr(PSTR("Error: Invalid topic\r\n"));
     return true;
   }
 
   // "save"
-  if (strncmp(cmd, "save", 4) == 0) {
+  if (strncmp_P(cmd, PSTR("save"), 4) == 0) {
     save();
+    msg_ptr(PSTR("Config saved to EEPROM\r\n"));
     return true;
   }
 
   // "reset"
-  if (strncmp(cmd, "reset", 5) == 0) {
+  if (strncmp_P(cmd, PSTR("reset"), 5) == 0) {
     reset_to_defaults();
-    msg("[CFG] Defaults loaded\r\n");
+    msg_ptr(PSTR("[CFG] Defaults loaded\r\n"));
+    return true;
+  }
+
+  // "reboot"
+  if (strncmp_P(cmd, PSTR("reboot"), 6) == 0) {
+    msg_ptr(PSTR("Rebooting...\r\n"));
+#ifdef __AVR__
+    _delay_ms(100);
+    wdt_enable(WDTO_15MS);
+    while (1)
+      ;
+#endif
     return true;
   }
 
   // Unknown command
-  msg("Unknown command\r\n");
+  msg_ptr(PSTR("Unknown command\r\n"));
   return false;
 }
 

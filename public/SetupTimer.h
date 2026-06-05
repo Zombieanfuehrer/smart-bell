@@ -13,7 +13,7 @@ enum class Prescaler : uint8_t {
 
 namespace ctc_mode {
 // Configure Timer1 CTC with given prescaler and OCR value
-void setup_timer0_ctc_mode(const Prescaler prescaler, const uint16_t ocr1a_value);
+void setup_timer1_ctc_mode(const Prescaler prescaler, const uint16_t ocr1a_value);
 // Configure Timer0 for 1ms ticks at 16MHz (calls TimerService::on_1ms_tick via ISR)
 void setup_timer0_1ms();
 }  // namespace ctc_mode
