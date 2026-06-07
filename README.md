@@ -116,14 +116,28 @@ Smart Bell ist eine bare-metal Firmware für den ATmega328P Mikrocontroller (bek
 
 #### Application Pins
 
-| ATmega328P Pin | Funktion | Beschreibung |
-|----------------|----------|--------------|
-| **PD2** (INT0) | Button Input | Türklingel-Taster (falling edge) |
-| **PB0** (D8) | Bell Output | Relais/LED Ausgang |
+Das System erwartet die Taster (Active-Low, gegen GND schaltend) und die Gong-Ausgänge (Active-High Steuersignale) an folgenden Ports:
 
-### Externe Beschaltung (Taster & LED)
+### Inputs (Taster)
+Die Taster sollten zwischen dem entsprechenden Pin und GND verbunden werden. Die internen Pull-up-Widerstände werden per Software aktiviert.
 
-#### Türklingel-Taster an PD2 (INT0)
+| Funktion | ATmega328P Pin | Port |
+| :--- | :--- | :--- |
+| **Taster Front** | PD2 | `PORTD2` |
+| **Taster Intern** | PD3 | `PORTD3` |
+
+### Outputs (Gong-Ansteuerung)
+Die Ausgänge liefern ein HIGH-Signal (5V), um z.B. einen Optokoppler oder ein Relais für den Gong zu schalten.
+
+| Funktion | ATmega328P Pin | Port |
+| :--- | :--- | :--- |
+| **Gong Front** | PB0 | `PORTB0` |
+| **Gong Intern** | PB1 | `PORTB1` |
+
+*(Hinweis: Achte bei der Ansteuerung von Relais unbedingt auf eine Freilaufdiode, um den ATmega vor Spannungsspitzen zu schützen!)*
+
+
+#### Türklingel-Taster an PORTD2
 
 Der Taster wird mit Hardware-Entprellung an PD2/INT0 angeschlossen:
 
@@ -174,7 +188,7 @@ Der Taster wird mit Hardware-Entprellung an PD2/INT0 angeschlossen:
 - **220nF:** Stärkere Entprellung bei sehr prellenden Tastern
 - **Typ:** Keramik-Kondensator (X7R oder C0G), 50V Spannungsfestigkeit
 
-#### Status-LED an PB0 (D8)
+#### Status-LED an PORTB0
 
 Die LED wird mit Vorwiderstand an PB0 angeschlossen:
 

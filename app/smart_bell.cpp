@@ -36,13 +36,14 @@ struct ChimeState {
 
   bool last_raw_state;
   uint32_t last_debounce_ms;
+  uint32_t last_event_ms;
 };
 
 // Definition der beiden Klingel-Module
 static ChimeState chime1 = {(1 << PORTB0), &PORTB, (1 << PORTD2), &PIND, true, false, false, 0,
-                            nullptr,       false,  false,         true,  0};
+                            nullptr,       false,  false,         true,  0,    0};
 static ChimeState chime2 = {(1 << PORTB1), &PORTB, (1 << PORTD3), &PIND, true, false, false, 0,
-                            nullptr,       false,  false,         true,  0};
+                            nullptr,       false,  false,         true,  0,    0};
 
 static serial::UART* g_uart = nullptr;
 static serial::SPI* g_spi = nullptr;
@@ -136,8 +137,6 @@ void mqtt_subscribe_topics(const Config::SmartBellConfig& cfg) {
 
 void process_chime(ChimeState& chime) {
   uint32_t now = System::TimerService::millis();
-
-  // Diese Variablen behalten ihren Wert über alle Funktionsaufrufe hinweg
   static bool is_loop_started = false;
   static uint32_t loop_start_ms = 0;
 
@@ -166,7 +165,10 @@ void process_chime(ChimeState& chime) {
   if ((now - chime.last_debounce_ms) > 50) {
     if (!raw_state) {
       // Nur bei einer echten Flanke (Edge-Trigger) auslösen!
-      if (!chime.button_pressed) {
+      // Taster gedrückt: Nur wenn vorher nicht schon als gedrückt erkannt und 3 Sekunden Cooldown
+      // seit letztem Event vergangen sind
+      if (!chime.button_pressed && (now - chime.last_event_ms > 3000)) {
+        chime.last_event_ms = now;  // Zeitstempel für den Cooldown setzen
         chime.button_pressed = true;
         chime.mqtt_sent = false;
         chime.trigger_pending = true;
