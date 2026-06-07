@@ -46,6 +46,12 @@ MinimalMQTT::MinimalMQTT(serial::UART* uart)
 bool MinimalMQTT::connect(const Config& config) {
   log("[MQTT] Connecting...\r\n");
 
+  // Remove all existing subscriptions on new connect attempt
+  for (uint8_t i = 0; i < kMaxSubscriptions; i++) {
+    subscriptions_[i].active = false;
+    subscriptions_[i].callback = nullptr;
+  }
+
   // Store config
   memcpy(&config_, &config, sizeof(Config));
   state_ = State::CONNECTING;
@@ -251,7 +257,7 @@ void MinimalMQTT::loop() {
   }
 
   // Timeout if no activity for keepalive * 1.5
-  if (idle_time > (config_.keepalive * 1500)) {
+  if (idle_time > (config_.keepalive * 1500UL)) {
     log("[MQTT] Keepalive timeout\r\n");
     state_ = State::ERROR;
   }
@@ -447,69 +453,83 @@ void MinimalMQTT::send_pingreq() {
 
 void MinimalMQTT::process_incoming_packet() {
   int16_t len = socket_recv(recv_buffer_, kRecvBufferSize);
-  // Wir brauchen mindestens Header + Remaining Length
-  if (len < 2)
-    return;
-
-  last_activity_ = System::TimerService::millis();
-
-  uint8_t msg_type = recv_buffer_[0] & 0xF0;
-  uint8_t qos = (recv_buffer_[0] & 0x06) >> 1;
-
-  if (msg_type == static_cast<uint8_t>(MessageType::PINGRESP)) {
-    last_activity_ = System::TimerService::millis();
+  if (len <= 0) {
     return;
   }
 
+  last_activity_ = System::TimerService::millis();
+
+  uint8_t header_byte = recv_buffer_[0];
+  uint8_t msg_type = header_byte & 0xF0;
+
+  // WICHTIG: Holt die QoS-Bits aus dem Header-Byte für die spätere Abfrage (qos > 0)
+  uint8_t qos = (header_byte & 0x06) >> 1;
+
+  // Handle PINGRESP
+  if (msg_type == static_cast<uint8_t>(MessageType::PINGRESP)) {
+    return;
+  }
+
+  // Handle PUBLISH
   if (msg_type == static_cast<uint8_t>(MessageType::PUBLISH)) {
     uint16_t pos = 1;
     uint32_t multiplier = 1;
     uint32_t rem_len = 0;
     uint8_t encoded_byte;
 
+    // Remaining Length decodieren (Variable Byte Integer)
     do {
-      if (pos >= len)
+      if (pos >= static_cast<uint16_t>(len))
         return;  // Out-of-Bounds Schutz
       encoded_byte = recv_buffer_[pos++];
       rem_len += (encoded_byte & 127) * multiplier;
       multiplier *= 128;
     } while ((encoded_byte & 128) != 0);
 
-    if (pos + 2 > len)
+    if (pos + 2 > static_cast<uint16_t>(len))
       return;  // Out-of-Bounds Schutz
 
     // Topic Length decodieren
     uint16_t topic_len = (recv_buffer_[pos] << 8) | recv_buffer_[pos + 1];
     pos += 2;
 
-    if (pos + topic_len > len)
+    if (pos + topic_len > static_cast<uint16_t>(len))
       return;  // Out-of-Bounds Schutz
 
-    // Topic String (Null-terminieren)
-    char* topic = reinterpret_cast<char*>(&recv_buffer_[pos]);
-    uint8_t original_byte = recv_buffer_[pos + topic_len];
-    recv_buffer_[pos + topic_len] = '\0';
+    // ======================================================================
+    // DEINE ÄNDERUNG: Sicher in lokalen Buffer extrahieren
+    // ======================================================================
+    char topic_str[kMaxTopicLength];
+    uint16_t copy_len = (topic_len < kMaxTopicLength - 1) ? topic_len : (kMaxTopicLength - 1);
+    memcpy(topic_str, &recv_buffer_[pos], copy_len);
+    topic_str[copy_len] = '\0';
     pos += topic_len;
 
+    // ======================================================================
+    // DEINE ÄNDERUNG: Packet ID überspringen (falls QoS > 0)
+    // ======================================================================
     if (qos > 0) {
-      if (pos + 2 > len)
-        return;  // Buffer-Überlauf verhindern
+      if (pos + 2 > static_cast<uint16_t>(len))
+        return;  // Out-of-Bounds Schutz
       pos += 2;
     }
 
+    // Payload bestimmen
     const uint8_t* payload = &recv_buffer_[pos];
-    uint16_t payload_len = len - pos;
+    uint16_t payload_len = static_cast<uint16_t>(len) - pos;
 
-    // Callback aufrufen
+    // ======================================================================
+    // DEINE ÄNDERUNG: Callbacks aufrufen
+    // ======================================================================
     for (uint8_t i = 0; i < kMaxSubscriptions; i++) {
-      if (subscriptions_[i].active && strcmp(subscriptions_[i].topic, topic) == 0 &&
+      if (subscriptions_[i].active && strcmp(subscriptions_[i].topic, topic_str) == 0 &&
           subscriptions_[i].callback != nullptr) {
-        subscriptions_[i].callback(topic, payload, payload_len);
+        subscriptions_[i].callback(topic_str, payload, payload_len);
       }
     }
 
-    // Byte wiederherstellen
-    recv_buffer_[pos - payload_len - ((qos > 0) ? 2 : 0)] = original_byte;
+    // Die fehlerhafte Zeile "recv_buffer_[...] = original_byte;" wurde gelöscht,
+    // da sie dank deiner "topic_str"-Änderung nicht mehr gebraucht wird!
   }
 }
 

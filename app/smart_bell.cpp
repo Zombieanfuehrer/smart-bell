@@ -39,10 +39,10 @@ struct ChimeState {
 };
 
 // Definition der beiden Klingel-Module
-ChimeState chime1 = {(1 << PORTB0), &PORTB, (1 << PORTD2), &PIND, true, false, false, 0,
-                     nullptr,       false,  false,         true,  0};
-ChimeState chime2 = {(1 << PORTB1), &PORTB, (1 << PORTD3), &PIND, true, false, false, 0,
-                     nullptr,       false,  false,         true,  0};
+static ChimeState chime1 = {(1 << PORTB0), &PORTB, (1 << PORTD2), &PIND, true, false, false, 0,
+                            nullptr,       false,  false,         true,  0};
+static ChimeState chime2 = {(1 << PORTB1), &PORTB, (1 << PORTD3), &PIND, true, false, false, 0,
+                            nullptr,       false,  false,         true,  0};
 
 static serial::UART* g_uart = nullptr;
 static serial::SPI* g_spi = nullptr;
@@ -85,6 +85,10 @@ void init_chime(ChimeState& chime) {
 void on_mqtt_message_received(const char* topic, const uint8_t* payload, uint16_t length) {
   print_log_ptr(g_uart, PSTR("[MQTT] CMD RX on: "));
   g_uart->send_string(topic);
+  print_log_ptr(g_uart, PSTR("Payload: "));
+  for (uint16_t i = 0; i < length; i++) {
+    g_uart->send(payload[i]);
+  }
   print_log_ptr(g_uart, PSTR("\r\n"));
 
   ChimeState* target_chime = nullptr;
@@ -133,7 +137,26 @@ void mqtt_subscribe_topics(const Config::SmartBellConfig& cfg) {
 void process_chime(ChimeState& chime) {
   uint32_t now = System::TimerService::millis();
 
-  // 1. Software-Polling & Debounce (Active-Low)
+  // Diese Variablen behalten ihren Wert über alle Funktionsaufrufe hinweg
+  static bool is_loop_started = false;
+  static uint32_t loop_start_ms = 0;
+
+  if (!is_loop_started) {
+    loop_start_ms = now;  // Speichere die exakte Zeit, wann die Loop wirklich begann
+    is_loop_started = true;
+  }
+
+  // Sperre die Verarbeitung für exakt 3 Sekunden NACH Eintritt in die Loop
+  if ((now - loop_start_ms) < 3000) {
+    chime.last_raw_state = (*chime.in_port & chime.in_pin) != 0;
+    chime.last_debounce_ms = now;
+    chime.button_pressed = false;
+    chime.mqtt_sent = false;
+    chime.trigger_pending = false;
+    return;  // Abbruch!
+  }
+
+  // 2. Software-Polling & Debounce (Active-Low)
   bool raw_state = (*chime.in_port & chime.in_pin) != 0;
   if (raw_state != chime.last_raw_state) {
     chime.last_debounce_ms = now;
@@ -142,19 +165,19 @@ void process_chime(ChimeState& chime) {
 
   if ((now - chime.last_debounce_ms) > 50) {
     if (!raw_state) {
-      if (!chime.button_pressed && !chime.is_ringing) {
+      // Nur bei einer echten Flanke (Edge-Trigger) auslösen!
+      if (!chime.button_pressed) {
         chime.button_pressed = true;
         chime.mqtt_sent = false;
         chime.trigger_pending = true;
       }
     } else {
-      if (!chime.is_ringing) {
-        chime.button_pressed = false;
-      }
+      // Taster losgelassen: Sofort zurücksetzen, unabhängig vom Gong!
+      chime.button_pressed = false;
     }
   }
 
-  // 2. Physischen Ausgang schalten
+  // 3. Physischen Ausgang schalten
   if (chime.trigger_pending) {
     chime.trigger_pending = false;
     if (chime.enabled && !chime.is_ringing) {
@@ -164,7 +187,7 @@ void process_chime(ChimeState& chime) {
     }
   }
 
-  // 3. Timer für physischen Gong (1.5 Sekunden)
+  // 4. Timer für physischen Gong (1.5 Sekunden)
   if (chime.is_ringing) {
     if ((now - chime.ring_start_ms) >= 1500) {
       chime.is_ringing = false;
@@ -173,7 +196,7 @@ void process_chime(ChimeState& chime) {
     }
   }
 
-  // 4. MQTT Event senden
+  // 5. MQTT Event senden (Retry solange gedrückt)
   if (chime.button_pressed && !chime.mqtt_sent && g_mqtt_client->is_connected() &&
       chime.pub_topic) {
     static const char* payload = "1";
@@ -309,6 +332,9 @@ int main() {
 
   init_chime(chime1);
   init_chime(chime2);
+
+  chime1.last_raw_state = (*chime1.in_port & chime1.in_pin) != 0;
+  chime2.last_raw_state = (*chime2.in_port & chime2.in_pin) != 0;
 
   while (1) {
     wdt_reset();
